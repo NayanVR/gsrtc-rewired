@@ -144,8 +144,9 @@ function SearchResults() {
 		<>
 			<SiteHeader />
 			{/* Heritage banner */}
-			<div className="dither-gradient relative overflow-hidden">
-				<div aria-hidden className="jali absolute inset-0 opacity-[0.1]" />
+			<div className="mesh-band relative overflow-hidden">
+				<div aria-hidden className="grain" />
+				<div aria-hidden className="jali absolute inset-0 opacity-[0.08]" />
 				<div className="relative mx-auto max-w-6xl px-4 py-3 text-center text-white sm:px-6">
 					<p className="font-display font-semibold">
 						Enjoy the rich heritage & warm hospitality of Gujarat with GSRTC

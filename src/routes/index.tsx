@@ -115,8 +115,10 @@ function NoteStrip() {
 function Hero() {
 	return (
 		<section className="relative overflow-hidden">
-			<div aria-hidden className="dither-gradient absolute inset-0" />
-			<div aria-hidden className="jali absolute inset-0 opacity-[0.1]" />
+			<div aria-hidden className="mesh-hero absolute inset-0">
+				<div className="grain" />
+			</div>
+			<div aria-hidden className="jali absolute inset-0 opacity-[0.06]" />
 			<div className="relative mx-auto max-w-5xl px-4 pt-12 pb-24 text-center sm:px-6 sm:pt-16">
 				<span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-medium text-sm text-white ring-1 ring-white/25 backdrop-blur">
 					<StarIcon className="text-saffron-200" height={14} width={14} />

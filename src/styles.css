@@ -112,6 +112,51 @@ body {
 
 /* Dithered gradient — the signature spectrum with a fine grain overlay that
    breaks up banding and gives the surface a crafted, tactile finish. */
+/* Atmospheric mesh gradient — soft color glows over a deep indigo base.
+   Reads far calmer than a flat linear sweep and lets white text sit cleanly. */
+.mesh-hero {
+  background-color: #1b2660;
+  background-image:
+    radial-gradient(
+      56rem 40rem at -2% -8%,
+      rgba(92, 128, 255, 0.95),
+      transparent 58%
+    ),
+    radial-gradient(
+      52rem 44rem at 108% 116%,
+      rgba(244, 120, 46, 0.9),
+      transparent 60%
+    ),
+    radial-gradient(
+      40rem 32rem at 96% 6%,
+      rgba(255, 178, 78, 0.45),
+      transparent 56%
+    ),
+    radial-gradient(
+      46rem 42rem at 52% 80%,
+      rgba(150, 86, 214, 0.5),
+      transparent 64%
+    ),
+    linear-gradient(145deg, #22337f 0%, #271b57 55%, #2c1e50 100%);
+}
+
+/* Horizontal variant for slim banners. */
+.mesh-band {
+  background-color: #23306f;
+  background-image:
+    radial-gradient(
+      36rem 20rem at -2% 50%,
+      rgba(96, 132, 255, 0.85),
+      transparent 62%
+    ),
+    radial-gradient(
+      36rem 20rem at 102% 50%,
+      rgba(240, 118, 52, 0.85),
+      transparent 62%
+    ),
+    linear-gradient(90deg, #23409f 0%, #6a3f9e 50%, #d5622a 100%);
+}
+
 /* Expects the element to carry its own `relative`/`absolute` position. */
 .dither-gradient {
   background: var(--gradient-sarvam);
