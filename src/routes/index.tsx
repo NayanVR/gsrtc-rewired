@@ -120,26 +120,30 @@ function Hero() {
 				<div className="grain" />
 			</div>
 			<div aria-hidden className="jali absolute inset-0 opacity-[0.06]" />
-			<div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pt-12 pb-24 sm:px-6 sm:pt-14 lg:grid-cols-2">
-				<div>
-					<span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-medium text-sm text-white ring-1 ring-white/25 backdrop-blur">
-						<StarIcon className="text-saffron-200" height={14} width={14} />
-						New record · 24 October 2025
-					</span>
-					<h1 className="mt-4 font-display font-extrabold text-4xl text-white leading-[1.05] tracking-tight sm:text-5xl">
-						Travel Gujarat with GSRTC.
-					</h1>
-					<p className="mt-4 max-w-md text-lg text-white/85 leading-relaxed">
-						Volvo, Sleeper, Express and more across thousands of routes. Live
-						seat maps, transparent fares, and a calmer way to book.
-					</p>
-				</div>
-				<HeroSlideshow />
-			</div>
 
-			{/* Booking widget overlapping the hero base */}
-			<div className="relative mx-auto -mt-16 max-w-6xl px-4 pb-10 sm:px-6">
-				<SearchForm showTabs variant="hero" />
+			<div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+				{/* Intro + carousel share one row */}
+				<div className="grid items-center gap-8 lg:grid-cols-[1fr_1.05fr]">
+					<div>
+						<span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-medium text-sm text-white ring-1 ring-white/25 backdrop-blur">
+							<StarIcon className="text-saffron-200" height={14} width={14} />
+							New record · 24 October 2025
+						</span>
+						<h1 className="mt-4 font-display font-extrabold text-4xl text-white leading-[1.05] tracking-tight sm:text-5xl">
+							Travel Gujarat with GSRTC.
+						</h1>
+						<p className="mt-4 max-w-md text-lg text-white/85 leading-relaxed">
+							Volvo, Sleeper, Express and more across thousands of routes. Live
+							seat maps, transparent fares, and a calmer way to book.
+						</p>
+					</div>
+					<HeroSlideshow />
+				</div>
+
+				{/* Booking widget — part of the same hero panel */}
+				<div className="mt-6">
+					<SearchForm showTabs variant="hero" />
+				</div>
 			</div>
 		</section>
 	);
