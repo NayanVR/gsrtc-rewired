@@ -1,5 +1,64 @@
-
 @import "tailwindcss";
+
+/* ==========================================================================
+   GSRTC Design System — "Modern GovTech"
+   A trustworthy, accessible refresh that keeps the recognizable GSRTC blue.
+   ========================================================================== */
+
+@theme {
+  /* Brand — GSRTC blue, tuned for accessible contrast */
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #d9e6ff;
+  --color-brand-200: #bcd3ff;
+  --color-brand-300: #8eb5ff;
+  --color-brand-400: #598cff;
+  --color-brand-500: #3366ff;
+  --color-brand-600: #1a49e6;
+  --color-brand-700: #1539b4;
+  --color-brand-800: #163193;
+  --color-brand-900: #172d75;
+  --color-brand-950: #101c47;
+
+  /* Accent — the GSRTC red, reserved for primary CTAs & alerts */
+  --color-accent-50: #fff1f1;
+  --color-accent-100: #ffe0e0;
+  --color-accent-200: #ffc6c6;
+  --color-accent-300: #ff9d9d;
+  --color-accent-400: #ff6363;
+  --color-accent-500: #f5333a;
+  --color-accent-600: #e11d24;
+  --color-accent-700: #bd141a;
+  --color-accent-800: #9c1519;
+  --color-accent-900: #81181b;
+
+  /* Neutrals — warm-cool slate, easier on the eye than pure gray */
+  --color-ink-50: #f7f8fa;
+  --color-ink-100: #eef0f4;
+  --color-ink-200: #dfe3ea;
+  --color-ink-300: #c6ccd8;
+  --color-ink-400: #99a1b3;
+  --color-ink-500: #6b7387;
+  --color-ink-600: #4d5468;
+  --color-ink-700: #3a4054;
+  --color-ink-800: #262b3a;
+  --color-ink-900: #171b28;
+
+  --color-success-50: #ecfdf3;
+  --color-success-500: #16a34a;
+  --color-success-700: #15803d;
+
+  --color-surface: #ffffff;
+  --color-canvas: #f5f7fb;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
+
+  --radius-card: 1rem;
+
+  --shadow-card: 0 1px 2px rgb(16 28 71 / 0.04),
+    0 8px 24px -12px rgb(16 28 71 / 0.16);
+  --shadow-pop: 0 12px 40px -12px rgb(16 28 71 / 0.28);
+}
 
 * {
   box-sizing: border-box;
@@ -11,7 +70,45 @@ body,
   min-height: 100%;
 }
 
-body {
-  margin: 0;
+html {
+  scroll-behavior: smooth;
 }
 
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-ink-800);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Accessible focus ring for keyboard users */
+:focus-visible {
+  outline: 3px solid var(--color-brand-400);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Utility: visually hidden but available to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

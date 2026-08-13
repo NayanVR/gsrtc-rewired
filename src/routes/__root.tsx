@@ -7,21 +7,30 @@ import appCss from "../styles.css?url";
 export const Route = createRootRoute({
 	head: () => ({
 		meta: [
+			{ charSet: "utf-8" },
+			{ name: "viewport", content: "width=device-width, initial-scale=1" },
+			{ title: "GSRTC · Book Gujarat State Road Transport bus tickets" },
 			{
-				charSet: "utf-8",
+				name: "description",
+				content:
+					"Search, compare and book GSRTC bus tickets across Gujarat. A cleaner, faster and more accessible booking experience.",
 			},
-			{
-				name: "viewport",
-				content: "width=device-width, initial-scale=1",
-			},
-			{
-				title: "TanStack Start Starter",
-			},
+			{ name: "theme-color", content: "#1a49e6" },
 		],
 		links: [
+			{ rel: "stylesheet", href: appCss },
+			{
+				rel: "preconnect",
+				href: "https://fonts.googleapis.com",
+			},
+			{
+				rel: "preconnect",
+				href: "https://fonts.gstatic.com",
+				crossOrigin: "anonymous",
+			},
 			{
 				rel: "stylesheet",
-				href: appCss,
+				href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
 			},
 		],
 	}),
@@ -35,11 +44,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body>
+				<a
+					className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-brand-700 focus:px-4 focus:py-2 focus:text-white"
+					href="#main"
+				>
+					Skip to main content
+				</a>
 				{children}
 				<TanStackDevtools
-					config={{
-						position: "bottom-right",
-					}}
+					config={{ position: "bottom-right" }}
 					plugins={[
 						{
 							name: "Tanstack Router",
