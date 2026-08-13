@@ -110,6 +110,53 @@ body {
   background: var(--gradient-sarvam);
 }
 
+/* Dithered gradient — the signature spectrum with a fine grain overlay that
+   breaks up banding and gives the surface a crafted, tactile finish. */
+/* Expects the element to carry its own `relative`/`absolute` position. */
+.dither-gradient {
+  background: var(--gradient-sarvam);
+}
+
+/* Lift real children above the grain overlay */
+.dither-gradient > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dither-gradient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 140px 140px;
+}
+
+/* Drop-in grain overlay for any gradient container (adds dithering) */
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 140px 140px;
+}
+
+/* Ordered-dither dot overlay for large flat gradient posters */
+.dither-dots::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.14;
+  background-image: radial-gradient(currentColor 0.5px, transparent 0.6px);
+  background-size: 4px 4px;
+}
+
 /* Jali lattice — a faint geometric weave overlay */
 .jali {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M24 0 48 24 24 48 0 24Z'/%3E%3Ccircle cx='24' cy='24' r='11'/%3E%3Cpath d='M0 0 12 12M48 0 36 12M48 48 36 36M0 48 12 36'/%3E%3C/g%3E%3C/svg%3E");

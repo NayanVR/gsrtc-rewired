@@ -1,9 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+	BusArt,
+	DwarkaArt,
+	QrCode,
+	RannOfKutchArt,
+	SomnathArt,
+	StatueOfUnityArt,
+	TrophyArt,
+} from "#/components/artwork";
+import {
 	AndroidIcon,
 	AppleIcon,
 	ArrowRightIcon,
-	QrIcon,
 	StarIcon,
 	TrackIcon,
 	UsersGroupIcon,
@@ -52,25 +60,25 @@ const DESTINATIONS = [
 		name: "Statue of Unity",
 		tag: "Kevadia",
 		blurb: "The world's tallest statue, on the banks of the Narmada.",
-		hue: 214,
+		Art: StatueOfUnityArt,
 	},
 	{
 		name: "Somnath",
 		tag: "Gir Somnath",
 		blurb: "First among the twelve sacred Jyotirlinga shrines.",
-		hue: 24,
+		Art: SomnathArt,
 	},
 	{
 		name: "Rann of Kutch",
 		tag: "Bhuj",
 		blurb: "The vast white salt desert at Dhordo — surreal and serene.",
-		hue: 320,
+		Art: RannOfKutchArt,
 	},
 	{
 		name: "Dwarka",
 		tag: "Devbhumi Dwarka",
 		blurb: "The revered coastal pilgrimage city of Lord Krishna.",
-		hue: 260,
+		Art: DwarkaArt,
 	},
 ] as const;
 
@@ -107,8 +115,8 @@ function NoteStrip() {
 function Hero() {
 	return (
 		<section className="relative overflow-hidden">
-			<div aria-hidden className="gradient-surface absolute inset-0" />
-			<div aria-hidden className="jali absolute inset-0 opacity-[0.12]" />
+			<div aria-hidden className="dither-gradient absolute inset-0" />
+			<div aria-hidden className="jali absolute inset-0 opacity-[0.1]" />
 			<div className="relative mx-auto max-w-5xl px-4 pt-12 pb-24 text-center sm:px-6 sm:pt-16">
 				<span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-medium text-sm text-white ring-1 ring-white/25 backdrop-blur">
 					<StarIcon className="text-saffron-200" height={14} width={14} />
@@ -136,6 +144,7 @@ function Milestone() {
 		<section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
 			<div className="grid gap-6 rounded-3xl border border-ink-100 bg-surface p-6 shadow-card sm:p-8 lg:grid-cols-[1fr_1.3fr] lg:items-center">
 				<div>
+					<TrophyArt className="mb-3 h-10 w-10" />
 					<span className="inline-flex items-center gap-2 rounded-full bg-saffron-50 px-3 py-1 font-semibold text-saffron-700 text-xs">
 						<StarIcon height={13} width={13} />
 						New milestone · 24 October 2025
@@ -218,22 +227,24 @@ function QuickAccess() {
 				</div>
 
 				{/* Feedback + policies */}
-				<div className="rounded-3xl border border-ink-100 bg-surface p-6 shadow-card">
-					<div className="flex items-start gap-4">
-						<span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-ink-200 bg-canvas text-ink-700">
-							<QrIcon height={34} width={34} />
-						</span>
-						<div>
-							<h2 className="font-bold font-display text-ink-900">
-								Share your feedback
-							</h2>
-							<p className="mt-1 text-ink-500 text-sm">
-								Scan the QR or visit www.feedback.gsrtc.org to rate your
-								journey.
-							</p>
+				<div className="overflow-hidden rounded-3xl border border-ink-100 bg-surface shadow-card">
+					<div className="dither-gradient relative p-5">
+						<div className="relative flex items-center gap-4">
+							<div className="rounded-2xl bg-white/95 p-2 shadow-sm">
+								<QrCode size={84} />
+							</div>
+							<div className="flex-1 text-white">
+								<h2 className="font-bold font-display text-lg leading-tight">
+									Rate your GSRTC journey
+								</h2>
+								<p className="mt-1 text-sm text-white/85">
+									Scan the QR or visit www.feedback.gsrtc.org
+								</p>
+								<BusArt className="mt-2 h-9 w-auto" />
+							</div>
 						</div>
 					</div>
-					<div className="mt-5 space-y-2">
+					<div className="space-y-2 p-5">
 						{POLICIES.map((policy) => (
 							<a
 								className="flex items-center justify-between rounded-xl bg-canvas px-4 py-2.5 font-medium text-ink-800 text-sm transition hover:bg-saffron-50 hover:text-saffron-700"
@@ -342,16 +353,9 @@ function Destinations() {
 						className="group overflow-hidden rounded-2xl border border-ink-100 bg-surface shadow-card transition hover:-translate-y-0.5 hover:shadow-pop"
 						key={place.name}
 					>
-						<div
-							className="relative flex h-32 items-end overflow-hidden p-4"
-							style={{
-								background: `linear-gradient(135deg, hsl(${place.hue} 72% 46%), hsl(${
-									place.hue + 25
-								} 68% 32%))`,
-							}}
-						>
-							<span aria-hidden className="jali absolute inset-0 opacity-15" />
-							<span className="relative inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 font-medium text-white text-xs ring-1 ring-white/25">
+						<div className="relative h-36">
+							<place.Art className="h-full w-full transition duration-500 group-hover:scale-105" />
+							<span className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-black/25 px-2.5 py-1 font-medium text-white text-xs ring-1 ring-white/25 backdrop-blur">
 								{place.tag}
 							</span>
 						</div>
