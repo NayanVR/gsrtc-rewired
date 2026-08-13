@@ -3,7 +3,9 @@ import { useMemo, useState } from "react";
 import {
 	AMENITY_ICONS,
 	ArrowRightIcon,
+	ChevronDownIcon,
 	ClockIcon,
+	DiscountIcon,
 	PinIcon,
 	StarIcon,
 } from "#/components/icons";
@@ -12,6 +14,7 @@ import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
 import {
 	AMENITY_META,
+	BUS_TYPE_META,
 	type BusType,
 	formatDuration,
 	formatFare,
@@ -42,7 +45,7 @@ export const Route = createFileRoute("/search")({
 });
 
 const SORTS = [
-	{ id: "departure", label: "Departure" },
+	{ id: "departure", label: "Departure time" },
 	{ id: "fare-low", label: "Price: low to high" },
 	{ id: "duration", label: "Fastest" },
 	{ id: "rating", label: "Top rated" },
@@ -57,6 +60,14 @@ const TIME_BANDS = [
 	{ id: "night", label: "After 6 PM", from: 18, to: 24 },
 ] as const;
 
+const TRIP_INFO_LINKS = [
+	"Discounts",
+	"Boarding & Dropping Points",
+	"Amenities",
+	"Refreshment Stops",
+	"Fare Summary",
+] as const;
+
 function departureHour(trip: Trip): number {
 	return Number(trip.departure.slice(0, 2));
 }
@@ -66,17 +77,13 @@ function SearchResults() {
 	const { trips } = Route.useLoaderData();
 
 	const [sort, setSort] = useState<SortId>("departure");
-	const [busTypes, setBusTypes] = useState<Set<BusType>>(new Set());
+	const [activeType, setActiveType] = useState<BusType | "ALL">("ALL");
 	const [bands, setBands] = useState<Set<string>>(new Set());
-
-	const availableBusTypes = useMemo(
-		() => Array.from(new Set(trips.map((trip) => trip.busType))),
-		[trips]
-	);
+	const [modifyOpen, setModifyOpen] = useState(false);
 
 	const filtered = useMemo(() => {
 		const result = trips.filter((trip) => {
-			if (busTypes.size > 0 && !busTypes.has(trip.busType)) {
+			if (activeType !== "ALL" && trip.busType !== activeType) {
 				return false;
 			}
 			if (bands.size > 0) {
@@ -105,84 +112,179 @@ function SearchResults() {
 			}
 		});
 		return sorted;
-	}, [trips, busTypes, bands, sort]);
+	}, [trips, activeType, bands, sort]);
 
-	const toggle = <T,>(set: Set<T>, value: T): Set<T> => {
-		const next = new Set(set);
-		if (next.has(value)) {
-			next.delete(value);
-		} else {
-			next.add(value);
+	const typeChips = useMemo(() => {
+		const chips: { type: BusType | "ALL"; count: number; fareFrom?: number }[] =
+			[{ type: "ALL", count: trips.length }];
+		for (const [type, meta] of Object.entries(BUS_TYPE_META)) {
+			const count = trips.filter((t) => t.busType === type).length;
+			chips.push({
+				type: type as BusType,
+				count,
+				fareFrom: meta.fareFrom,
+			});
 		}
-		return next;
+		return chips;
+	}, [trips]);
+
+	const toggleBand = (id: string) => {
+		setBands((set) => {
+			const next = new Set(set);
+			if (next.has(id)) {
+				next.delete(id);
+			} else {
+				next.add(id);
+			}
+			return next;
+		});
 	};
 
 	return (
 		<>
 			<SiteHeader />
+			{/* Heritage banner */}
+			<div className="gradient-surface relative overflow-hidden">
+				<div aria-hidden className="jali absolute inset-0 opacity-[0.12]" />
+				<div className="relative mx-auto max-w-6xl px-4 py-3 text-center text-white sm:px-6">
+					<p className="font-display font-semibold">
+						Enjoy the rich heritage & warm hospitality of Gujarat with GSRTC
+					</p>
+					<p className="text-sm text-white/85">
+						Avail discounts on premium and non-premium services
+					</p>
+				</div>
+			</div>
+
 			<main className="bg-canvas" id="main">
-				{/* Search summary + modify */}
-				<div className="border-ink-200 border-b bg-surface">
-					<div className="mx-auto max-w-6xl px-6 py-5">
-						<div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1">
-							<h1 className="flex items-center gap-2 font-bold text-ink-900 text-xl">
-								{from}
-								<ArrowRightIcon
-									className="text-brand-500"
-									height={18}
-									width={18}
+				{/* Toolbar */}
+				<div className="border-ink-100 border-b bg-surface">
+					<div className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
+						<div className="flex flex-wrap items-center justify-between gap-3">
+							<div>
+								<p className="font-bold font-display text-ink-900 text-lg">
+									Total trips available:{" "}
+									<span className="gradient-text">{filtered.length}</span>
+								</p>
+								<h1 className="mt-0.5 flex items-center gap-2 text-ink-600 text-sm">
+									{from.toUpperCase()} Central Bus Stand
+									<ArrowRightIcon
+										className="text-saffron-500"
+										height={14}
+										width={14}
+									/>
+									{to.toUpperCase()} Central Bus Stand ·{" "}
+									{new Date(date).toLocaleDateString("en-GB")}
+								</h1>
+							</div>
+							<button
+								className="inline-flex items-center gap-1.5 rounded-full border border-ink-200 px-4 py-2 font-semibold text-ink-700 text-sm transition hover:border-saffron-300 hover:text-saffron-700"
+								onClick={() => setModifyOpen((v) => !v)}
+								type="button"
+							>
+								Modify search
+								<ChevronDownIcon
+									className={
+										modifyOpen ? "rotate-180 transition" : "transition"
+									}
+									height={15}
+									width={15}
 								/>
-								{to}
-							</h1>
-							<span className="text-ink-500 text-sm">
-								{new Date(date).toLocaleDateString("en-IN", {
-									weekday: "short",
-									day: "numeric",
-									month: "short",
-								})}{" "}
-								· {passengers} {passengers > 1 ? "seats" : "seat"}
-							</span>
+							</button>
 						</div>
-						<SearchForm
-							initial={{ from, to, date, passengers }}
-							variant="bar"
-						/>
+
+						{modifyOpen ? (
+							<div className="mt-4">
+								<SearchForm
+									initial={{ from, to, date, passengers }}
+									variant="bar"
+								/>
+							</div>
+						) : null}
+
+						{/* Bus type category chips */}
+						<div className="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1">
+							{typeChips.map((chip) => {
+								const active = activeType === chip.type;
+								const label =
+									chip.type === "ALL" ? "All" : BUS_TYPE_META[chip.type].label;
+								return (
+									<button
+										className={`flex shrink-0 flex-col items-start rounded-xl border px-3.5 py-2 text-left transition ${
+											active
+												? "border-transparent bg-ink-900 text-white"
+												: "border-ink-200 bg-surface text-ink-700 hover:border-saffron-300"
+										}`}
+										key={chip.type}
+										onClick={() => setActiveType(chip.type)}
+										type="button"
+									>
+										<span className="font-semibold text-sm">
+											{label}
+											<span
+												className={active ? "text-white/70" : "text-ink-400"}
+											>
+												{" "}
+												· {chip.count}
+											</span>
+										</span>
+										{chip.fareFrom ? (
+											<span
+												className={`text-xs ${
+													active ? "text-white/70" : "text-ink-400"
+												}`}
+											>
+												from {formatFare(chip.fareFrom)}
+											</span>
+										) : (
+											<span
+												className={`text-xs ${
+													active ? "text-white/70" : "text-ink-400"
+												}`}
+											>
+												all services
+											</span>
+										)}
+									</button>
+								);
+							})}
+						</div>
 					</div>
 				</div>
 
-				<div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8 lg:flex-row">
+				<div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row">
 					{/* Filters */}
-					<aside className="lg:w-64 lg:shrink-0">
-						<div className="rounded-2xl border border-ink-200 bg-surface p-5 lg:sticky lg:top-24">
-							<h2 className="font-bold text-ink-900">Filters</h2>
+					<aside className="lg:w-60 lg:shrink-0">
+						<div className="rounded-2xl border border-ink-100 bg-surface p-5 lg:sticky lg:top-24">
+							<h2 className="font-bold font-display text-ink-900">Filters</h2>
 
-							<FilterGroup label="Bus type">
-								{availableBusTypes.map((type) => (
-									<CheckRow
-										checked={busTypes.has(type)}
-										key={type}
-										label={type}
-										onChange={() => setBusTypes((set) => toggle(set, type))}
-									/>
-								))}
-							</FilterGroup>
+							<div className="mt-4 border-ink-100 border-t pt-4">
+								<p className="mb-2.5 font-semibold text-ink-700 text-sm">
+									Filter by time
+								</p>
+								<div className="space-y-1">
+									{TIME_BANDS.map((band) => (
+										<label
+											className="flex cursor-pointer items-center gap-2.5 rounded-lg px-1 py-1.5 text-ink-600 text-sm hover:text-ink-900"
+											key={band.id}
+										>
+											<input
+												checked={bands.has(band.id)}
+												className="h-4 w-4 rounded border-ink-300 accent-saffron-500"
+												onChange={() => toggleBand(band.id)}
+												type="checkbox"
+											/>
+											{band.label}
+										</label>
+									))}
+								</div>
+							</div>
 
-							<FilterGroup label="Departure time">
-								{TIME_BANDS.map((band) => (
-									<CheckRow
-										checked={bands.has(band.id)}
-										key={band.id}
-										label={band.label}
-										onChange={() => setBands((set) => toggle(set, band.id))}
-									/>
-								))}
-							</FilterGroup>
-
-							{(busTypes.size > 0 || bands.size > 0) && (
+							{(activeType !== "ALL" || bands.size > 0) && (
 								<button
-									className="mt-4 font-semibold text-brand-600 text-sm hover:text-brand-700"
+									className="mt-4 font-semibold text-saffron-600 text-sm hover:text-saffron-700"
 									onClick={() => {
-										setBusTypes(new Set());
+										setActiveType("ALL");
 										setBands(new Set());
 									}}
 									type="button"
@@ -195,17 +297,18 @@ function SearchResults() {
 
 					{/* Results */}
 					<section className="flex-1">
-						<div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+						<div className="mb-4 flex items-center justify-between gap-3">
 							<p className="text-ink-600 text-sm">
+								Showing{" "}
 								<span className="font-bold text-ink-900">
 									{filtered.length}
 								</span>{" "}
-								buses available
+								buses
 							</p>
 							<label className="flex items-center gap-2 text-sm">
 								<span className="text-ink-500">Sort by</span>
 								<select
-									className="rounded-lg border border-ink-200 bg-surface px-3 py-1.5 font-semibold text-ink-800 outline-none focus-visible:border-brand-400"
+									className="rounded-lg border border-ink-200 bg-surface px-3 py-1.5 font-semibold text-ink-800 outline-none focus-visible:border-saffron-400"
 									onChange={(event) => setSort(event.target.value as SortId)}
 									value={sort}
 								>
@@ -217,7 +320,6 @@ function SearchResults() {
 								</select>
 							</label>
 						</div>
-
 						{filtered.length === 0 ? (
 							<div className="rounded-2xl border border-ink-200 border-dashed bg-surface p-12 text-center">
 								<p className="font-semibold text-ink-900">
@@ -244,43 +346,6 @@ function SearchResults() {
 	);
 }
 
-function FilterGroup({
-	label,
-	children,
-}: {
-	label: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<div className="mt-5 border-ink-100 border-t pt-4">
-			<p className="mb-2.5 font-semibold text-ink-700 text-sm">{label}</p>
-			<div className="space-y-1">{children}</div>
-		</div>
-	);
-}
-
-function CheckRow({
-	label,
-	checked,
-	onChange,
-}: {
-	label: string;
-	checked: boolean;
-	onChange: () => void;
-}) {
-	return (
-		<label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-1 py-1.5 text-ink-600 text-sm hover:text-ink-900">
-			<input
-				checked={checked}
-				className="h-4 w-4 rounded border-ink-300 text-brand-600 accent-brand-600"
-				onChange={onChange}
-				type="checkbox"
-			/>
-			{label}
-		</label>
-	);
-}
-
 function TripCard({
 	trip,
 	date,
@@ -293,7 +358,7 @@ function TripCard({
 	const fillingFast = trip.seatsAvailable <= 10;
 
 	return (
-		<article className="overflow-hidden rounded-2xl border border-ink-200 bg-surface shadow-card transition hover:border-brand-300 hover:shadow-pop">
+		<article className="overflow-hidden rounded-2xl border border-ink-100 bg-surface shadow-card transition hover:border-saffron-300 hover:shadow-pop">
 			<div className="grid gap-4 p-5 sm:grid-cols-[1fr_auto] sm:items-center">
 				<div>
 					<div className="flex flex-wrap items-center gap-2">
@@ -304,12 +369,14 @@ function TripCard({
 							<StarIcon height={11} width={11} />
 							{trip.rating.toFixed(1)}
 						</span>
-						<span className="text-ink-400 text-xs">{trip.operatorCode}</span>
+						<span className="font-mono text-ink-400 text-xs">{trip.id}</span>
 					</div>
 
 					<div className="mt-3 flex items-center gap-4">
 						<div>
-							<p className="font-bold text-ink-900 text-xl">{trip.departure}</p>
+							<p className="font-bold font-display text-ink-900 text-xl">
+								{trip.departure}
+							</p>
 							<p className="text-ink-500 text-xs">{trip.origin}</p>
 						</div>
 						<div className="flex flex-1 items-center gap-2 text-ink-400">
@@ -321,17 +388,19 @@ function TripCard({
 							<span className="h-px flex-1 bg-ink-200" />
 						</div>
 						<div className="text-right">
-							<p className="font-bold text-ink-900 text-xl">{trip.arrival}</p>
+							<p className="font-bold font-display text-ink-900 text-xl">
+								{trip.arrival}
+							</p>
 							<p className="text-ink-500 text-xs">{trip.destination}</p>
 						</div>
 					</div>
 
-					{trip.via.length > 0 && (
+					{trip.via.length > 0 ? (
 						<p className="mt-2 inline-flex items-center gap-1 text-ink-400 text-xs">
 							<PinIcon height={12} width={12} />
 							via {trip.via.join(", ")}
 						</p>
-					)}
+					) : null}
 
 					<div className="mt-3 flex flex-wrap items-center gap-3">
 						{trip.amenities.slice(0, 5).map((amenity) => {
@@ -339,7 +408,7 @@ function TripCard({
 							const Icon = AMENITY_ICONS[meta.icon];
 							return (
 								<span
-									className="inline-flex items-center gap-1 text-ink-500 text-xs"
+									className="inline-flex items-center gap-1 text-ink-500"
 									key={amenity}
 									title={meta.label}
 								>
@@ -353,13 +422,13 @@ function TripCard({
 
 				<div className="flex items-end justify-between gap-4 border-ink-100 border-t pt-4 sm:flex-col sm:items-end sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
 					<div className="text-right">
-						<p className="font-extrabold text-2xl text-ink-900">
+						<p className="font-display font-extrabold text-2xl text-ink-900">
 							{formatFare(trip.fare)}
 						</p>
 						<p
 							className={
 								fillingFast
-									? "font-semibold text-accent-600 text-xs"
+									? "font-semibold text-saffron-600 text-xs"
 									: "text-ink-500 text-xs"
 							}
 						>
@@ -367,15 +436,29 @@ function TripCard({
 						</p>
 					</div>
 					<Link
-						className="inline-flex items-center gap-1.5 rounded-xl bg-accent-600 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-accent-700"
+						className="gradient-surface inline-flex items-center gap-1.5 rounded-xl px-5 py-2.5 font-semibold text-white shadow-sm transition hover:brightness-105"
 						params={{ tripId: trip.id }}
 						search={{ date, passengers }}
 						to="/book/$tripId"
 					>
-						Select seats
+						Select seat/s
 						<ArrowRightIcon height={16} width={16} />
 					</Link>
 				</div>
+			</div>
+
+			{/* Info links */}
+			<div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-ink-100 border-t bg-canvas/60 px-5 py-2.5">
+				<DiscountIcon className="text-saffron-500" height={14} width={14} />
+				{TRIP_INFO_LINKS.map((label) => (
+					<button
+						className="font-medium text-brand-600 text-xs hover:text-brand-700 hover:underline"
+						key={label}
+						type="button"
+					>
+						{label}
+					</button>
+				))}
 			</div>
 		</article>
 	);

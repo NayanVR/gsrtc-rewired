@@ -1,73 +1,76 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+	AndroidIcon,
+	AppleIcon,
 	ArrowRightIcon,
-	CheckIcon,
-	ClockIcon,
-	PinIcon,
-	ShieldCheckIcon,
+	QrIcon,
 	StarIcon,
+	TrackIcon,
+	UsersGroupIcon,
+	WalletIcon,
 } from "#/components/icons";
 import { SearchForm } from "#/components/search-form";
 import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
-import { BUS_TYPE_META, type BusType, formatFare } from "#/data/trips";
+import { formatFare } from "#/data/trips";
 
 export const Route = createFileRoute("/")({ component: Home });
 
+const ACHIEVEMENT = [
+	{ year: "2018", seats: 74_368, revenue: "₹1.53 Cr" },
+	{ year: "2021", seats: 94_539, revenue: "₹1.80 Cr" },
+	{ year: "2022", seats: 114_880, revenue: "₹2.10 Cr" },
+	{ year: "2023", seats: 132_177, revenue: "₹2.98 Cr" },
+	{ year: "2024", seats: 141_468, revenue: "₹3.16 Cr" },
+	{ year: "2025", seats: 133_043, revenue: "₹3.19 Cr" },
+] as const;
+
+const PEAK_SEATS = 141_468;
+
+const GROWING_NUMBERS = [
+	{ label: "Android App Downloads", value: "63,92,501", icon: AndroidIcon },
+	{ label: "iOS App Downloads", value: "13,09,035", icon: AppleIcon },
+	{ label: "Wallet Users", value: "12,86,369", icon: WalletIcon },
+	{ label: "Visitors Count", value: "31,37,16,988", icon: UsersGroupIcon },
+] as const;
+
+const POLICIES = [
+	{ label: "બુકિંગ નીતિ (Gujarati)", note: "Booking policy" },
+	{ label: "बुकिंग नीति (Hindi)", note: "Booking policy" },
+	{ label: "Booking Policy (English)", note: "Booking policy" },
+] as const;
+
 const POPULAR_ROUTES = [
-	{ from: "Ahmedabad", to: "Vadodara", fare: 120, mins: 120 },
-	{ from: "Vadodara", to: "Surat", fare: 147, mins: 165 },
-	{ from: "Ahmedabad", to: "Rajkot", fare: 220, mins: 240 },
-	{ from: "Surat", to: "Ahmedabad", fare: 260, mins: 270 },
-	{ from: "Rajkot", to: "Bhavnagar", fare: 180, mins: 210 },
-	{ from: "Ahmedabad", to: "Bhuj", fare: 340, mins: 420 },
-] as const;
-
-const FEATURES = [
-	{
-		title: "Live seat availability",
-		body: "Real-time seat maps so you always book what's actually free — no surprises at the counter.",
-		icon: CheckIcon,
-	},
-	{
-		title: "Secure 7-minute hold",
-		body: "Your seat is locked while you pay. Government-grade, PCI-compliant payment gateway.",
-		icon: ShieldCheckIcon,
-	},
-	{
-		title: "On-time, tracked buses",
-		body: "Follow your bus live and get boarding-point reminders before departure.",
-		icon: ClockIcon,
-	},
-] as const;
-
-const STATS = [
-	{ label: "Buses daily", value: "8,000+" },
-	{ label: "Routes covered", value: "18,000+" },
-	{ label: "App downloads", value: "77 lakh+" },
-	{ label: "On-time record", value: "94%" },
+	{ from: "Ahmedabad", to: "Vadodara", fare: 120 },
+	{ from: "Vadodara", to: "Surat", fare: 147 },
+	{ from: "Ahmedabad", to: "Rajkot", fare: 220 },
+	{ from: "Surat", to: "Ahmedabad", fare: 260 },
 ] as const;
 
 const DESTINATIONS = [
 	{
 		name: "Statue of Unity",
 		tag: "Kevadia",
-		blurb: "The world's tallest statue on the Narmada.",
+		blurb: "The world's tallest statue, on the banks of the Narmada.",
+		hue: 214,
 	},
 	{
 		name: "Somnath",
 		tag: "Gir Somnath",
-		blurb: "First among the twelve Jyotirlinga shrines.",
+		blurb: "First among the twelve sacred Jyotirlinga shrines.",
+		hue: 24,
 	},
 	{
 		name: "Rann of Kutch",
 		tag: "Bhuj",
-		blurb: "The vast white salt desert at Dhordo.",
+		blurb: "The vast white salt desert at Dhordo — surreal and serene.",
+		hue: 320,
 	},
 	{
 		name: "Dwarka",
 		tag: "Devbhumi Dwarka",
-		blurb: "The revered coastal pilgrimage city.",
+		blurb: "The revered coastal pilgrimage city of Lord Krishna.",
+		hue: 260,
 	},
 ] as const;
 
@@ -75,12 +78,13 @@ function Home() {
 	return (
 		<>
 			<SiteHeader />
+			<NoteStrip />
 			<main id="main">
 				<Hero />
-				<PopularRoutes />
-				<BusTypes />
-				<Features />
-				<Stats />
+				<Milestone />
+				<QuickAccess />
+				<GrowingNumbers />
+				<LiveTracking />
 				<Destinations />
 			</main>
 			<SiteFooter />
@@ -88,134 +92,185 @@ function Home() {
 	);
 }
 
-function Hero() {
+function NoteStrip() {
 	return (
-		<section className="relative overflow-hidden bg-gradient-to-br from-brand-800 via-brand-700 to-brand-900">
-			<div
-				aria-hidden
-				className="absolute inset-0 opacity-30"
-				style={{
-					backgroundImage:
-						"radial-gradient(60rem 30rem at 80% -10%, rgba(255,255,255,0.35), transparent), radial-gradient(40rem 24rem at 0% 120%, rgba(89,140,255,0.5), transparent)",
-				}}
-			/>
-			<div className="relative mx-auto max-w-6xl px-6 pt-14 pb-28 sm:pt-20">
-				<div className="max-w-2xl">
-					<span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-medium text-brand-100 text-sm ring-1 ring-white/20">
-						<StarIcon className="text-yellow-300" height={14} width={14} />
-						Official GSRTC ticketing · Government of Gujarat
-					</span>
-					<h1 className="mt-5 font-extrabold text-4xl text-white leading-[1.1] tracking-tight sm:text-5xl">
-						Book your Gujarat bus journey in under a minute.
-					</h1>
-					<p className="mt-4 text-brand-100 text-lg leading-relaxed">
-						Compare Volvo, Sleeper, Express and more across 18,000 routes. Live
-						seat maps, transparent fares, and a booking flow that just works.
-					</p>
-				</div>
-
-				<div className="mt-8">
-					<SearchForm variant="hero" />
-				</div>
+		<div className="border-saffron-200 border-b bg-saffron-50">
+			<div className="mx-auto max-w-6xl px-4 py-2 text-saffron-800 text-sm sm:px-6">
+				<span className="font-semibold">Note:</span> Please do not press the
+				forward or back buttons during a transaction. 📌 ટિકિટ બુક કરતા પહેલા
+				એકવાર બ્રાઉઝર હિસ્ટ્રી ક્લિયર કરવી.
 			</div>
-
-			{/* soft curve into next section */}
-			<div className="relative -mb-px h-8 bg-canvas [clip-path:ellipse(75%_100%_at_50%_100%)]" />
-		</section>
-	);
-}
-
-function SectionHeading({
-	eyebrow,
-	title,
-	action,
-}: {
-	eyebrow: string;
-	title: string;
-	action?: React.ReactNode;
-}) {
-	return (
-		<div className="flex items-end justify-between gap-4">
-			<div>
-				<p className="font-semibold text-brand-600 text-sm uppercase tracking-wide">
-					{eyebrow}
-				</p>
-				<h2 className="mt-1 font-bold text-2xl text-ink-900 tracking-tight sm:text-3xl">
-					{title}
-				</h2>
-			</div>
-			{action}
 		</div>
 	);
 }
 
-function PopularRoutes() {
+function Hero() {
 	return (
-		<section className="mx-auto max-w-6xl px-6 py-14">
-			<SectionHeading eyebrow="Frequently travelled" title="Popular routes" />
-			<div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-				{POPULAR_ROUTES.map((route) => (
-					<Link
-						className="group flex items-center justify-between rounded-2xl border border-ink-200 bg-surface p-5 shadow-card transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-pop"
-						key={`${route.from}-${route.to}`}
-						search={{
-							from: route.from,
-							to: route.to,
-							date: new Date().toISOString().slice(0, 10),
-							passengers: 1,
-						}}
-						to="/search"
-					>
-						<div>
-							<div className="flex items-center gap-2 font-semibold text-ink-900">
-								{route.from}
-								<ArrowRightIcon
-									className="text-ink-400"
-									height={16}
-									width={16}
-								/>
-								{route.to}
-							</div>
-							<p className="mt-1 text-ink-500 text-sm">
-								from {formatFare(route.fare)} · {Math.round(route.mins / 60)}h
-								onwards
-							</p>
-						</div>
-						<span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-600 transition group-hover:bg-brand-600 group-hover:text-white">
-							<ArrowRightIcon height={16} width={16} />
-						</span>
-					</Link>
-				))}
+		<section className="relative overflow-hidden">
+			<div aria-hidden className="gradient-surface absolute inset-0" />
+			<div aria-hidden className="jali absolute inset-0 opacity-[0.12]" />
+			<div className="relative mx-auto max-w-5xl px-4 pt-12 pb-24 text-center sm:px-6 sm:pt-16">
+				<span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-medium text-sm text-white ring-1 ring-white/25 backdrop-blur">
+					<StarIcon className="text-saffron-200" height={14} width={14} />
+					New record · 24 October 2025
+				</span>
+				<h1 className="mx-auto mt-4 max-w-3xl font-display font-extrabold text-4xl text-white leading-[1.05] tracking-tight sm:text-5xl">
+					Travel Gujarat with GSRTC — booked in under a minute.
+				</h1>
+				<p className="mx-auto mt-4 max-w-xl text-lg text-white/85 leading-relaxed">
+					Volvo, Sleeper, Express and more across thousands of routes. Live seat
+					maps, transparent fares, and a calmer way to book.
+				</p>
+			</div>
+
+			{/* Booking widget overlapping the hero base */}
+			<div className="relative mx-auto -mt-16 max-w-5xl px-4 pb-10 sm:px-6">
+				<SearchForm showTabs variant="hero" />
 			</div>
 		</section>
 	);
 }
 
-function BusTypes() {
-	const types = Object.entries(BUS_TYPE_META) as [
-		BusType,
-		(typeof BUS_TYPE_META)[BusType],
-	][];
+function Milestone() {
 	return (
-		<section className="border-ink-200 border-y bg-surface">
-			<div className="mx-auto max-w-6xl px-6 py-14">
-				<SectionHeading
-					eyebrow="Choose your comfort"
-					title="Every kind of bus"
-				/>
-				<div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{types.map(([type, meta]) => (
-						<div
-							className="rounded-2xl border border-ink-200 bg-canvas/60 p-5 transition hover:border-brand-300 hover:bg-brand-50/50"
-							key={type}
-						>
-							<div className="flex items-center justify-between">
-								<h3 className="font-bold text-ink-900 text-lg">{meta.label}</h3>
-								<span className="rounded-full bg-brand-100 px-2.5 py-0.5 font-semibold text-brand-700 text-xs">
-									from {formatFare(meta.fareFrom)}
+		<section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+			<div className="grid gap-6 rounded-3xl border border-ink-100 bg-surface p-6 shadow-card sm:p-8 lg:grid-cols-[1fr_1.3fr] lg:items-center">
+				<div>
+					<span className="inline-flex items-center gap-2 rounded-full bg-saffron-50 px-3 py-1 font-semibold text-saffron-700 text-xs">
+						<StarIcon height={13} width={13} />
+						New milestone · 24 October 2025
+					</span>
+					<h2 className="mt-3 font-bold font-display text-2xl text-ink-900 tracking-tight">
+						A record number of seats booked, and revenue generated.
+					</h2>
+					<p className="mt-2 text-ink-500 leading-relaxed">
+						GSRTC OPRS broke its own single-day record. Yearly seats booked
+						through the online portal:
+					</p>
+				</div>
+
+				<div className="flex items-end gap-3">
+					{ACHIEVEMENT.map((row) => {
+						const height = Math.round((row.seats / PEAK_SEATS) * 120);
+						const isPeak = row.year === "2025";
+						return (
+							<div
+								className="flex flex-1 flex-col items-center gap-2"
+								key={row.year}
+							>
+								<span className="font-semibold text-[11px] text-ink-500">
+									{(row.seats / 1000).toFixed(0)}k
 								</span>
+								<div
+									className={`w-full rounded-t-lg ${
+										isPeak ? "gradient-surface" : "bg-ink-100"
+									}`}
+									style={{ height: `${Math.max(height, 20)}px` }}
+								/>
+								<span className="text-[11px] text-ink-500">{row.year}</span>
+								<span className="text-[10px] text-ink-400">{row.revenue}</span>
 							</div>
-							<p className="mt-1.5 text-ink-500 text-sm">{meta.blurb}</p>
+						);
+					})}
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function QuickAccess() {
+	return (
+		<section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+			<div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+				{/* Popular routes */}
+				<div className="rounded-3xl border border-ink-100 bg-surface p-6 shadow-card">
+					<h2 className="font-bold font-display text-ink-900 text-xl">
+						Popular routes
+					</h2>
+					<div className="mt-4 grid gap-3 sm:grid-cols-2">
+						{POPULAR_ROUTES.map((route) => (
+							<Link
+								className="group flex items-center justify-between rounded-2xl border border-ink-100 bg-canvas px-4 py-3.5 transition hover:border-saffron-300 hover:bg-saffron-50"
+								key={`${route.from}-${route.to}`}
+								search={{
+									from: route.from,
+									to: route.to,
+									date: new Date().toISOString().slice(0, 10),
+									passengers: 1,
+								}}
+								to="/search"
+							>
+								<span className="flex items-center gap-2 font-semibold text-ink-900 text-sm">
+									{route.from}
+									<ArrowRightIcon
+										className="text-ink-400"
+										height={14}
+										width={14}
+									/>
+									{route.to}
+								</span>
+								<span className="text-ink-500 text-xs">
+									from {formatFare(route.fare)}
+								</span>
+							</Link>
+						))}
+					</div>
+				</div>
+
+				{/* Feedback + policies */}
+				<div className="rounded-3xl border border-ink-100 bg-surface p-6 shadow-card">
+					<div className="flex items-start gap-4">
+						<span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-ink-200 bg-canvas text-ink-700">
+							<QrIcon height={34} width={34} />
+						</span>
+						<div>
+							<h2 className="font-bold font-display text-ink-900">
+								Share your feedback
+							</h2>
+							<p className="mt-1 text-ink-500 text-sm">
+								Scan the QR or visit www.feedback.gsrtc.org to rate your
+								journey.
+							</p>
+						</div>
+					</div>
+					<div className="mt-5 space-y-2">
+						{POLICIES.map((policy) => (
+							<a
+								className="flex items-center justify-between rounded-xl bg-canvas px-4 py-2.5 font-medium text-ink-800 text-sm transition hover:bg-saffron-50 hover:text-saffron-700"
+								href="/"
+								key={policy.label}
+							>
+								{policy.label}
+								<ArrowRightIcon height={15} width={15} />
+							</a>
+						))}
+					</div>
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function GrowingNumbers() {
+	return (
+		<section className="border-ink-100 border-y bg-surface-2">
+			<div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+				<h2 className="text-center font-bold font-display text-2xl text-ink-900 tracking-tight sm:text-3xl">
+					GSRTC growing numbers
+				</h2>
+				<div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+					{GROWING_NUMBERS.map((item) => (
+						<div
+							className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-card"
+							key={item.label}
+						>
+							<span className="gradient-text inline-flex">
+								<item.icon height={26} width={26} />
+							</span>
+							<p className="mt-3 font-display font-extrabold text-2xl text-ink-900">
+								{item.value}
+							</p>
+							<p className="mt-0.5 text-ink-500 text-sm">{item.label}</p>
 						</div>
 					))}
 				</div>
@@ -224,46 +279,47 @@ function BusTypes() {
 	);
 }
 
-function Features() {
+function LiveTracking() {
+	const cards = [
+		{ label: "GSRTC Live Tracking", sub: "Android", icon: AndroidIcon },
+		{ label: "GSRTC Live Tracking", sub: "iOS", icon: AppleIcon },
+	];
 	return (
-		<section className="mx-auto max-w-6xl px-6 py-16">
-			<SectionHeading
-				eyebrow="Why book here"
-				title="A booking experience you can trust"
-			/>
-			<div className="mt-8 grid gap-5 md:grid-cols-3">
-				{FEATURES.map((feature) => (
-					<div
-						className="rounded-2xl border border-ink-200 bg-surface p-6 shadow-card"
-						key={feature.title}
-					>
-						<span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-600 text-white">
-							<feature.icon height={22} width={22} />
-						</span>
-						<h3 className="mt-4 font-bold text-ink-900 text-lg">
-							{feature.title}
-						</h3>
-						<p className="mt-2 text-ink-500 text-sm leading-relaxed">
-							{feature.body}
-						</p>
-					</div>
-				))}
+		<section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+			<div className="flex items-center gap-3">
+				<span className="gradient-text">
+					<TrackIcon height={26} width={26} />
+				</span>
+				<h2 className="font-bold font-display text-2xl text-ink-900 tracking-tight sm:text-3xl">
+					GSRTC live tracking
+				</h2>
 			</div>
-		</section>
-	);
-}
-
-function Stats() {
-	return (
-		<section className="bg-brand-900">
-			<div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-6 py-12 md:grid-cols-4">
-				{STATS.map((stat) => (
-					<div className="text-center" key={stat.label}>
-						<p className="font-extrabold text-3xl text-white tracking-tight sm:text-4xl">
-							{stat.value}
-						</p>
-						<p className="mt-1 text-brand-200 text-sm">{stat.label}</p>
-					</div>
+			<div className="mt-6 grid gap-4 sm:grid-cols-2">
+				{cards.map((card) => (
+					<a
+						className="group flex items-center justify-between rounded-2xl border border-ink-100 bg-surface p-5 shadow-card transition hover:border-saffron-300"
+						href="/"
+						key={card.sub}
+					>
+						<span className="flex items-center gap-3">
+							<span className="grid h-11 w-11 place-items-center rounded-xl bg-canvas text-ink-700">
+								<card.icon height={22} width={22} />
+							</span>
+							<span>
+								<span className="block font-semibold text-ink-900">
+									{card.label}
+								</span>
+								<span className="block text-ink-500 text-sm">
+									Download for {card.sub}
+								</span>
+							</span>
+						</span>
+						<ArrowRightIcon
+							className="text-ink-400 transition group-hover:translate-x-1 group-hover:text-saffron-600"
+							height={18}
+							width={18}
+						/>
+					</a>
 				))}
 			</div>
 		</section>
@@ -272,29 +328,37 @@ function Stats() {
 
 function Destinations() {
 	return (
-		<section className="mx-auto max-w-6xl px-6 py-16">
-			<SectionHeading eyebrow="Explore Gujarat" title="Top destinations" />
-			<div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-				{DESTINATIONS.map((place, index) => (
+		<section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6">
+			<h2 className="font-bold font-display text-2xl text-ink-900 tracking-tight sm:text-3xl">
+				Top destinations
+			</h2>
+			<p className="mt-2 max-w-2xl text-ink-500">
+				Popular pilgrimage spots, tourist cities and key commercial hubs — GSRTC
+				connects you to every corner of Gujarat through its extensive network.
+			</p>
+			<div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+				{DESTINATIONS.map((place) => (
 					<article
-						className="group overflow-hidden rounded-2xl border border-ink-200 bg-surface shadow-card"
+						className="group overflow-hidden rounded-2xl border border-ink-100 bg-surface shadow-card transition hover:-translate-y-0.5 hover:shadow-pop"
 						key={place.name}
 					>
 						<div
-							className="flex h-32 items-end p-4"
+							className="relative flex h-32 items-end overflow-hidden p-4"
 							style={{
-								background: `linear-gradient(135deg, hsl(${
-									216 + index * 24
-								} 70% 46%), hsl(${230 + index * 20} 65% 32%))`,
+								background: `linear-gradient(135deg, hsl(${place.hue} 72% 46%), hsl(${
+									place.hue + 25
+								} 68% 32%))`,
 							}}
 						>
-							<span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 font-medium text-white text-xs ring-1 ring-white/25">
-								<PinIcon height={12} width={12} />
+							<span aria-hidden className="jali absolute inset-0 opacity-15" />
+							<span className="relative inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 font-medium text-white text-xs ring-1 ring-white/25">
 								{place.tag}
 							</span>
 						</div>
 						<div className="p-5">
-							<h3 className="font-bold text-ink-900">{place.name}</h3>
+							<h3 className="font-bold font-display text-ink-900">
+								{place.name}
+							</h3>
 							<p className="mt-1.5 text-ink-500 text-sm leading-relaxed">
 								{place.blurb}
 							</p>

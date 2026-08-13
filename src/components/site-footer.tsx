@@ -1,87 +1,152 @@
-import { BusIcon } from "#/components/icons";
+import { BrandMark } from "#/components/brand-mark";
+import { AndroidIcon, AppleIcon, PhoneIcon } from "#/components/icons";
 
 const FOOTER_COLUMNS = [
 	{
-		heading: "Book & travel",
-		links: [
-			"Advance booking",
-			"Bus pass",
-			"Statue of Unity",
-			"Electric bus",
-			"Special services",
-		],
-	},
-	{
-		heading: "Manage",
-		links: [
-			"Cancel ticket",
-			"Refund status",
-			"Boarding points",
-			"Bus enquiry",
-			"Live tracking",
-		],
-	},
-	{
 		heading: "Corporation",
-		links: ["About us", "Leadership", "Tenders", "Recruitment", "Achievements"],
+		links: [
+			"About Us",
+			"Leadership",
+			"Special Services",
+			"Achievements",
+			"Tenders",
+			"FAQs",
+			"Sitemap",
+		],
 	},
 	{
-		heading: "Policies",
+		heading: "Policies & Governance",
 		links: [
-			"Booking policy",
-			"Privacy policy",
-			"RTI disclosure",
-			"Citizen's rights",
-			"Grievance redressal",
+			"Booking Policies",
+			"Proactive Disclosure (RTI)",
+			"RTC Act",
+			"Divisions",
+			"Corporate Office",
+			"Performance",
+			"Bus Enquiry",
+		],
+	},
+	{
+		heading: "Public Information",
+		links: [
+			"Recruitment",
+			"Contact Us",
+			"Awards",
+			"GSRTC Direct Agents List",
+			"GSRTC Franchisee Agents List",
+			"Blacklisted Agencies",
+			"Grievance Redressal Officers (Divyang)",
+			"Annual Audit Report",
+		],
+	},
+	{
+		heading: "Resources",
+		links: [
+			"Gujarat Pavitra Yatradham Vikas Board",
+			"Download",
+			"Privacy Policy",
+			"India Code",
+			"Press Release",
+			"Citizen's Rights (નાગરિક અધિકાર પત્ર)",
+			"Women Harassment Act 2013 (Circular 323)",
+			"Service Regulation",
 		],
 	},
 ] as const;
 
+const BROWSERS = ["Chrome", "Edge", "Firefox", "Opera"] as const;
+
 export function SiteFooter() {
 	return (
-		<footer className="mt-16 bg-ink-900 text-ink-300">
-			<div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-2 lg:grid-cols-5">
-				<div className="lg:col-span-1">
-					<div className="flex items-center gap-2.5 text-white">
-						<span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-600">
-							<BusIcon height={22} width={22} />
-						</span>
-						<span className="font-bold text-lg">GSRTC</span>
+		<footer className="mt-20 bg-ink-900 text-ink-300">
+			<div className="relative overflow-hidden">
+				<div
+					aria-hidden
+					className="jali pointer-events-none absolute inset-0 opacity-[0.04]"
+				/>
+				<div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-5">
+					<div className="lg:col-span-1">
+						<div className="flex items-center gap-2.5 text-white">
+							<BrandMark size={40} />
+							<span className="font-bold font-display text-lg leading-tight">
+								GSRTC
+							</span>
+						</div>
+						<p className="mt-4 text-ink-400 text-sm leading-relaxed">
+							Gujarat State Road Transport Corporation. Steering miles with
+							smiles since 1960.
+						</p>
+						<a
+							className="mt-4 inline-flex items-center gap-2 font-semibold text-sm text-white hover:text-saffron-300"
+							href="tel:18002336666"
+						>
+							<PhoneIcon height={15} width={15} />
+							Toll Free · 1800 233 666666
+						</a>
 					</div>
-					<p className="mt-4 text-ink-400 text-sm leading-relaxed">
-						Gujarat State Road Transport Corporation. Steering miles with smiles
-						since 1960.
-					</p>
-					<p className="mt-4 font-semibold text-sm text-white">
-						Toll free · 1800 233 666666
-					</p>
-				</div>
 
-				{FOOTER_COLUMNS.map((column) => (
-					<nav key={column.heading}>
-						<h2 className="font-semibold text-sm text-white">
-							{column.heading}
-						</h2>
-						<ul className="mt-4 space-y-2.5">
-							{column.links.map((link) => (
-								<li key={link}>
-									<a
-										className="text-ink-400 text-sm transition-colors hover:text-white"
-										href="/"
-									>
-										{link}
-									</a>
-								</li>
-							))}
-						</ul>
-					</nav>
-				))}
+					{FOOTER_COLUMNS.map((column) => (
+						<nav key={column.heading}>
+							<h2 className="font-semibold text-sm text-white">
+								{column.heading}
+							</h2>
+							<ul className="mt-4 space-y-2.5">
+								{column.links.map((link) => (
+									<li key={link}>
+										<a
+											className="text-ink-400 text-sm transition-colors hover:text-saffron-300"
+											href="/"
+										>
+											{link}
+										</a>
+									</li>
+								))}
+							</ul>
+						</nav>
+					))}
+				</div>
 			</div>
 
-			<div className="border-ink-800 border-t">
-				<div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-6 py-5 text-ink-500 text-xs sm:flex-row">
-					<p>© {new Date().getFullYear()} GSRTC. All rights reserved.</p>
-					<p>A redesign concept · not the official website</p>
+			{/* Apps + browser compatibility */}
+			<div className="border-ink-700/60 border-t">
+				<div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 py-6 sm:px-6 md:flex-row md:items-center">
+					<div className="flex flex-wrap items-center gap-3">
+						<a
+							className="inline-flex items-center gap-2 rounded-full bg-ink-800 px-4 py-2 font-medium text-sm text-white transition hover:bg-ink-700"
+							href="/"
+						>
+							<AndroidIcon height={18} width={18} />
+							Download Android App
+						</a>
+						<a
+							className="inline-flex items-center gap-2 rounded-full bg-ink-800 px-4 py-2 font-medium text-sm text-white transition hover:bg-ink-700"
+							href="/"
+						>
+							<AppleIcon height={18} width={18} />
+							Download iOS App
+						</a>
+					</div>
+					<div className="flex items-center gap-3 text-ink-400 text-xs">
+						<span>Browser compatibility:</span>
+						<span className="flex gap-2">
+							{BROWSERS.map((browser) => (
+								<span
+									className="grid h-7 w-7 place-items-center rounded-full bg-ink-800 font-semibold text-[10px] text-white"
+									key={browser}
+									title={browser}
+								>
+									{browser.slice(0, 2)}
+								</span>
+							))}
+						</span>
+					</div>
+				</div>
+			</div>
+
+			<div className="border-ink-700/60 border-t">
+				<div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-5 text-ink-500 text-xs sm:flex-row sm:px-6">
+					<p>© {new Date().getFullYear()} GSRTC. All Rights Reserved.</p>
+					<p>Version Details: 20/07/2026, 20:00 PM · A redesign concept</p>
 				</div>
 			</div>
 		</footer>

@@ -1,63 +1,76 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   GSRTC Design System — "Modern GovTech"
-   A trustworthy, accessible refresh that keeps the recognizable GSRTC blue.
+   GSRTC × Sarvam-inspired design system
+   Refined Indian modernism: warm cream canvas, a blue→orange signature
+   gradient, mandala/jali geometry, and a clean contemporary sans.
+   The original GSRTC blue is kept as a functional brand anchor.
    ========================================================================== */
 
 @theme {
-  /* Brand — GSRTC blue, tuned for accessible contrast */
-  --color-brand-50: #eef4ff;
-  --color-brand-100: #d9e6ff;
-  --color-brand-200: #bcd3ff;
-  --color-brand-300: #8eb5ff;
-  --color-brand-400: #598cff;
-  --color-brand-500: #3366ff;
-  --color-brand-600: #1a49e6;
-  --color-brand-700: #1539b4;
-  --color-brand-800: #163193;
-  --color-brand-900: #172d75;
-  --color-brand-950: #101c47;
+  /* Warm paper canvas & surfaces */
+  --color-canvas: #f6f2ea;
+  --color-canvas-2: #efe9dd;
+  --color-surface: #fffdf9;
+  --color-surface-2: #faf6ee;
 
-  /* Accent — the GSRTC red, reserved for primary CTAs & alerts */
-  --color-accent-50: #fff1f1;
-  --color-accent-100: #ffe0e0;
-  --color-accent-200: #ffc6c6;
-  --color-accent-300: #ff9d9d;
-  --color-accent-400: #ff6363;
-  --color-accent-500: #f5333a;
-  --color-accent-600: #e11d24;
-  --color-accent-700: #bd141a;
-  --color-accent-800: #9c1519;
-  --color-accent-900: #81181b;
+  /* Warm ink neutrals */
+  --color-ink-50: #f4f1ec;
+  --color-ink-100: #e9e3d8;
+  --color-ink-200: #ddd5c7;
+  --color-ink-300: #c4b9a6;
+  --color-ink-400: #9c9079;
+  --color-ink-500: #746a58;
+  --color-ink-600: #574f41;
+  --color-ink-700: #403a30;
+  --color-ink-800: #2a251d;
+  --color-ink-900: #1a1712;
 
-  /* Neutrals — warm-cool slate, easier on the eye than pure gray */
-  --color-ink-50: #f7f8fa;
-  --color-ink-100: #eef0f4;
-  --color-ink-200: #dfe3ea;
-  --color-ink-300: #c6ccd8;
-  --color-ink-400: #99a1b3;
-  --color-ink-500: #6b7387;
-  --color-ink-600: #4d5468;
-  --color-ink-700: #3a4054;
-  --color-ink-800: #262b3a;
-  --color-ink-900: #171b28;
+  /* GSRTC brand blue (anchor of the gradient's cool end) */
+  --color-brand-50: #ecf1ff;
+  --color-brand-100: #dbe4ff;
+  --color-brand-200: #bccdff;
+  --color-brand-300: #93acff;
+  --color-brand-400: #5f80f5;
+  --color-brand-500: #3a5ae6;
+  --color-brand-600: #2340cf;
+  --color-brand-700: #1d33a6;
+  --color-brand-800: #1b2e85;
+  --color-brand-900: #1a2b6b;
 
-  --color-success-50: #ecfdf3;
-  --color-success-500: #16a34a;
-  --color-success-700: #15803d;
+  /* Saffron / marigold — the gradient's warm end (also GSRTC red family) */
+  --color-saffron-50: #fff5ec;
+  --color-saffron-100: #ffe7d1;
+  --color-saffron-200: #ffcaa1;
+  --color-saffron-300: #ffa869;
+  --color-saffron-400: #fb8438;
+  --color-saffron-500: #f26518;
+  --color-saffron-600: #d84c12;
+  --color-saffron-700: #b33a12;
+  --color-saffron-800: #8f3016;
 
-  --color-surface: #ffffff;
-  --color-canvas: #f5f7fb;
+  /* Functional */
+  --color-success-50: #edf7ec;
+  --color-success-500: #3f9142;
+  --color-success-700: #2f6f34;
+  --color-danger-500: #d84c12;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Bricolage Grotesque", "Inter", ui-sans-serif, sans-serif;
 
-  --radius-card: 1rem;
+  --shadow-card: 0 1px 2px rgb(42 37 29 / 0.04),
+    0 10px 30px -18px rgb(42 37 29 / 0.25);
+  --shadow-pop: 0 20px 50px -20px rgb(42 37 29 / 0.32);
 
-  --shadow-card: 0 1px 2px rgb(16 28 71 / 0.04),
-    0 8px 24px -12px rgb(16 28 71 / 0.16);
-  --shadow-pop: 0 12px 40px -12px rgb(16 28 71 / 0.28);
+  /* Sarvam signature spectrum */
+  --gradient-sarvam: linear-gradient(
+    100deg,
+    #2340cf 0%,
+    #5a46d6 28%,
+    #b5459b 55%,
+    #f2651f 80%,
+    #ffab2e 100%
+  );
 }
 
 * {
@@ -83,11 +96,36 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Accessible focus ring for keyboard users */
+/* ---- Sarvam signature utilities ---- */
+
+/* The blue→orange spectrum as a text or surface fill */
+.gradient-text {
+  background: var(--gradient-sarvam);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gradient-surface {
+  background: var(--gradient-sarvam);
+}
+
+/* Jali lattice — a faint geometric weave overlay */
+.jali {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M24 0 48 24 24 48 0 24Z'/%3E%3Ccircle cx='24' cy='24' r='11'/%3E%3Cpath d='M0 0 12 12M48 0 36 12M48 48 36 36M0 48 12 36'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 48px 48px;
+}
+
+.jali-ink {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%232a251d' stroke-width='1'%3E%3Cpath d='M24 0 48 24 24 48 0 24Z'/%3E%3Ccircle cx='24' cy='24' r='11'/%3E%3Cpath d='M0 0 12 12M48 0 36 12M48 48 36 36M0 48 12 36'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 48px 48px;
+}
+
+/* Accessible focus ring */
 :focus-visible {
-  outline: 3px solid var(--color-brand-400);
+  outline: 3px solid var(--color-saffron-400);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -100,7 +138,6 @@ body {
   }
 }
 
-/* Utility: visually hidden but available to screen readers */
 .sr-only {
   position: absolute;
   width: 1px;
