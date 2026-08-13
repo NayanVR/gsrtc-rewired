@@ -8,6 +8,7 @@ import {
 	StatueOfUnityArt,
 	TrophyArt,
 } from "#/components/artwork";
+import { HeroSlideshow } from "#/components/hero-slideshow";
 import {
 	AndroidIcon,
 	AppleIcon,
@@ -119,22 +120,25 @@ function Hero() {
 				<div className="grain" />
 			</div>
 			<div aria-hidden className="jali absolute inset-0 opacity-[0.06]" />
-			<div className="relative mx-auto max-w-5xl px-4 pt-12 pb-24 text-center sm:px-6 sm:pt-16">
-				<span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-medium text-sm text-white ring-1 ring-white/25 backdrop-blur">
-					<StarIcon className="text-saffron-200" height={14} width={14} />
-					New record · 24 October 2025
-				</span>
-				<h1 className="mx-auto mt-4 max-w-3xl font-display font-extrabold text-4xl text-white leading-[1.05] tracking-tight sm:text-5xl">
-					Travel Gujarat with GSRTC — booked in under a minute.
-				</h1>
-				<p className="mx-auto mt-4 max-w-xl text-lg text-white/85 leading-relaxed">
-					Volvo, Sleeper, Express and more across thousands of routes. Live seat
-					maps, transparent fares, and a calmer way to book.
-				</p>
+			<div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pt-12 pb-24 sm:px-6 sm:pt-14 lg:grid-cols-2">
+				<div>
+					<span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-medium text-sm text-white ring-1 ring-white/25 backdrop-blur">
+						<StarIcon className="text-saffron-200" height={14} width={14} />
+						New record · 24 October 2025
+					</span>
+					<h1 className="mt-4 font-display font-extrabold text-4xl text-white leading-[1.05] tracking-tight sm:text-5xl">
+						Travel Gujarat with GSRTC.
+					</h1>
+					<p className="mt-4 max-w-md text-lg text-white/85 leading-relaxed">
+						Volvo, Sleeper, Express and more across thousands of routes. Live
+						seat maps, transparent fares, and a calmer way to book.
+					</p>
+				</div>
+				<HeroSlideshow />
 			</div>
 
 			{/* Booking widget overlapping the hero base */}
-			<div className="relative mx-auto -mt-16 max-w-5xl px-4 pb-10 sm:px-6">
+			<div className="relative mx-auto -mt-16 max-w-6xl px-4 pb-10 sm:px-6">
 				<SearchForm showTabs variant="hero" />
 			</div>
 		</section>
@@ -230,7 +234,8 @@ function QuickAccess() {
 
 				{/* Feedback + policies */}
 				<div className="overflow-hidden rounded-3xl border border-ink-100 bg-surface shadow-card">
-					<div className="dither-gradient relative p-5">
+					<div className="mesh-band relative overflow-hidden p-5">
+						<div aria-hidden className="grain" />
 						<div className="relative flex items-center gap-4">
 							<div className="rounded-2xl bg-white/95 p-2 shadow-sm">
 								<QrCode size={84} />

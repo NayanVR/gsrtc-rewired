@@ -26,17 +26,17 @@
   --color-ink-800: #2a251d;
   --color-ink-900: #1a1712;
 
-  /* GSRTC brand blue (anchor of the gradient's cool end) */
-  --color-brand-50: #ecf1ff;
-  --color-brand-100: #dbe4ff;
-  --color-brand-200: #bccdff;
-  --color-brand-300: #93acff;
-  --color-brand-400: #5f80f5;
-  --color-brand-500: #3a5ae6;
-  --color-brand-600: #2340cf;
-  --color-brand-700: #1d33a6;
-  --color-brand-800: #1b2e85;
-  --color-brand-900: #1a2b6b;
+  /* GSRTC royal blue (anchor of the gradient's cool end) */
+  --color-brand-50: #eaf2ff;
+  --color-brand-100: #d3e4ff;
+  --color-brand-200: #b0ccff;
+  --color-brand-300: #83aefb;
+  --color-brand-400: #4f86f2;
+  --color-brand-500: #2a6ae0;
+  --color-brand-600: #155fc9;
+  --color-brand-700: #124fa6;
+  --color-brand-800: #143f85;
+  --color-brand-900: #14346f;
 
   /* Saffron / marigold — the gradient's warm end (also GSRTC red family) */
   --color-saffron-50: #fff5ec;
@@ -62,14 +62,15 @@
     0 10px 30px -18px rgb(42 37 29 / 0.25);
   --shadow-pop: 0 20px 50px -20px rgb(42 37 29 / 0.32);
 
-  /* Sarvam signature spectrum */
+  /* Signature spectrum — GSRTC blue → soft violet → warm, kept gentle so it
+     never reads as a harsh rainbow at small sizes. */
   --gradient-sarvam: linear-gradient(
-    100deg,
-    #2340cf 0%,
-    #5a46d6 28%,
-    #b5459b 55%,
-    #f2651f 80%,
-    #ffab2e 100%
+    118deg,
+    #155fc9 0%,
+    #5157c6 36%,
+    #9b62ac 56%,
+    #e37c40 82%,
+    #f4a63f 100%
   );
 }
 
@@ -115,46 +116,46 @@ body {
 /* Atmospheric mesh gradient — soft color glows over a deep indigo base.
    Reads far calmer than a flat linear sweep and lets white text sit cleanly. */
 .mesh-hero {
-  background-color: #1b2660;
+  background-color: #122a63;
   background-image:
     radial-gradient(
       56rem 40rem at -2% -8%,
-      rgba(92, 128, 255, 0.95),
+      rgba(38, 110, 224, 0.95),
       transparent 58%
     ),
     radial-gradient(
       52rem 44rem at 108% 116%,
-      rgba(244, 120, 46, 0.9),
+      rgba(240, 120, 48, 0.85),
       transparent 60%
     ),
     radial-gradient(
       40rem 32rem at 96% 6%,
-      rgba(255, 178, 78, 0.45),
+      rgba(255, 176, 78, 0.4),
       transparent 56%
     ),
     radial-gradient(
       46rem 42rem at 52% 80%,
-      rgba(150, 86, 214, 0.5),
+      rgba(120, 86, 200, 0.45),
       transparent 64%
     ),
-    linear-gradient(145deg, #22337f 0%, #271b57 55%, #2c1e50 100%);
+    linear-gradient(145deg, #12409a 0%, #1c2560 58%, #241d52 100%);
 }
 
 /* Horizontal variant for slim banners. */
 .mesh-band {
-  background-color: #23306f;
+  background-color: #163470;
   background-image:
     radial-gradient(
       36rem 20rem at -2% 50%,
-      rgba(96, 132, 255, 0.85),
+      rgba(38, 110, 224, 0.9),
       transparent 62%
     ),
     radial-gradient(
       36rem 20rem at 102% 50%,
-      rgba(240, 118, 52, 0.85),
+      rgba(240, 118, 52, 0.8),
       transparent 62%
     ),
-    linear-gradient(90deg, #23409f 0%, #6a3f9e 50%, #d5622a 100%);
+    linear-gradient(90deg, #1550b6 0%, #5f4296 52%, #cf6029 100%);
 }
 
 /* Expects the element to carry its own `relative`/`absolute` position. */

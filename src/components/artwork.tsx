@@ -59,7 +59,7 @@ function SceneFrame({
 
 export function StatueOfUnityArt({ className }: SceneProps) {
 	return (
-		<SceneFrame className={className} from="#2a52c9" to="#0f2a7a">
+		<SceneFrame className={className} from="#2666d4" to="#123a86">
 			<circle cx="128" cy="26" fill="#ffd9a8" opacity="0.85" r="12" />
 			{/* river band */}
 			<path d="M0 104h160v16H0z" fill="#0c2470" opacity="0.6" />
@@ -79,7 +79,7 @@ export function StatueOfUnityArt({ className }: SceneProps) {
 
 export function SomnathArt({ className }: SceneProps) {
 	return (
-		<SceneFrame className={className} from="#f2731c" to="#b5307a">
+		<SceneFrame className={className} from="#ef8836" to="#9c4a63">
 			<circle cx="30" cy="30" fill="#ffe1b0" opacity="0.9" r="14" />
 			<path d="M0 106h160v14H0z" fill="#7a1f57" opacity="0.65" />
 			{/* temple */}
@@ -98,7 +98,7 @@ export function SomnathArt({ className }: SceneProps) {
 
 export function RannOfKutchArt({ className }: SceneProps) {
 	return (
-		<SceneFrame className={className} from="#c0489a" to="#5e2aa8">
+		<SceneFrame className={className} from="#b06aa2" to="#4f3a96">
 			<circle cx="120" cy="34" fill="#ffe6c2" opacity="0.9" r="16" />
 			{/* salt flats */}
 			<path d="M0 96h160v24H0z" fill="#f3e9f6" opacity="0.85" />
@@ -116,7 +116,7 @@ export function RannOfKutchArt({ className }: SceneProps) {
 
 export function DwarkaArt({ className }: SceneProps) {
 	return (
-		<SceneFrame className={className} from="#2f7de0" to="#123a86">
+		<SceneFrame className={className} from="#2f7de0" to="#12357e">
 			<circle cx="34" cy="30" fill="#fff0d0" opacity="0.85" r="13" />
 			<path d="M0 104h160v16H0z" fill="#0f2f6e" opacity="0.6" />
 			<g fill="#0e2c66">
@@ -128,6 +128,28 @@ export function DwarkaArt({ className }: SceneProps) {
 				<rect fill="#0a2352" height="36" width="8" x="70" y="70" />
 				<rect fill="#0a2352" height="36" width="8" x="82" y="70" />
 			</g>
+		</SceneFrame>
+	);
+}
+
+export function AkshardhamArt({ className }: SceneProps) {
+	return (
+		<SceneFrame className={className} from="#e79a3c" to="#b0532a">
+			<circle cx="30" cy="28" fill="#fff0cf" opacity="0.9" r="13" />
+			<path d="M0 108h160v12H0z" fill="#7a3418" opacity="0.6" />
+			<g fill="#6e2f18">
+				{/* base */}
+				<rect height="22" width="80" x="40" y="86" />
+				{/* central shikhara */}
+				<path d="M64 86l16-52 16 52z" />
+				<rect height="10" width="4" x="78" y="26" />
+				{/* side domes */}
+				<path d="M40 86a10 10 0 0 1 20 0z" />
+				<path d="M100 86a10 10 0 0 1 20 0z" />
+				<rect fill="#5b2513" height="16" width="4" x="48" y="70" />
+				<rect fill="#5b2513" height="16" width="4" x="108" y="70" />
+			</g>
+			<rect fill="#4a1d0f" height="18" width="12" x="74" y="90" />
 		</SceneFrame>
 	);
 }
