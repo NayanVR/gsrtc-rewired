@@ -1,14 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
 	BusArt,
 	DwarkaArt,
+	LANDMARK_SILHOUETTES,
 	QrCode,
 	RannOfKutchArt,
 	SomnathArt,
 	StatueOfUnityArt,
 	TrophyArt,
 } from "#/components/artwork";
-import { HeroSlideshow } from "#/components/hero-slideshow";
 import {
 	AndroidIcon,
 	AppleIcon,
@@ -113,35 +114,131 @@ function NoteStrip() {
 	);
 }
 
+const HERO_SLIDES = [
+	{ name: "Statue of Unity", tag: "Kevadia" },
+	{ name: "Akshardham", tag: "Gandhinagar" },
+	{ name: "Rann of Kutch", tag: "Dhordo" },
+	{ name: "Somnath", tag: "Gir Somnath" },
+	{ name: "Dwarka", tag: "Devbhumi Dwarka" },
+] as const;
+
+const HERO_ROTATE_MS = 5000;
+
 function Hero() {
+	const [index, setIndex] = useState(0);
+	const [paused, setPaused] = useState(false);
+
+	useEffect(() => {
+		if (paused) {
+			return;
+		}
+		const id = setInterval(
+			() => setIndex((value) => (value + 1) % HERO_SLIDES.length),
+			HERO_ROTATE_MS
+		);
+		return () => clearInterval(id);
+	}, [paused]);
+
+	const active = HERO_SLIDES[index];
+
 	return (
-		<section className="relative overflow-hidden">
+		// biome-ignore lint/a11y/noNoninteractiveElementInteractions: hover pause is a mouse-only enhancement; controls stay keyboard-accessible
+		// biome-ignore lint/a11y/noStaticElementInteractions: hover pause is a mouse-only enhancement; controls stay keyboard-accessible
+		<section
+			className="relative overflow-hidden"
+			onMouseEnter={() => setPaused(true)}
+			onMouseLeave={() => setPaused(false)}
+		>
+			{/* Consistent blue mesh base */}
 			<div aria-hidden className="mesh-hero absolute inset-0">
 				<div className="grain" />
 			</div>
-			<div aria-hidden className="jali absolute inset-0 opacity-[0.06]" />
+			<div aria-hidden className="jali absolute inset-0 opacity-[0.05]" />
 
-			<div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
-				{/* Intro + carousel share one row */}
-				<div className="grid items-center gap-8 lg:grid-cols-[1fr_1.05fr]">
-					<div>
-						<span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-medium text-sm text-white ring-1 ring-white/25 backdrop-blur">
-							<StarIcon className="text-saffron-200" height={14} width={14} />
-							New record · 24 October 2025
-						</span>
-						<h1 className="mt-4 font-display font-extrabold text-4xl text-white leading-[1.05] tracking-tight sm:text-5xl">
-							Travel Gujarat with GSRTC.
-						</h1>
-						<p className="mt-4 max-w-md text-lg text-white/85 leading-relaxed">
-							Volvo, Sleeper, Express and more across thousands of routes. Live
-							seat maps, transparent fares, and a calmer way to book.
-						</p>
-					</div>
-					<HeroSlideshow />
+			{/* Rotating landmark silhouette watermark */}
+			<div
+				aria-hidden
+				className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] items-end justify-center text-white/[0.16] lg:flex"
+			>
+				{HERO_SLIDES.map((slide, i) => {
+					const Silhouette = LANDMARK_SILHOUETTES[slide.name];
+					return (
+						<Silhouette
+							className={`absolute bottom-0 h-[86%] w-full transition-opacity duration-[1200ms] ${
+								i === index ? "opacity-100" : "opacity-0"
+							}`}
+							key={slide.name}
+						/>
+					);
+				})}
+			</div>
+
+			<div className="relative mx-auto flex min-h-[540px] max-w-6xl flex-col justify-between px-4 py-10 sm:px-6 sm:py-12">
+				<div className="max-w-xl">
+					<h1 className="font-display font-extrabold text-4xl text-white leading-[1.05] tracking-tight sm:text-5xl">
+						Travel Gujarat with GSRTC.
+					</h1>
+					<p className="mt-4 max-w-md text-lg text-white/80 leading-relaxed">
+						Volvo, Sleeper, Express and more across thousands of routes — with
+						live seat maps and a calmer way to book.
+					</p>
 				</div>
 
-				{/* Booking widget — part of the same hero panel */}
-				<div className="mt-6">
+				<div className="mt-10">
+					{/* Slide caption + controls sit just above the search bar */}
+					<div className="mb-3 flex items-end justify-between text-white">
+						<div className="flex items-center gap-2">
+							<StarIcon className="text-saffron-300" height={15} width={15} />
+							<span className="font-medium text-sm text-white/90">
+								{active.name}
+								<span className="text-white/60"> · {active.tag}</span>
+							</span>
+						</div>
+						<div className="flex items-center gap-3">
+							<div className="flex gap-1.5">
+								{HERO_SLIDES.map((slide, i) => (
+									<button
+										aria-label={`Show ${slide.name}`}
+										className={`h-1.5 rounded-full transition-all ${
+											i === index
+												? "w-6 bg-white"
+												: "w-1.5 bg-white/40 hover:bg-white/70"
+										}`}
+										key={slide.name}
+										onClick={() => setIndex(i)}
+										type="button"
+									/>
+								))}
+							</div>
+							<div className="flex gap-1.5">
+								<button
+									aria-label="Previous"
+									className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/25 transition hover:bg-white/20"
+									onClick={() =>
+										setIndex(
+											(index - 1 + HERO_SLIDES.length) % HERO_SLIDES.length
+										)
+									}
+									type="button"
+								>
+									<ArrowRightIcon
+										className="rotate-180"
+										height={15}
+										width={15}
+									/>
+								</button>
+								<button
+									aria-label="Next"
+									className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/25 transition hover:bg-white/20"
+									onClick={() => setIndex((index + 1) % HERO_SLIDES.length)}
+									type="button"
+								>
+									<ArrowRightIcon height={15} width={15} />
+								</button>
+							</div>
+						</div>
+					</div>
+
 					<SearchForm showTabs variant="hero" />
 				</div>
 			</div>

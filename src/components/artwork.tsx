@@ -26,17 +26,21 @@ export function QrCode({ size = 96 }: { size?: number }) {
 
 interface SceneProps {
 	className?: string;
+	/** Fill and crop the frame (for full-bleed backdrops) instead of fitting. */
+	fill?: boolean;
 }
 
 function SceneFrame({
 	from,
 	to,
 	className,
+	fill,
 	children,
 }: {
 	from: string;
 	to: string;
 	className?: string;
+	fill?: boolean;
 	children: React.ReactNode;
 }) {
 	return (
@@ -48,7 +52,7 @@ function SceneFrame({
 			<svg
 				aria-hidden
 				className="absolute inset-0 h-full w-full"
-				preserveAspectRatio="xMidYMax meet"
+				preserveAspectRatio={fill ? "xMidYMax slice" : "xMidYMax meet"}
 				viewBox="0 0 160 120"
 			>
 				{children}
@@ -57,9 +61,9 @@ function SceneFrame({
 	);
 }
 
-export function StatueOfUnityArt({ className }: SceneProps) {
+export function StatueOfUnityArt({ className, fill }: SceneProps) {
 	return (
-		<SceneFrame className={className} from="#2666d4" to="#123a86">
+		<SceneFrame className={className} fill={fill} from="#2666d4" to="#123a86">
 			<circle cx="128" cy="26" fill="#ffd9a8" opacity="0.85" r="12" />
 			{/* river band */}
 			<path d="M0 104h160v16H0z" fill="#0c2470" opacity="0.6" />
@@ -77,9 +81,9 @@ export function StatueOfUnityArt({ className }: SceneProps) {
 	);
 }
 
-export function SomnathArt({ className }: SceneProps) {
+export function SomnathArt({ className, fill }: SceneProps) {
 	return (
-		<SceneFrame className={className} from="#ef8836" to="#9c4a63">
+		<SceneFrame className={className} fill={fill} from="#ef8836" to="#9c4a63">
 			<circle cx="30" cy="30" fill="#ffe1b0" opacity="0.9" r="14" />
 			<path d="M0 106h160v14H0z" fill="#7a1f57" opacity="0.65" />
 			{/* temple */}
@@ -96,9 +100,9 @@ export function SomnathArt({ className }: SceneProps) {
 	);
 }
 
-export function RannOfKutchArt({ className }: SceneProps) {
+export function RannOfKutchArt({ className, fill }: SceneProps) {
 	return (
-		<SceneFrame className={className} from="#b06aa2" to="#4f3a96">
+		<SceneFrame className={className} fill={fill} from="#b06aa2" to="#4f3a96">
 			<circle cx="120" cy="34" fill="#ffe6c2" opacity="0.9" r="16" />
 			{/* salt flats */}
 			<path d="M0 96h160v24H0z" fill="#f3e9f6" opacity="0.85" />
@@ -114,9 +118,9 @@ export function RannOfKutchArt({ className }: SceneProps) {
 	);
 }
 
-export function DwarkaArt({ className }: SceneProps) {
+export function DwarkaArt({ className, fill }: SceneProps) {
 	return (
-		<SceneFrame className={className} from="#2f7de0" to="#12357e">
+		<SceneFrame className={className} fill={fill} from="#2f7de0" to="#12357e">
 			<circle cx="34" cy="30" fill="#fff0d0" opacity="0.85" r="13" />
 			<path d="M0 104h160v16H0z" fill="#0f2f6e" opacity="0.6" />
 			<g fill="#0e2c66">
@@ -132,9 +136,9 @@ export function DwarkaArt({ className }: SceneProps) {
 	);
 }
 
-export function AkshardhamArt({ className }: SceneProps) {
+export function AkshardhamArt({ className, fill }: SceneProps) {
 	return (
-		<SceneFrame className={className} from="#e79a3c" to="#b0532a">
+		<SceneFrame className={className} fill={fill} from="#e79a3c" to="#b0532a">
 			<circle cx="30" cy="28" fill="#fff0cf" opacity="0.9" r="13" />
 			<path d="M0 108h160v12H0z" fill="#7a3418" opacity="0.6" />
 			<g fill="#6e2f18">
@@ -212,3 +216,89 @@ export function TrophyArt({ className }: SceneProps) {
 		</svg>
 	);
 }
+
+/** Landmark silhouettes (currentColor) for the hero watermark motif. */
+export const LANDMARK_SILHOUETTES: Record<
+	string,
+	(props: SceneProps) => React.ReactElement
+> = {
+	Akshardham: ({ className }) => (
+		<svg
+			aria-hidden
+			className={className}
+			fill="currentColor"
+			preserveAspectRatio="xMidYMax meet"
+			viewBox="0 0 160 120"
+		>
+			<rect height="24" width="96" x="32" y="84" />
+			<path d="M60 84l20-58 20 58z" />
+			<rect height="12" width="5" x="77" y="16" />
+			<path d="M32 84a12 12 0 0 1 24 0z" />
+			<path d="M104 84a12 12 0 0 1 24 0z" />
+			<rect height="20" width="5" x="42" y="66" />
+			<rect height="20" width="5" x="113" y="66" />
+			<rect height="20" width="14" x="73" y="88" />
+		</svg>
+	),
+	Dwarka: ({ className }) => (
+		<svg
+			aria-hidden
+			className={className}
+			fill="currentColor"
+			preserveAspectRatio="xMidYMax meet"
+			viewBox="0 0 160 120"
+		>
+			<rect height="30" width="48" x="56" y="78" />
+			<path d="M62 78l18-46 18 46z" />
+			<rect height="16" width="3" x="78" y="8" />
+			<path d="M81 8l14 6-14 6z" />
+			<rect height="40" width="10" x="66" y="66" />
+			<rect height="40" width="10" x="84" y="66" />
+		</svg>
+	),
+	"Rann of Kutch": ({ className }) => (
+		<svg
+			aria-hidden
+			className={className}
+			fill="currentColor"
+			preserveAspectRatio="xMidYMax meet"
+			viewBox="0 0 160 120"
+		>
+			<path d="M34 100V84a14 14 0 0 1 28 0v16z" />
+			<path d="M28 84l20-14 20 14z" />
+			<path d="M96 100V88a11 11 0 0 1 22 0v12z" />
+			<path d="M91 88l16-11 16 11z" />
+		</svg>
+	),
+	Somnath: ({ className }) => (
+		<svg
+			aria-hidden
+			className={className}
+			fill="currentColor"
+			preserveAspectRatio="xMidYMax meet"
+			viewBox="0 0 160 120"
+		>
+			<rect height="28" width="60" x="50" y="80" />
+			<path d="M58 80l22-52 22 52z" />
+			<path d="M80 22l5 10h-10z" />
+			<rect height="12" width="6" x="77" y="12" />
+			<rect height="40" width="12" x="60" y="68" />
+			<rect height="40" width="12" x="88" y="68" />
+		</svg>
+	),
+	"Statue of Unity": ({ className }) => (
+		<svg
+			aria-hidden
+			className={className}
+			fill="currentColor"
+			preserveAspectRatio="xMidYMax meet"
+			viewBox="0 0 160 120"
+		>
+			<rect height="16" width="44" x="58" y="90" />
+			<rect height="12" width="30" x="65" y="80" />
+			<path d="M80 14c5 0 8 4 8 9 0 4-3 6-3 10l5 20-4 3 3 24 4 22h-26l4-22 3-24-4-3 5-20c0-4-3-6-3-10 0-5 3-9 8-9Z" />
+			<path d="M72 62l-10 8 3 5 10-8z" />
+			<path d="M88 62l10 8-3 5-10-8z" />
+		</svg>
+	),
+};
