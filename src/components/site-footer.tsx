@@ -1,58 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import { BrandMark } from "#/components/brand-mark";
 import { AndroidIcon, AppleIcon, PhoneIcon } from "#/components/icons";
-
-const FOOTER_COLUMNS = [
-	{
-		heading: "Corporation",
-		links: [
-			"About Us",
-			"Leadership",
-			"Special Services",
-			"Achievements",
-			"Tenders",
-			"FAQs",
-			"Sitemap",
-		],
-	},
-	{
-		heading: "Policies & Governance",
-		links: [
-			"Booking Policies",
-			"Proactive Disclosure (RTI)",
-			"RTC Act",
-			"Divisions",
-			"Corporate Office",
-			"Performance",
-			"Bus Enquiry",
-		],
-	},
-	{
-		heading: "Public Information",
-		links: [
-			"Recruitment",
-			"Contact Us",
-			"Awards",
-			"GSRTC Direct Agents List",
-			"GSRTC Franchisee Agents List",
-			"Blacklisted Agencies",
-			"Grievance Redressal Officers (Divyang)",
-			"Annual Audit Report",
-		],
-	},
-	{
-		heading: "Resources",
-		links: [
-			"Gujarat Pavitra Yatradham Vikas Board",
-			"Download",
-			"Privacy Policy",
-			"India Code",
-			"Press Release",
-			"Citizen's Rights (નાગરિક અધિકાર પત્ર)",
-			"Women Harassment Act 2013 (Circular 323)",
-			"Service Regulation",
-		],
-	},
-] as const;
+import { FOOTER_COLUMNS, slugify } from "#/data/site-nav";
 
 const BROWSERS = ["Chrome", "Edge", "Firefox", "Opera"] as const;
 
@@ -93,12 +42,13 @@ export function SiteFooter() {
 							<ul className="mt-4 space-y-2.5">
 								{column.links.map((link) => (
 									<li key={link}>
-										<a
+										<Link
 											className="text-ink-400 text-sm transition-colors hover:text-saffron-300"
-											href="/"
+											params={{ slug: slugify(link) }}
+											to="/p/$slug"
 										>
 											{link}
-										</a>
+										</Link>
 									</li>
 								))}
 							</ul>

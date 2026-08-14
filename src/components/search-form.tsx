@@ -193,7 +193,7 @@ interface FieldProps {
 
 function Field({ id, label, icon, children }: FieldProps) {
 	return (
-		<div className="flex items-center gap-3 rounded-xl border border-ink-200 bg-surface px-3.5 py-2.5 transition focus-within:border-saffron-400 focus-within:ring-2 focus-within:ring-saffron-100">
+		<div className="flex items-center gap-3 rounded-xl border border-ink-200 bg-surface px-3.5 py-2.5 transition focus-within:border-saffron-400">
 			<span className="text-saffron-500">{icon}</span>
 			<label className="flex-1" htmlFor={id}>
 				<span className="block font-medium text-ink-500 text-xs">{label}</span>

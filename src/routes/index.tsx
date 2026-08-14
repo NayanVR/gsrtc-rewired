@@ -3,12 +3,10 @@ import { useEffect, useState } from "react";
 import {
 	BusArt,
 	DwarkaArt,
-	LANDMARK_SILHOUETTES,
 	QrCode,
 	RannOfKutchArt,
 	SomnathArt,
 	StatueOfUnityArt,
-	TrophyArt,
 } from "#/components/artwork";
 import {
 	AndroidIcon,
@@ -19,23 +17,13 @@ import {
 	UsersGroupIcon,
 	WalletIcon,
 } from "#/components/icons";
+import { Milestone } from "#/components/milestone";
 import { SearchForm } from "#/components/search-form";
 import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
 import { formatFare } from "#/data/trips";
 
 export const Route = createFileRoute("/")({ component: Home });
-
-const ACHIEVEMENT = [
-	{ year: "2018", seats: 74_368, revenue: "₹1.53 Cr" },
-	{ year: "2021", seats: 94_539, revenue: "₹1.80 Cr" },
-	{ year: "2022", seats: 114_880, revenue: "₹2.10 Cr" },
-	{ year: "2023", seats: 132_177, revenue: "₹2.98 Cr" },
-	{ year: "2024", seats: 141_468, revenue: "₹3.16 Cr" },
-	{ year: "2025", seats: 133_043, revenue: "₹3.19 Cr" },
-] as const;
-
-const PEAK_SEATS = 141_468;
 
 const GROWING_NUMBERS = [
 	{ label: "Android App Downloads", value: "63,92,501", icon: AndroidIcon },
@@ -91,6 +79,10 @@ function Home() {
 			<NoteStrip />
 			<main id="main">
 				<Hero />
+				{/* Search card straddles the hero's bottom edge, half over the image */}
+				<div className="relative z-10 mx-auto -mt-16 max-w-6xl px-4 sm:-mt-20 sm:px-6">
+					<SearchForm showTabs variant="hero" />
+				</div>
 				<Milestone />
 				<QuickAccess />
 				<GrowingNumbers />
@@ -115,12 +107,19 @@ function NoteStrip() {
 }
 
 const HERO_SLIDES = [
-	{ name: "Statue of Unity", tag: "Kevadia" },
-	{ name: "Akshardham", tag: "Gandhinagar" },
-	{ name: "Rann of Kutch", tag: "Dhordo" },
-	{ name: "Somnath", tag: "Gir Somnath" },
-	{ name: "Dwarka", tag: "Devbhumi Dwarka" },
+	{
+		name: "Statue of Unity",
+		tag: "Kevadia",
+		image: "/hero/statue-of-unity.webp",
+	},
+	{ name: "Akshardham", tag: "Gandhinagar", image: "/hero/akshardham.webp" },
+	{ name: "Rann of Kutch", tag: "Dhordo", image: "/hero/rann-of-kutch.webp" },
+	{ name: "Somnath", tag: "Gir Somnath", image: "/hero/somnath.webp" },
+	{ name: "Dwarka", tag: "Devbhumi Dwarka", image: "/hero/dwarka.webp" },
 ] as const;
+
+// Fades the artwork into the blue mesh, keeping the left third clear for text.
+const HERO_IMAGE_MASK = "linear-gradient(to right, transparent, #000 55%)";
 
 const HERO_ROTATE_MS = 5000;
 
@@ -155,38 +154,43 @@ function Hero() {
 			</div>
 			<div aria-hidden className="jali absolute inset-0 opacity-[0.05]" />
 
-			{/* Rotating landmark silhouette watermark */}
+			{/* Rotating landmark artwork, faded into the blue */}
 			<div
 				aria-hidden
-				className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] items-end justify-center text-white/[0.16] lg:flex"
+				className="pointer-events-none absolute inset-y-0 right-0 w-full sm:w-[62%]"
 			>
-				{HERO_SLIDES.map((slide, i) => {
-					const Silhouette = LANDMARK_SILHOUETTES[slide.name];
-					return (
-						<Silhouette
-							className={`absolute bottom-0 h-[86%] w-full transition-opacity duration-[1200ms] ${
-								i === index ? "opacity-100" : "opacity-0"
-							}`}
-							key={slide.name}
-						/>
-					);
-				})}
+				{HERO_SLIDES.map((slide, i) => (
+					<img
+						alt=""
+						className={`absolute inset-0 h-full w-full origin-bottom -translate-x-6 scale-110 object-cover object-bottom transition-opacity duration-[1200ms] sm:translate-x-0 ${
+							i === index ? "opacity-100" : "opacity-0"
+						}`}
+						height={1350}
+						key={slide.name}
+						src={slide.image}
+						style={{
+							maskImage: HERO_IMAGE_MASK,
+							WebkitMaskImage: HERO_IMAGE_MASK,
+						}}
+						width={2400}
+					/>
+				))}
 			</div>
 
-			<div className="relative mx-auto flex min-h-[540px] max-w-6xl flex-col justify-between px-4 py-10 sm:px-6 sm:py-12">
+			<div className="relative mx-auto flex min-h-[460px] max-w-6xl flex-col justify-between px-4 pt-10 pb-28 sm:px-6 sm:pt-12 sm:pb-32">
 				<div className="max-w-xl">
 					<h1 className="font-display font-extrabold text-4xl text-white leading-[1.05] tracking-tight sm:text-5xl">
-						Travel Gujarat with GSRTC.
+						GSRTC: The way i want it to be.
 					</h1>
 					<p className="mt-4 max-w-md text-lg text-white/80 leading-relaxed">
-						Volvo, Sleeper, Express and more across thousands of routes — with
-						live seat maps and a calmer way to book.
+						Hopefully they will never see this. Even if they see, they will get
+						to know their potential or get some small ideas.
 					</p>
 				</div>
 
 				<div className="mt-10">
-					{/* Slide caption + controls sit just above the search bar */}
-					<div className="mb-3 flex items-end justify-between text-white">
+					{/* Slide caption + controls sit just above the overlapping search bar */}
+					<div className="flex translate-y-3 items-end justify-between text-white">
 						<div className="flex items-center gap-2">
 							<StarIcon className="text-saffron-300" height={15} width={15} />
 							<span className="font-medium text-sm text-white/90">
@@ -238,56 +242,6 @@ function Hero() {
 							</div>
 						</div>
 					</div>
-
-					<SearchForm showTabs variant="hero" />
-				</div>
-			</div>
-		</section>
-	);
-}
-
-function Milestone() {
-	return (
-		<section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-			<div className="grid gap-6 rounded-3xl border border-ink-100 bg-surface p-6 shadow-card sm:p-8 lg:grid-cols-[1fr_1.3fr] lg:items-center">
-				<div>
-					<TrophyArt className="mb-3 h-10 w-10" />
-					<span className="inline-flex items-center gap-2 rounded-full bg-saffron-50 px-3 py-1 font-semibold text-saffron-700 text-xs">
-						<StarIcon height={13} width={13} />
-						New milestone · 24 October 2025
-					</span>
-					<h2 className="mt-3 font-bold font-display text-2xl text-ink-900 tracking-tight">
-						A record number of seats booked, and revenue generated.
-					</h2>
-					<p className="mt-2 text-ink-500 leading-relaxed">
-						GSRTC OPRS broke its own single-day record. Yearly seats booked
-						through the online portal:
-					</p>
-				</div>
-
-				<div className="flex items-end gap-3">
-					{ACHIEVEMENT.map((row) => {
-						const height = Math.round((row.seats / PEAK_SEATS) * 120);
-						const isPeak = row.year === "2025";
-						return (
-							<div
-								className="flex flex-1 flex-col items-center gap-2"
-								key={row.year}
-							>
-								<span className="font-semibold text-[11px] text-ink-500">
-									{(row.seats / 1000).toFixed(0)}k
-								</span>
-								<div
-									className={`w-full rounded-t-lg ${
-										isPeak ? "gradient-surface" : "bg-ink-100"
-									}`}
-									style={{ height: `${Math.max(height, 20)}px` }}
-								/>
-								<span className="text-[11px] text-ink-500">{row.year}</span>
-								<span className="text-[10px] text-ink-400">{row.revenue}</span>
-							</div>
-						);
-					})}
 				</div>
 			</div>
 		</section>
