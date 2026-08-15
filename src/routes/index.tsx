@@ -165,8 +165,11 @@ function Hero() {
 						className={`absolute inset-0 h-full w-full origin-bottom -translate-x-6 scale-110 object-cover object-bottom transition-opacity duration-[1200ms] sm:translate-x-0 ${
 							i === index ? "opacity-100" : "opacity-0"
 						}`}
+						decoding="async"
+						fetchPriority={i === 0 ? "high" : "low"}
 						height={1350}
 						key={slide.name}
+						loading={i === 0 ? "eager" : "lazy"}
 						src={slide.image}
 						style={{
 							maskImage: HERO_IMAGE_MASK,
@@ -260,7 +263,7 @@ function QuickAccess() {
 					<div className="mt-4 grid gap-3 sm:grid-cols-2">
 						{POPULAR_ROUTES.map((route) => (
 							<Link
-								className="group flex items-center justify-between rounded-2xl border border-ink-100 bg-canvas px-4 py-3.5 transition hover:border-saffron-300 hover:bg-saffron-50"
+								className="group flex items-center justify-between rounded-2xl border border-ink-100 bg-canvas px-4 py-3.5 transition duration-200 hover:-translate-y-0.5 hover:border-saffron-300 hover:bg-saffron-50 hover:shadow-card motion-reduce:hover:translate-y-0"
 								key={`${route.from}-${route.to}`}
 								search={{
 									from: route.from,
@@ -273,7 +276,7 @@ function QuickAccess() {
 								<span className="flex items-center gap-2 font-semibold text-ink-900 text-sm">
 									{route.from}
 									<ArrowRightIcon
-										className="text-ink-400"
+										className="text-ink-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-saffron-500"
 										height={14}
 										width={14}
 									/>
@@ -326,7 +329,7 @@ function QuickAccess() {
 
 function GrowingNumbers() {
 	return (
-		<section className="border-ink-100 border-y bg-surface-2">
+		<section className="cv-auto border-ink-100 border-y bg-surface-2">
 			<div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
 				<h2 className="text-center font-bold font-display text-2xl text-ink-900 tracking-tight sm:text-3xl">
 					GSRTC growing numbers
@@ -358,7 +361,7 @@ function LiveTracking() {
 		{ label: "GSRTC Live Tracking", sub: "iOS", icon: AppleIcon },
 	];
 	return (
-		<section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+		<section className="cv-auto mx-auto max-w-6xl px-4 py-14 sm:px-6">
 			<div className="flex items-center gap-3">
 				<span className="gradient-text">
 					<TrackIcon height={26} width={26} />
@@ -401,7 +404,7 @@ function LiveTracking() {
 
 function Destinations() {
 	return (
-		<section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6">
+		<section className="cv-auto mx-auto max-w-6xl px-4 pb-14 sm:px-6">
 			<h2 className="font-bold font-display text-2xl text-ink-900 tracking-tight sm:text-3xl">
 				Top destinations
 			</h2>

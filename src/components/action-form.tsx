@@ -1,8 +1,10 @@
-import { type FormEvent, useId } from "react";
+import type { FormEvent } from "react";
+import { Button } from "#/components/ui/button";
+import { Field } from "#/components/ui/field";
+import { Input } from "#/components/ui/input";
+import { Select } from "#/components/ui/select";
+import { Textarea } from "#/components/ui/textarea";
 import type { FormField, PageForm } from "#/data/page-forms";
-
-const FIELD_CLASS =
-	"w-full rounded-xl border border-ink-200 bg-surface px-3.5 py-2.5 text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-saffron-400";
 
 // Renders a designed (concept) form for a transactional GSRTC page.
 export function ActionForm({ form }: { form: PageForm }) {
@@ -11,18 +13,26 @@ export function ActionForm({ form }: { form: PageForm }) {
 	return (
 		<div className="max-w-2xl">
 			<form
-				className="rounded-3xl border border-ink-100 bg-surface p-6 shadow-card sm:p-8"
+				className="animate-fade-up rounded-3xl border border-ink-100 bg-surface p-6 shadow-card sm:p-8"
 				onSubmit={submit}
 			>
 				<div className="grid gap-4 sm:grid-cols-2">
 					{form.fields.map((field) => (
-						<Field field={field} key={field.name} />
+						<Field
+							className={
+								field.full || field.type === "textarea" ? "sm:col-span-2" : ""
+							}
+							key={field.name}
+							label={field.label}
+						>
+							{(id) => <Control field={field} id={id} />}
+						</Field>
 					))}
 				</div>
 
 				{form.external ? (
 					<a
-						className="gradient-surface mt-6 inline-flex rounded-xl px-6 py-3 font-semibold text-white shadow-sm transition hover:brightness-105"
+						className="gradient-surface mt-6 inline-flex rounded-xl px-6 py-3 font-semibold text-white shadow-sm transition-[transform,filter] duration-150 hover:brightness-105 active:scale-[0.97]"
 						href={form.external}
 						rel="noopener"
 						target="_blank"
@@ -30,12 +40,9 @@ export function ActionForm({ form }: { form: PageForm }) {
 						{form.submit}
 					</a>
 				) : (
-					<button
-						className="gradient-surface mt-6 rounded-xl px-6 py-3 font-semibold text-white shadow-sm transition hover:brightness-105"
-						type="submit"
-					>
+					<Button className="mt-6" size="lg" type="submit">
 						{form.submit}
-					</button>
+					</Button>
 				)}
 
 				{form.note ? (
@@ -46,34 +53,13 @@ export function ActionForm({ form }: { form: PageForm }) {
 	);
 }
 
-function Field({ field }: { field: FormField }) {
-	const id = useId();
-	const span = field.full || field.type === "textarea" ? "sm:col-span-2" : "";
-
-	return (
-		<label className={`block ${span}`} htmlFor={id}>
-			<span className="mb-1.5 block font-medium text-ink-600 text-sm">
-				{field.label}
-			</span>
-			{renderControl(field, id)}
-		</label>
-	);
-}
-
-function renderControl(field: FormField, id: string) {
+function Control({ field, id }: { field: FormField; id: string }) {
 	if (field.type === "textarea") {
-		return (
-			<textarea
-				className={FIELD_CLASS}
-				id={id}
-				placeholder={field.placeholder}
-				rows={4}
-			/>
-		);
+		return <Textarea id={id} placeholder={field.placeholder} />;
 	}
 	if (field.type === "select") {
 		return (
-			<select className={FIELD_CLASS} defaultValue="" id={id}>
+			<Select defaultValue="" id={id}>
 				<option disabled value="">
 					Select…
 				</option>
@@ -82,12 +68,11 @@ function renderControl(field: FormField, id: string) {
 						{option}
 					</option>
 				))}
-			</select>
+			</Select>
 		);
 	}
 	return (
-		<input
-			className={FIELD_CLASS}
+		<Input
 			id={id}
 			placeholder={field.placeholder}
 			type={field.type ?? "text"}

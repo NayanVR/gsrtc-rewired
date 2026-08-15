@@ -1,3 +1,5 @@
+import { Button } from "#/components/ui/button";
+
 const TRANSACTIONS = [
 	{
 		amount: -147,
@@ -33,18 +35,10 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 
 			{variant === "account" ? (
 				<div className="grid gap-3 sm:grid-cols-2">
-					<button
-						className="gradient-surface rounded-xl px-5 py-3 font-semibold text-white shadow-sm transition hover:brightness-105"
-						type="button"
-					>
-						Add money
-					</button>
-					<button
-						className="rounded-xl border border-ink-200 px-5 py-3 font-semibold text-ink-700 transition hover:bg-canvas"
-						type="button"
-					>
+					<Button size="lg">Add money</Button>
+					<Button size="lg" variant="secondary">
 						Manage KYC
-					</button>
+					</Button>
 				</div>
 			) : (
 				<div className="overflow-hidden rounded-2xl border border-ink-100 bg-surface shadow-card">

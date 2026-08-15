@@ -158,7 +158,7 @@ function DesktopNavItem({ group }: { group: NavGroup }) {
 				<ChevronDownIcon height={13} width={13} />
 			</button>
 			{open ? (
-				<div className="absolute left-0 z-50 mt-1 min-w-56 overflow-hidden rounded-2xl border border-ink-100 bg-surface py-1.5 shadow-pop">
+				<div className="absolute left-0 z-50 mt-1 min-w-56 origin-top animate-pop-in overflow-hidden rounded-2xl border border-ink-100 bg-surface py-1.5 shadow-pop">
 					{group.children.map((label) => (
 						<Link
 							className="block px-4 py-2 text-ink-700 text-sm transition-colors hover:bg-saffron-50 hover:text-saffron-700"
@@ -227,7 +227,7 @@ function MobileNavItem({
 				<ChevronDownIcon height={16} width={16} />
 			</button>
 			{open ? (
-				<div className="mb-1 ml-3 border-ink-100 border-l pl-2">
+				<div className="mb-1 ml-3 animate-pop-in border-ink-100 border-l pl-2">
 					{group.children.map((label) => (
 						<Link
 							className="block rounded-lg px-3 py-2 text-ink-600 text-sm hover:bg-saffron-50 hover:text-saffron-700"
