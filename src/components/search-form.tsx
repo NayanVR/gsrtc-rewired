@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { type FormEvent, useId, useState } from "react";
+import { type FormEvent, useEffect, useId, useState } from "react";
+import { listCities } from "#/api/fns";
 import {
 	CalendarIcon,
 	ChevronDownIcon,
@@ -12,7 +13,6 @@ import {
 	SEARCH_CONTROL_CLASS,
 	SearchField,
 } from "#/components/ui/search-field";
-import { CITIES } from "#/data/trips";
 
 const MAX_PASSENGERS = 6;
 
@@ -53,6 +53,11 @@ export function SearchForm({
 	const [date, setDate] = useState(initial?.date ?? todayIso());
 	const [passengers, setPassengers] = useState(initial?.passengers ?? 1);
 	const [singleLady, setSingleLady] = useState(false);
+	const [cities, setCities] = useState<string[]>([]);
+
+	useEffect(() => {
+		listCities({ data: undefined }).then(setCities);
+	}, []);
 
 	const swap = () => {
 		setFrom(to);
@@ -197,7 +202,7 @@ export function SearchForm({
 				</label>
 
 				<datalist id={listId}>
-					{CITIES.map((city) => (
+					{cities.map((city) => (
 						<option key={city} value={city} />
 					))}
 				</datalist>

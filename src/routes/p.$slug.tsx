@@ -3,7 +3,7 @@ import { ActionForm } from "#/components/action-form";
 import { PageBody } from "#/components/page-body";
 import { PageShell } from "#/components/page-shell";
 import { WalletPanel } from "#/components/wallet-panel";
-import { PAGE_CONTENT } from "#/data/page-content";
+import { EXTERNAL_LINKS, PAGE_CONTENT } from "#/data/page-content";
 import { PAGE_FORMS } from "#/data/page-forms";
 import { PAGE_BLURBS, PAGE_TITLES } from "#/data/site-nav";
 
@@ -29,7 +29,7 @@ function StubPage() {
 
 	return (
 		<PageShell blurb={blurb} title={title}>
-			{renderBody({ wallet, form, content })}
+			{renderBody({ content, form, slug, wallet })}
 		</PageShell>
 	);
 }
@@ -38,16 +38,18 @@ function renderBody({
 	wallet,
 	form,
 	content,
+	slug,
 }: {
 	wallet?: "account" | "passbook";
 	form?: (typeof PAGE_FORMS)[string];
 	content?: (typeof PAGE_CONTENT)[string];
+	slug: string;
 }) {
 	if (wallet) {
 		return <WalletPanel variant={wallet} />;
 	}
 	if (form) {
-		return <ActionForm form={form} />;
+		return <ActionForm external={EXTERNAL_LINKS[slug]} form={form} />;
 	}
 	if (content?.sections?.length || content?.contact) {
 		return <PageBody content={content} />;
