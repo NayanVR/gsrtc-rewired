@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { searchTrips } from "#/api/fns";
+import type { Trip } from "#/api/schemas";
 import {
 	AMENITY_ICONS,
 	ArrowRightIcon,
 	ChevronDownIcon,
 	ClockIcon,
 	DiscountIcon,
-	PinIcon,
-	StarIcon,
 } from "#/components/icons";
 import { SearchForm } from "#/components/search-form";
 import { SiteFooter } from "#/components/site-footer";
@@ -18,8 +18,7 @@ import {
 	type BusType,
 	formatDuration,
 	formatFare,
-	searchTrips,
-	type Trip,
+	formatTime,
 } from "#/data/trips";
 
 interface SearchParams {
@@ -40,7 +39,15 @@ export const Route = createFileRoute("/search")({
 		passengers: typeof search.passengers === "number" ? search.passengers : 1,
 	}),
 	loaderDeps: ({ search }) => search,
-	loader: ({ deps }) => ({ trips: searchTrips(deps.from, deps.to) }),
+	loader: ({ deps }) =>
+		searchTrips({
+			data: {
+				date: deps.date,
+				from: deps.from,
+				passengers: deps.passengers,
+				to: deps.to,
+			},
+		}),
 	component: SearchResults,
 });
 
@@ -48,7 +55,6 @@ const SORTS = [
 	{ id: "departure", label: "Departure time" },
 	{ id: "fare-low", label: "Price: low to high" },
 	{ id: "duration", label: "Fastest" },
-	{ id: "rating", label: "Top rated" },
 ] as const;
 
 type SortId = (typeof SORTS)[number]["id"];
@@ -69,7 +75,7 @@ const TRIP_INFO_LINKS = [
 ] as const;
 
 function departureHour(trip: Trip): number {
-	return Number(trip.departure.slice(0, 2));
+	return Number(formatTime(trip.departure).slice(0, 2));
 }
 
 function SearchResults() {
@@ -102,11 +108,9 @@ function SearchResults() {
 		sorted.sort((a, b) => {
 			switch (sort) {
 				case "fare-low":
-					return a.fare - b.fare;
+					return a.fareFrom - b.fareFrom;
 				case "duration":
-					return a.durationMinutes - b.durationMinutes;
-				case "rating":
-					return b.rating - a.rating;
+					return a.durationMin - b.durationMin;
 				default:
 					return a.departure.localeCompare(b.departure);
 			}
@@ -366,46 +370,38 @@ function TripCard({
 						<span className="rounded-full bg-brand-50 px-2.5 py-0.5 font-semibold text-brand-700 text-xs">
 							{trip.busType}
 						</span>
-						<span className="inline-flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 font-semibold text-success-700 text-xs">
-							<StarIcon height={11} width={11} />
-							{trip.rating.toFixed(1)}
-						</span>
 						<span className="font-mono text-ink-400 text-xs">{trip.id}</span>
 					</div>
 
 					<div className="mt-3 flex items-center gap-4">
 						<div>
 							<p className="font-bold font-display text-ink-900 text-xl">
-								{trip.departure}
+								{formatTime(trip.departure)}
 							</p>
-							<p className="text-ink-500 text-xs">{trip.origin}</p>
+							<p className="text-ink-500 text-xs">{trip.from}</p>
 						</div>
 						<div className="flex flex-1 items-center gap-2 text-ink-400">
 							<span className="h-px flex-1 bg-ink-200" />
 							<span className="inline-flex items-center gap-1 whitespace-nowrap text-xs">
 								<ClockIcon height={13} width={13} />
-								{formatDuration(trip.durationMinutes)}
+								{formatDuration(trip.durationMin)}
 							</span>
 							<span className="h-px flex-1 bg-ink-200" />
 						</div>
 						<div className="text-right">
 							<p className="font-bold font-display text-ink-900 text-xl">
-								{trip.arrival}
+								{formatTime(trip.arrival)}
 							</p>
-							<p className="text-ink-500 text-xs">{trip.destination}</p>
+							<p className="text-ink-500 text-xs">{trip.to}</p>
 						</div>
 					</div>
-
-					{trip.via.length > 0 ? (
-						<p className="mt-2 inline-flex items-center gap-1 text-ink-400 text-xs">
-							<PinIcon height={12} width={12} />
-							via {trip.via.join(", ")}
-						</p>
-					) : null}
 
 					<div className="mt-3 flex flex-wrap items-center gap-3">
 						{trip.amenities.slice(0, 5).map((amenity) => {
 							const meta = AMENITY_META[amenity];
+							if (!meta) {
+								return null;
+							}
 							const Icon = AMENITY_ICONS[meta.icon];
 							return (
 								<span
@@ -424,7 +420,7 @@ function TripCard({
 				<div className="flex items-end justify-between gap-4 border-ink-100 border-t pt-4 sm:flex-col sm:items-end sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
 					<div className="text-right">
 						<p className="font-display font-extrabold text-2xl text-ink-900">
-							{formatFare(trip.fare)}
+							{formatFare(trip.fareFrom)}
 						</p>
 						<p
 							className={

@@ -370,7 +370,28 @@ function LiveTracking() {
 					GSRTC live tracking
 				</h2>
 			</div>
-			<div className="mt-6 grid gap-4 sm:grid-cols-2">
+			<Link
+				className="group gradient-surface mt-6 flex items-center justify-between rounded-2xl border border-transparent p-5 text-white shadow-card transition hover:brightness-105"
+				to="/track"
+			>
+				<span className="flex items-center gap-3">
+					<span className="grid h-11 w-11 place-items-center rounded-xl bg-white/15">
+						<TrackIcon height={22} width={22} />
+					</span>
+					<span>
+						<span className="block font-semibold">Track a bus on the web</span>
+						<span className="block text-sm text-white/80">
+							See stop-by-stop progress — no app needed
+						</span>
+					</span>
+				</span>
+				<ArrowRightIcon
+					className="transition group-hover:translate-x-1"
+					height={18}
+					width={18}
+				/>
+			</Link>
+			<div className="mt-4 grid gap-4 sm:grid-cols-2">
 				{cards.map((card) => (
 					<a
 						className="group flex items-center justify-between rounded-2xl border border-ink-100 bg-surface p-5 shadow-card transition hover:border-saffron-300"

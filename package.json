@@ -17,6 +17,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@orpc/client": "^1.15.0",
+    "@orpc/contract": "^1.15.0",
+    "@orpc/server": "^1.15.0",
+    "@sentry/tanstackstart-react": "^10.70.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",
@@ -25,7 +29,8 @@
     "nitro": "3.0.260610-beta",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "valibot": "^1.4.2"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.6",
