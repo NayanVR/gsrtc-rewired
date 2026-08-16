@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { BrandMark } from "#/components/brand-mark";
 import {
-	AccessibilityIcon,
 	BellIcon,
 	ChevronDownIcon,
 	GlobeIcon,
@@ -113,14 +112,6 @@ function UtilityStrip() {
 					>
 						<BellIcon height={13} width={13} />
 						Alert
-					</Link>
-					<Link
-						className="hidden items-center gap-1 hover:text-brand-600 sm:flex"
-						params={{ slug: "special-services" }}
-						to="/p/$slug"
-					>
-						<AccessibilityIcon height={13} width={13} />
-						Accessibility
 					</Link>
 					<LanguageMenu />
 				</div>
