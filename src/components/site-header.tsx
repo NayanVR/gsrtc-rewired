@@ -12,6 +12,7 @@ import {
 	UserIcon,
 } from "#/components/icons";
 import { NAV, type NavGroup, slugify } from "#/data/site-nav";
+import { LANGUAGES, useLanguage } from "#/lib/i18n";
 
 export function SiteHeader() {
 	const [mobileOpen, setMobileOpen] = useState(false);
@@ -63,7 +64,10 @@ function UtilityStrip() {
 	return (
 		<div className="border-ink-100 border-b bg-canvas-2/80">
 			<div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-5 gap-y-1 px-4 py-1.5 text-xs sm:px-6">
-				<div className="hidden items-center gap-4 text-ink-600 md:flex">
+				<div
+					className="hidden items-center gap-4 text-ink-600 md:flex"
+					data-no-translate
+				>
 					<a
 						className="flex items-center gap-1.5 hover:text-saffron-600"
 						href="mailto:customer-support@gsrtc.org"
@@ -86,38 +90,84 @@ function UtilityStrip() {
 					</a>
 				</div>
 				<div className="flex flex-1 items-center justify-end gap-x-4 gap-y-1 text-ink-600">
-					<Link className="flex items-center gap-1 hover:text-brand-600" to="/">
+					<Link
+						className="flex items-center gap-1 hover:text-brand-600"
+						params={{ slug: "gsrtc-agent-login" }}
+						to="/p/$slug"
+					>
 						<UserIcon height={13} width={13} />
 						GSRTC Login
 					</Link>
-					<Link className="flex items-center gap-1 hover:text-brand-600" to="/">
+					<Link
+						className="flex items-center gap-1 hover:text-brand-600"
+						params={{ slug: "new-commuter-bus-pass" }}
+						to="/p/$slug"
+					>
 						<UserIcon height={13} width={13} />
 						Bus Pass Login
 					</Link>
 					<Link
 						className="flex items-center gap-1 font-semibold text-saffron-600 hover:text-saffron-700"
-						to="/"
+						params={{ slug: "press-release" }}
+						to="/p/$slug"
 					>
 						<BellIcon height={13} width={13} />
 						Alert
 					</Link>
 					<Link
 						className="hidden items-center gap-1 hover:text-brand-600 sm:flex"
-						to="/"
+						params={{ slug: "special-services" }}
+						to="/p/$slug"
 					>
 						<AccessibilityIcon height={13} width={13} />
 						Accessibility
 					</Link>
-					<button
-						className="flex items-center gap-1 hover:text-brand-600"
-						type="button"
-					>
-						<GlobeIcon height={13} width={13} />
-						English
-						<ChevronDownIcon height={12} width={12} />
-					</button>
+					<LanguageMenu />
 				</div>
 			</div>
+		</div>
+	);
+}
+
+function LanguageMenu() {
+	const { lang, setLang } = useLanguage();
+	const [open, setOpen] = useState(false);
+	const current = LANGUAGES.find((item) => item.code === lang) ?? LANGUAGES[0];
+
+	return (
+		<div className="relative" data-no-translate>
+			<button
+				aria-expanded={open}
+				aria-label="Change language"
+				className="flex items-center gap-1 hover:text-brand-600"
+				onClick={() => setOpen((value) => !value)}
+				type="button"
+			>
+				<GlobeIcon height={13} width={13} />
+				{current.label}
+				<ChevronDownIcon height={12} width={12} />
+			</button>
+			{open ? (
+				<div className="absolute right-0 z-50 mt-1.5 min-w-36 origin-top animate-pop-in overflow-hidden rounded-xl border border-ink-100 bg-surface py-1 shadow-pop">
+					{LANGUAGES.map((item) => (
+						<button
+							className={`block w-full px-3.5 py-1.5 text-left text-sm transition-colors hover:bg-saffron-50 ${
+								item.code === lang
+									? "font-semibold text-saffron-700"
+									: "text-ink-700"
+							}`}
+							key={item.code}
+							onClick={() => {
+								setLang(item.code);
+								setOpen(false);
+							}}
+							type="button"
+						>
+							{item.label}
+						</button>
+					))}
+				</div>
+			) : null}
 		</div>
 	);
 }

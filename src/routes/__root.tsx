@@ -2,6 +2,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
+import { LanguageProvider } from "#/lib/i18n";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -50,7 +51,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				>
 					Skip to main content
 				</a>
-				{children}
+				<LanguageProvider>{children}</LanguageProvider>
 				{import.meta.env.DEV ? (
 					<TanStackDevtools
 						config={{ position: "bottom-right" }}
