@@ -10,7 +10,10 @@ import { defineConfig } from "vite";
 const config = defineConfig({
 	plugins: [
 		devtools(),
-		nitro({ rollupConfig: { external: [/^@sentry\//] } }),
+		// Don't mark @sentry/* as rollup-external: that stops Nitro tracing it
+		// into .output/server/node_modules, so the SSR function 500s on Vercel
+		// with ERR_MODULE_NOT_FOUND. Let Nitro bundle/trace it normally.
+		nitro(),
 		tailwindcss(),
 		tanstackStart(),
 		viteReact(),
