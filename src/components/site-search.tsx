@@ -141,10 +141,10 @@ export function SiteSearch() {
 				onClose={() => setQuery("")}
 				ref={dialogRef}
 			>
-				<div className="flex items-center gap-3 border-ink-100 border-b px-4 py-3">
+				<div className="flex items-center gap-3 border-ink-100 border-b px-4 py-3 transition-colors focus-within:border-saffron-300">
 					<SearchIcon className="text-ink-400" height={18} width={18} />
 					<input
-						className="flex-1 bg-transparent text-ink-900 outline-none placeholder:text-ink-400"
+						className="palette-input flex-1 bg-transparent text-ink-900 outline-none placeholder:text-ink-400"
 						onChange={(event) => {
 							setQuery(event.target.value);
 							setActive(0);

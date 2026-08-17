@@ -287,6 +287,12 @@ label {
   border-radius: 6px;
 }
 
+/* The search palette field shows focus via its container's underline, so it
+   opts out of the global ring (which looks heavy on a full-width input). */
+.palette-input:focus-visible {
+  outline: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
