@@ -15,7 +15,7 @@ import { NAV, type NavGroup, slugify } from "#/data/site-nav";
 import { LANGUAGES, useLanguage } from "#/lib/i18n";
 
 export function SiteHeader() {
-	const [mobileOpen, setMobileOpen] = useState(false);
+	const [menuOpen, setMenuOpen] = useState(false);
 
 	return (
 		<header className="sticky top-0 z-40 bg-surface/85 backdrop-blur-md">
@@ -42,10 +42,10 @@ export function SiteHeader() {
 					</div>
 
 					<button
-						aria-expanded={mobileOpen}
-						aria-label="Toggle menu"
-						className="shrink-0 rounded-full border border-ink-200 p-2 text-ink-700 lg:hidden"
-						onClick={() => setMobileOpen((value) => !value)}
+						aria-expanded={menuOpen}
+						aria-label="Toggle navigation menu"
+						className="shrink-0 rounded-full border border-ink-200 p-2 text-ink-700 transition hover:border-saffron-300 hover:text-saffron-700"
+						onClick={() => setMenuOpen((value) => !value)}
 						type="button"
 					>
 						<MenuIcon />
@@ -53,18 +53,7 @@ export function SiteHeader() {
 				</div>
 			</div>
 
-			{/* Primary navigation gets its own centered row below the brand/search */}
-			<nav className="hidden border-ink-100 border-b lg:block">
-				<div className="mx-auto flex max-w-6xl items-center justify-center gap-1 px-4 py-1.5 sm:px-6">
-					{NAV.map((group) => (
-						<DesktopNavItem group={group} key={group.label} />
-					))}
-				</div>
-			</nav>
-
-			{mobileOpen ? (
-				<MobileNav onNavigate={() => setMobileOpen(false)} />
-			) : null}
+			{menuOpen ? <NavMenu onNavigate={() => setMenuOpen(false)} /> : null}
 		</header>
 	);
 }
@@ -173,70 +162,20 @@ function LanguageMenu() {
 	);
 }
 
-const NAV_ITEM_CLASS =
-	"flex items-center gap-1 whitespace-nowrap rounded-full px-3 py-2 font-medium text-ink-700 text-sm transition-colors hover:bg-saffron-50 hover:text-saffron-700";
-
-function DesktopNavItem({ group }: { group: NavGroup }) {
-	const [open, setOpen] = useState(false);
-
-	if (!group.children) {
-		return (
-			<Link
-				className={NAV_ITEM_CLASS}
-				params={{ slug: slugify(group.label) }}
-				to="/p/$slug"
-			>
-				{group.label}
-			</Link>
-		);
-	}
-
+// Revealed by the single menu button — one panel instead of a permanent nav
+// bar. Groups flow into columns so it stays compact on wider screens.
+function NavMenu({ onNavigate }: { onNavigate: () => void }) {
 	return (
-		// biome-ignore lint/a11y/noNoninteractiveElementInteractions: hover-to-open is a mouse enhancement; the button toggles for keyboard
-		// biome-ignore lint/a11y/noStaticElementInteractions: hover-to-open is a mouse enhancement; the button toggles for keyboard
-		<div
-			className="relative"
-			onMouseEnter={() => setOpen(true)}
-			onMouseLeave={() => setOpen(false)}
-		>
-			<button
-				aria-expanded={open}
-				className={NAV_ITEM_CLASS}
-				onClick={() => setOpen((value) => !value)}
-				type="button"
-			>
-				{group.label}
-				<ChevronDownIcon height={13} width={13} />
-			</button>
-			{open ? (
-				<div className="absolute left-0 z-50 mt-1 min-w-56 origin-top animate-pop-in overflow-hidden rounded-2xl border border-ink-100 bg-surface py-1.5 shadow-pop">
-					{group.children.map((label) => (
-						<Link
-							className="block px-4 py-2 text-ink-700 text-sm transition-colors hover:bg-saffron-50 hover:text-saffron-700"
-							key={label}
-							onClick={() => setOpen(false)}
-							params={{ slug: slugify(label) }}
-							to="/p/$slug"
-						>
-							{label}
-						</Link>
-					))}
-				</div>
-			) : null}
-		</div>
-	);
-}
-
-function MobileNav({ onNavigate }: { onNavigate: () => void }) {
-	return (
-		<nav className="border-ink-100 border-b bg-surface px-4 py-3 sm:px-6 lg:hidden">
-			{NAV.map((group) => (
-				<MobileNavItem
-					group={group}
-					key={group.label}
-					onNavigate={onNavigate}
-				/>
-			))}
+		<nav className="border-ink-100 border-b bg-surface">
+			<div className="mx-auto grid max-w-6xl gap-x-6 gap-y-1 px-4 py-3 sm:grid-cols-2 sm:px-6 lg:grid-cols-3">
+				{NAV.map((group) => (
+					<MobileNavItem
+						group={group}
+						key={group.label}
+						onNavigate={onNavigate}
+					/>
+				))}
+			</div>
 		</nav>
 	);
 }
