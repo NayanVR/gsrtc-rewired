@@ -10,6 +10,7 @@ import {
 	PhoneIcon,
 	UserIcon,
 } from "#/components/icons";
+import { SiteSearch } from "#/components/site-search";
 import { NAV, type NavGroup, slugify } from "#/data/site-nav";
 import { LANGUAGES, useLanguage } from "#/lib/i18n";
 
@@ -40,15 +41,18 @@ export function SiteHeader() {
 						))}
 					</nav>
 
-					<button
-						aria-expanded={mobileOpen}
-						aria-label="Toggle menu"
-						className="rounded-full border border-ink-200 p-2 text-ink-700 lg:hidden"
-						onClick={() => setMobileOpen((value) => !value)}
-						type="button"
-					>
-						<MenuIcon />
-					</button>
+					<div className="flex items-center gap-2">
+						<SiteSearch />
+						<button
+							aria-expanded={mobileOpen}
+							aria-label="Toggle menu"
+							className="rounded-full border border-ink-200 p-2 text-ink-700 lg:hidden"
+							onClick={() => setMobileOpen((value) => !value)}
+							type="button"
+						>
+							<MenuIcon />
+						</button>
+					</div>
 				</div>
 			</div>
 
