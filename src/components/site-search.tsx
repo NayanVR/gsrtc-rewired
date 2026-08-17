@@ -93,6 +93,28 @@ export function SiteSearch() {
 		return () => window.removeEventListener("keydown", onKey);
 	}, []);
 
+	// Close on backdrop click and reset the query when the dialog closes. Done
+	// imperatively so the <dialog> keeps no interaction handlers of its own.
+	useEffect(() => {
+		const dialog = dialogRef.current;
+		// biome-ignore lint/suspicious/noUnnecessaryConditions: ref is null until mounted; tsc requires this guard
+		if (!dialog) {
+			return;
+		}
+		const onBackdropClick = (event: MouseEvent) => {
+			if (event.target === dialog) {
+				dialog.close();
+			}
+		};
+		const onClose = () => setQuery("");
+		dialog.addEventListener("click", onBackdropClick);
+		dialog.addEventListener("close", onClose);
+		return () => {
+			dialog.removeEventListener("click", onBackdropClick);
+			dialog.removeEventListener("close", onClose);
+		};
+	}, []);
+
 	const go = (item: SearchItem) => {
 		dialogRef.current?.close();
 		if (item.kind === "page") {
@@ -123,13 +145,13 @@ export function SiteSearch() {
 			<button
 				aria-keyshortcuts="Meta+K Control+K"
 				aria-label="Search the site"
-				className="flex items-center gap-2 rounded-full border border-ink-200 py-1.5 pr-2 pl-3 text-ink-500 text-sm transition hover:border-saffron-300 hover:text-ink-700"
+				className="flex w-full items-center gap-2 rounded-full border border-ink-200 py-2 pr-2 pl-3.5 text-ink-500 text-sm transition hover:border-saffron-300 hover:text-ink-700"
 				onClick={open}
 				type="button"
 			>
-				<SearchIcon height={16} width={16} />
-				<span className="hidden sm:inline">Search…</span>
-				<kbd className="hidden rounded border border-ink-200 bg-canvas px-1.5 font-sans text-[10px] text-ink-400 sm:inline">
+				<SearchIcon className="shrink-0" height={16} width={16} />
+				<span>Search…</span>
+				<kbd className="ml-auto hidden rounded border border-ink-200 bg-canvas px-1.5 font-sans text-[10px] text-ink-400 sm:inline">
 					⌘K
 				</kbd>
 			</button>
@@ -138,7 +160,6 @@ export function SiteSearch() {
 				aria-label="Site search"
 				className="mt-[12vh] mr-auto ml-auto w-[min(40rem,calc(100vw-2rem))] rounded-2xl border border-ink-100 bg-surface p-0 shadow-pop backdrop:bg-ink-900/40"
 				data-no-translate
-				onClose={() => setQuery("")}
 				ref={dialogRef}
 			>
 				<div className="flex items-center gap-3 border-ink-100 border-b px-4 py-3 transition-colors focus-within:border-saffron-300">

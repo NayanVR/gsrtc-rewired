@@ -22,8 +22,8 @@ export function SiteHeader() {
 			<UtilityStrip />
 
 			<div className="border-ink-100 border-b">
-				<div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-					<Link className="flex items-center gap-3" to="/">
+				<div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
+					<Link className="flex shrink-0 items-center gap-3" to="/">
 						<BrandMark className="shrink-0" size={46} />
 						<span className="leading-tight">
 							<span className="block font-bold font-display text-base text-ink-900 tracking-tight sm:text-lg">
@@ -35,26 +35,32 @@ export function SiteHeader() {
 						</span>
 					</Link>
 
-					<nav className="hidden items-center gap-0.5 lg:flex">
-						{NAV.map((group) => (
-							<DesktopNavItem group={group} key={group.label} />
-						))}
-					</nav>
-
-					<div className="flex items-center gap-2">
-						<SiteSearch />
-						<button
-							aria-expanded={mobileOpen}
-							aria-label="Toggle menu"
-							className="rounded-full border border-ink-200 p-2 text-ink-700 lg:hidden"
-							onClick={() => setMobileOpen((value) => !value)}
-							type="button"
-						>
-							<MenuIcon />
-						</button>
+					<div className="flex flex-1 justify-center">
+						<div className="w-full max-w-md">
+							<SiteSearch />
+						</div>
 					</div>
+
+					<button
+						aria-expanded={mobileOpen}
+						aria-label="Toggle menu"
+						className="shrink-0 rounded-full border border-ink-200 p-2 text-ink-700 lg:hidden"
+						onClick={() => setMobileOpen((value) => !value)}
+						type="button"
+					>
+						<MenuIcon />
+					</button>
 				</div>
 			</div>
+
+			{/* Primary navigation gets its own centered row below the brand/search */}
+			<nav className="hidden border-ink-100 border-b lg:block">
+				<div className="mx-auto flex max-w-6xl items-center justify-center gap-1 px-4 py-1.5 sm:px-6">
+					{NAV.map((group) => (
+						<DesktopNavItem group={group} key={group.label} />
+					))}
+				</div>
+			</nav>
 
 			{mobileOpen ? (
 				<MobileNav onNavigate={() => setMobileOpen(false)} />
@@ -168,7 +174,7 @@ function LanguageMenu() {
 }
 
 const NAV_ITEM_CLASS =
-	"flex items-center gap-1 rounded-full px-3 py-2 font-medium text-ink-700 text-sm transition-colors hover:bg-saffron-50 hover:text-saffron-700";
+	"flex items-center gap-1 whitespace-nowrap rounded-full px-3 py-2 font-medium text-ink-700 text-sm transition-colors hover:bg-saffron-50 hover:text-saffron-700";
 
 function DesktopNavItem({ group }: { group: NavGroup }) {
 	const [open, setOpen] = useState(false);
