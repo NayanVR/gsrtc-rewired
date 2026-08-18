@@ -155,6 +155,14 @@ const TRACK_CORRIDOR = [
 	"Bharuch",
 	"Surat",
 ] as const;
+// Minor halts on each leg (keyed by the stop the bus is leaving).
+const SUBSTOPS: Record<string, string[]> = {
+	Ahmedabad: ["Mahemdabad", "Kheda"],
+	Anand: ["Karamsad", "Bhaili"],
+	Bharuch: ["Ankleshwar", "Kosamba", "Kim"],
+	Nadiad: ["Uttarsanda", "Vasad"],
+	Vadodara: ["Karjan", "Palej"],
+};
 const STOP_GAP_MIN = 40;
 const JOURNEY_STARTED_MIN_AGO = 95;
 const MS_PER_MIN = 60_000;
@@ -195,6 +203,7 @@ const progress = os.tracking.progress.handler(({ input }) => {
 			name,
 			scheduled: new Date(scheduledMs).toISOString(),
 			status,
+			subStops: SUBSTOPS[name],
 		};
 	});
 

@@ -1,3 +1,11 @@
+import "@fontsource-variable/inter/wght.css";
+import "@fontsource-variable/plus-jakarta-sans/wght.css";
+import "@fontsource/hind-vadodara/400.css";
+import "@fontsource/hind-vadodara/gujarati-400.css";
+import "@fontsource/hind-vadodara/600.css";
+import "@fontsource/hind-vadodara/gujarati-600.css";
+import "@fontsource/hind-vadodara/700.css";
+import "@fontsource/hind-vadodara/gujarati-700.css";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -36,19 +44,6 @@ export const Route = createRootRoute({
 			{ rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
 			{ rel: "manifest", href: "/site.webmanifest" },
 			{ rel: "stylesheet", href: appCss },
-			{
-				rel: "preconnect",
-				href: "https://fonts.googleapis.com",
-			},
-			{
-				rel: "preconnect",
-				href: "https://fonts.gstatic.com",
-				crossOrigin: "anonymous",
-			},
-			{
-				rel: "stylesheet",
-				href: "https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap",
-			},
 		],
 	}),
 	shellComponent: RootDocument,

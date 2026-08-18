@@ -136,6 +136,7 @@ export const JourneyStop = v.object({
 	name: City,
 	scheduled: Timestamp,
 	status: v.picklist(["departed", "current", "upcoming"]),
+	subStops: v.optional(v.array(v.string())), // minor stops on the leg leaving here
 });
 
 export const JourneyProgress = v.object({

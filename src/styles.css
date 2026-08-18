@@ -55,8 +55,8 @@
   --color-success-700: #2f6f34;
   --color-danger-500: #d84c12;
 
-  --font-sans: "Inter", "Hind Vadodara", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Plus Jakarta Sans", "Hind Vadodara", "Inter", ui-sans-serif, sans-serif;
+  --font-sans: "Inter Variable", "Hind Vadodara", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Plus Jakarta Sans Variable", "Hind Vadodara", "Inter Variable", ui-sans-serif, sans-serif;
 
   --shadow-card: 0 1px 2px rgb(42 37 29 / 0.04),
     0 10px 30px -18px rgb(42 37 29 / 0.25);

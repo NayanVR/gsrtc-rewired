@@ -140,9 +140,14 @@ function JourneyBoard({
 	onRefresh: () => void;
 }) {
 	const onTime = journey.delayMin <= 0;
+	const total = journey.stops.length;
+	const departed = journey.stops.filter((s) => s.status === "departed").length;
+	const currentStop = journey.stops.find((s) => s.status === "current");
+	const progressPct = Math.round((departed / total) * 100);
+
 	return (
-		<div className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-card sm:p-6">
-			<div className="flex flex-wrap items-start justify-between gap-3">
+		<div className="overflow-hidden rounded-2xl border border-ink-100 bg-surface shadow-card">
+			<div className="flex flex-wrap items-start justify-between gap-3 p-5 sm:p-6">
 				<div>
 					<div className="flex items-center gap-2">
 						<span className="rounded-full bg-brand-50 px-2.5 py-0.5 font-mono font-semibold text-brand-700 text-xs">
@@ -167,40 +172,133 @@ function JourneyBoard({
 						/>{" "}
 						{journey.to}
 					</p>
-					{journey.nextStop ? (
-						<p className="mt-0.5 text-ink-500 text-sm">
-							Next stop:{" "}
-							<span className="font-semibold text-ink-700">
-								{journey.nextStop}
-							</span>
-						</p>
-					) : null}
 				</div>
 				<Button onClick={onRefresh} size="sm" variant="secondary">
 					Refresh
 				</Button>
 			</div>
 
-			<ol className="mt-6">
+			{/* Live next-stop banner + overall progress */}
+			{currentStop ? (
+				<div className="border-saffron-100 border-y bg-saffron-50/60 px-5 py-4 sm:px-6">
+					<div className="flex items-center justify-between gap-3">
+						<div className="inline-flex items-center gap-2">
+							<span
+								aria-hidden
+								className="h-2 w-2 rounded-full bg-saffron-500 motion-safe:animate-pulse"
+							/>
+							<span className="text-ink-600 text-sm">
+								Next stop{" "}
+								<span className="font-semibold text-ink-900">
+									{currentStop.name}
+								</span>
+							</span>
+						</div>
+						<span className="rounded-full bg-saffron-500 px-3 py-1 font-semibold text-white text-xs">
+							{etaLabel(currentStop.etaMin)}
+						</span>
+					</div>
+					<div className="mt-3 flex items-center gap-3">
+						<div
+							aria-hidden
+							className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink-100"
+						>
+							<div
+								className="h-full rounded-full bg-gradient-to-r from-brand-500 to-saffron-400"
+								style={{ width: `${progressPct}%` }}
+							/>
+						</div>
+						<span className="shrink-0 text-ink-500 text-xs tabular-nums">
+							{departed} of {total} stops
+						</span>
+					</div>
+				</div>
+			) : null}
+
+			<ol className="p-5 sm:p-6">
 				{journey.stops.map((stop, index) => (
 					<StopRow
-						isLast={index === journey.stops.length - 1}
+						isLast={index === total - 1}
 						key={stop.name}
+						nextIsCurrent={journey.stops[index + 1]?.status === "current"}
 						stop={stop}
 					/>
 				))}
 			</ol>
 
-			<p className="mt-4 text-ink-400 text-xs">
+			<p className="border-ink-100 border-t px-5 py-3 text-ink-400 text-xs sm:px-6">
 				Last updated {formatTime(journey.lastUpdated)} · times are scheduled
 			</p>
 		</div>
 	);
 }
 
-function StopRow({ stop, isLast }: { stop: JourneyStop; isLast: boolean }) {
+function etaLabel(etaMin: number | undefined): string {
+	if (etaMin === undefined) {
+		return "En route";
+	}
+	return etaMin === 0 ? "Arriving now" : `${etaMin} min away`;
+}
+
+// The line between two stops. On the in-transit leg it carries a riding bus
+// that toggles the leg's minor stops when it has any.
+function Connector({
+	departed,
+	transit,
+	expanded,
+	onToggle,
+}: {
+	departed: boolean;
+	transit: boolean;
+	expanded: boolean;
+	onToggle: (() => void) | null;
+}) {
+	if (transit) {
+		const marker =
+			"-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-surface shadow-card ring-1 ring-saffron-200";
+		return (
+			<span className="relative w-0.5 flex-1 bg-gradient-to-b from-brand-500 to-saffron-400">
+				{onToggle ? (
+					<button
+						aria-expanded={expanded}
+						aria-label={
+							expanded ? "Hide stops on this leg" : "Show stops on this leg"
+						}
+						className={`${marker} transition hover:ring-saffron-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-saffron-500`}
+						onClick={onToggle}
+						type="button"
+					>
+						<BusIcon className="text-saffron-600" height={13} width={13} />
+					</button>
+				) : (
+					<span aria-hidden className={marker}>
+						<BusIcon className="text-saffron-600" height={13} width={13} />
+					</span>
+				)}
+			</span>
+		);
+	}
+	return (
+		<span
+			aria-hidden
+			className={`w-0.5 flex-1 ${departed ? "bg-brand-500" : "bg-ink-200"}`}
+		/>
+	);
+}
+
+function StopRow({
+	stop,
+	isLast,
+	nextIsCurrent,
+}: {
+	stop: JourneyStop;
+	isLast: boolean;
+	nextIsCurrent: boolean;
+}) {
+	const [expanded, setExpanded] = useState(false);
 	const departed = stop.status === "departed";
 	const current = stop.status === "current";
+	const legStops = nextIsCurrent ? (stop.subStops ?? []) : [];
 
 	let node = "border-ink-300 bg-surface";
 	if (departed) {
@@ -210,9 +308,8 @@ function StopRow({ stop, isLast }: { stop: JourneyStop; isLast: boolean }) {
 	}
 
 	let detail = `Scheduled ${formatTime(stop.scheduled)}`;
-	if (current && stop.etaMin !== undefined) {
-		detail =
-			stop.etaMin === 0 ? "Arriving now" : `Arriving in ${stop.etaMin} min`;
+	if (current) {
+		detail = etaLabel(stop.etaMin);
 	} else if (departed) {
 		detail = `Departed · ${formatTime(stop.scheduled)}`;
 	}
@@ -227,9 +324,13 @@ function StopRow({ stop, isLast }: { stop: JourneyStop; isLast: boolean }) {
 					}`}
 				/>
 				{isLast ? null : (
-					<span
-						aria-hidden
-						className={`w-0.5 flex-1 ${departed ? "bg-brand-500" : "bg-ink-200"}`}
+					<Connector
+						departed={departed}
+						expanded={expanded}
+						onToggle={
+							legStops.length ? () => setExpanded((prev) => !prev) : null
+						}
+						transit={nextIsCurrent}
 					/>
 				)}
 			</div>
@@ -237,7 +338,7 @@ function StopRow({ stop, isLast }: { stop: JourneyStop; isLast: boolean }) {
 				<p
 					className={`font-semibold ${
 						current ? "text-saffron-700" : "text-ink-900"
-					}`}
+					} ${departed ? "text-ink-500" : ""}`}
 				>
 					{stop.name}
 				</p>
@@ -245,6 +346,31 @@ function StopRow({ stop, isLast }: { stop: JourneyStop; isLast: boolean }) {
 					<ClockIcon height={12} width={12} />
 					{detail}
 				</p>
+				{legStops.length && !expanded ? (
+					<button
+						className="mt-2.5 block text-saffron-700 text-xs underline-offset-2 hover:underline"
+						onClick={() => setExpanded(true)}
+						type="button"
+					>
+						{legStops.length} stops on the way ↓
+					</button>
+				) : null}
+				{expanded && legStops.length ? (
+					<ul className="mt-2 space-y-1.5 border-ink-100 border-l pl-3">
+						{legStops.map((name) => (
+							<li
+								className="flex items-center gap-2 text-ink-500 text-xs"
+								key={name}
+							>
+								<span
+									aria-hidden
+									className="h-1.5 w-1.5 rounded-full bg-ink-300"
+								/>
+								{name}
+							</li>
+						))}
+					</ul>
+				) : null}
 			</div>
 		</li>
 	);
