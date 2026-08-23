@@ -10,10 +10,16 @@
 
 ## Why this happens in the current architecture
 
+No claim in this section is externally verifiable: reproducing the gender bug
+requires a real booking, and both the error handling and the support-contact
+plumbing are only observable from inside. These are hypotheses that would
+each produce exactly the reported symptom — the design rationale for the plan
+below, not findings:
+
 - **The booking form and the print/PDF template are likely separate code
   paths reading the same underlying field differently** — a classic symptom
   of passenger data being re-mapped or re-serialized between the booking
-  servlet and a distinct print/ticket-generation servlet, rather than both
+  action and a distinct print/ticket-generation action, rather than both
   rendering from one shared, typed record. A mismatched enum encoding
   (e.g. `0/1` vs `M/F` between the two systems) reproduces exactly this bug
   and would be invisible to normal testing unless someone specifically
@@ -46,3 +52,10 @@
   (`content.page` / `content.faqs`, `src/data/page-content.ts`) served at
   request time from one place the web frontend reads directly — updating a
   number is a data change, not a coordinated release across every client.
+
+## Sources
+
+No externally verifiable facts in this document. Every claim rests on public
+app-store reviews and citizen complaint forums, which are not individually
+cited and have not been independently verified. The gender-encoding
+hypothesis in particular is not reproducible without a real booking.

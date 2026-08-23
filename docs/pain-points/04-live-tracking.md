@@ -9,11 +9,19 @@
 
 ## Why this happens in the current architecture
 
-- **Tracking is a separate app from a separate vendor**
-  (`com.infiniumsolutionzgsrtc.myapplication`), distinct from the main
-  booking app/portal — meaning the GPS feed, its auth, and its outage
-  handling live entirely outside GSRTC's own booking stack, with whatever
-  reliability that third party's ingestion pipeline happens to have.
+- **Tracking is a separate app from a separate vendor.** GSRTC Live Tracking
+  (package `com.infiniumsolutionzgsrtc.myapplication`, published by **Amnex
+  Infotechnologies**) is a different app from the booking app
+  (`com.gsrtc.mobileweb`) and from the web portal. The GPS feed, its auth,
+  and its outage handling live entirely outside GSRTC's own booking stack,
+  with whatever reliability that third party's ingestion pipeline happens to
+  have. (The package string names a different company than the current
+  publisher — white-label or legacy residue; either way it is not the
+  booking stack's code.)
+
+The two points below are inferred from user-visible behaviour and review
+patterns, not from the app's source:
+
 - **No graceful degradation when the live feed is stale or missing.** The
   reports of "always wrong location" and "never finds the bus" are
   consistent with a UI that only knows how to show a live GPS pin — when
@@ -45,3 +53,15 @@
   handled once, centrally, with one degradation strategy — instead of each
   client (web, app, agent) independently guessing what to show when data
   is missing.
+
+## Sources
+
+Observable facts (Verified 2026-08-22.)
+
+- <https://play.google.com/store/apps/details?id=com.infiniumsolutionzgsrtc.myapplication>
+  — GSRTC Live Tracking, published by Amnex Infotechnologies Pvt Ltd.
+- <https://play.google.com/store/apps/details?id=com.gsrtc.mobileweb> — the
+  separate GSRTC booking app.
+
+Behavioural claims (wrong locations, auth errors, no staleness signal) come
+from public review text and are not independently verified.
