@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { SearchIcon } from "#/components/icons";
 import { PAGE_BLURBS, PAGE_TITLES } from "#/data/site-nav";
+import { useTranslation } from "#/lib/i18n";
 
 // One flat index of everything you can jump to: the top-level features plus
 // every informational / transactional page. Keyed navigation stays type-safe
@@ -68,6 +69,7 @@ function filterItems(query: string): SearchItem[] {
 }
 
 export function SiteSearch() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const dialogRef = useRef<HTMLDialogElement>(null);
 	const [query, setQuery] = useState("");
@@ -144,20 +146,20 @@ export function SiteSearch() {
 		<>
 			<button
 				aria-keyshortcuts="Meta+K Control+K"
-				aria-label="Search the site"
+				aria-label={t("Search the site")}
 				className="flex w-full items-center gap-2 rounded-full border border-ink-200 py-2 pr-2 pl-3.5 text-ink-500 text-sm transition hover:border-saffron-300 hover:text-ink-700"
 				onClick={open}
 				type="button"
 			>
 				<SearchIcon className="shrink-0" height={16} width={16} />
-				<span>Search…</span>
+				<span>{t("Search…")}</span>
 				<kbd className="ml-auto hidden rounded border border-ink-200 bg-canvas px-1.5 font-sans text-[10px] text-ink-400 sm:inline">
 					⌘K
 				</kbd>
 			</button>
 
 			<dialog
-				aria-label="Site search"
+				aria-label={t("Site search")}
 				className="mt-[12vh] mr-auto ml-auto w-[min(40rem,calc(100vw-2rem))] rounded-2xl border border-ink-100 bg-surface p-0 shadow-pop backdrop:bg-ink-900/40"
 				data-no-translate
 				ref={dialogRef}
@@ -171,7 +173,7 @@ export function SiteSearch() {
 							setActive(0);
 						}}
 						onKeyDown={onKeyDown}
-						placeholder="Search pages and actions…"
+						placeholder={t("Search pages and actions…")}
 						value={query}
 					/>
 					<kbd className="rounded border border-ink-200 px-1.5 py-0.5 text-[10px] text-ink-400">
@@ -181,7 +183,7 @@ export function SiteSearch() {
 
 				{results.length === 0 ? (
 					<p className="px-4 py-8 text-center text-ink-500 text-sm">
-						No matches for “{query}”.
+						{t("No matches for “{query}”.", { query })}
 					</p>
 				) : (
 					<ul className="max-h-[50vh] overflow-y-auto p-2">
@@ -197,8 +199,8 @@ export function SiteSearch() {
 									onMouseEnter={() => setActive(index)}
 									type="button"
 								>
-									<span className="font-medium">{item.label}</span>
-									<span className="text-ink-400 text-xs">{item.group}</span>
+									<span className="font-medium">{t(item.label)}</span>
+									<span className="text-ink-400 text-xs">{t(item.group)}</span>
 								</button>
 							</li>
 						))}

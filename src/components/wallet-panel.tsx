@@ -1,67 +1,248 @@
+import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { getWalletAccount, getWalletPassbook, topUpWallet } from "#/api/fns";
+import type { Transaction, WalletAccount } from "#/api/schemas";
 import { Button } from "#/components/ui/button";
+import { Field } from "#/components/ui/field";
+import { Input } from "#/components/ui/input";
+import { Select } from "#/components/ui/select";
 
-const TRANSACTIONS = [
-	{
-		amount: -147,
-		date: "12 Aug 2026",
-		desc: "Ticket booking · Vadodara → Surat",
-	},
-	{ amount: 500, date: "08 Aug 2026", desc: "Wallet top-up · UPI" },
-	{ amount: 120, date: "02 Aug 2026", desc: "Refund · cancelled ticket" },
-	{
-		amount: -220,
-		date: "28 Jul 2026",
-		desc: "Ticket booking · Ahmedabad → Rajkot",
-	},
-	{ amount: 1000, date: "21 Jul 2026", desc: "Wallet top-up · Netbanking" },
-] as const;
+const PASSBOOK_PAGE_SIZE = 10;
+const MONEY_FORMATTER = new Intl.NumberFormat("en-IN", {
+	currency: "INR",
+	minimumFractionDigits: 2,
+	style: "currency",
+});
+const DATE_FORMATTER = new Intl.DateTimeFormat("en-IN", {
+	day: "2-digit",
+	month: "short",
+	year: "numeric",
+});
 
-const BALANCE = "₹1,253.00";
+type PaymentMethod = "upi" | "card" | "netbanking";
 
-// Concept wallet UI. variant "account" shows balance + actions, "passbook"
-// shows balance + a transaction ledger.
-export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
+function formatError(error: unknown): string {
+	if (error instanceof Error && error.message) {
+		return error.message;
+	}
+	return "We could not load your wallet. Sign in and try again.";
+}
+
+function money(amount: number): string {
+	return MONEY_FORMATTER.format(amount);
+}
+
+function WalletBalance({ account }: { account: WalletAccount }) {
 	return (
-		<div className="max-w-2xl space-y-6">
-			<div className="mesh-hero relative overflow-hidden rounded-3xl p-6 text-white shadow-pop sm:p-7">
-				<p className="text-sm text-white/70">Available balance</p>
-				<p className="mt-1 font-bold font-display text-4xl tracking-tight">
-					{BALANCE}
+		<div className="mesh-hero relative overflow-hidden rounded-3xl p-6 text-white shadow-pop sm:p-7">
+			<p className="text-sm text-white/70">Available balance</p>
+			<p className="mt-1 font-bold font-display text-4xl tracking-tight">
+				{money(account.balance)}
+			</p>
+			<p className="mt-4 text-sm text-white/70">
+				{account.linkedMobile
+					? `Linked mobile · ${account.linkedMobile}`
+					: "No phone number linked yet"}
+			</p>
+		</div>
+	);
+}
+
+function TransactionRow({ transaction }: { transaction: Transaction }) {
+	const credit = transaction.amount >= 0;
+	return (
+		<div className="flex items-center justify-between border-ink-100 border-b px-4 py-3 last:border-b-0">
+			<div>
+				<p className="font-medium text-ink-800 text-sm">
+					{transaction.description}
 				</p>
-				<p className="mt-4 text-sm text-white/70">
-					Linked mobile · +91 63599 18237
+				<p className="text-ink-400 text-xs">
+					{DATE_FORMATTER.format(new Date(transaction.date))}
 				</p>
 			</div>
+			<span
+				className={`font-semibold text-sm ${
+					credit ? "text-brand-600" : "text-ink-700"
+				}`}
+			>
+				{credit ? "+" : "−"}
+				{money(Math.abs(transaction.amount))}
+			</span>
+		</div>
+	);
+}
+
+// Wallet identity is always derived from the Better Auth session. No wallet
+// action accepts a mobile number or user id from the browser.
+export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
+	const [account, setAccount] = useState<WalletAccount | null>(null);
+	const [transactions, setTransactions] = useState<Transaction[]>([]);
+	const [page, setPage] = useState(1);
+	const [loading, setLoading] = useState(true);
+	const [submitting, setSubmitting] = useState(false);
+	const [error, setError] = useState("");
+	const [notice, setNotice] = useState("");
+	const [amount, setAmount] = useState("500");
+	const [method, setMethod] = useState<PaymentMethod>("upi");
+
+	const load = useCallback(async () => {
+		setLoading(true);
+		setError("");
+		try {
+			const currentAccount = await getWalletAccount();
+			setAccount(currentAccount);
+			if (variant === "passbook") {
+				const passbook = await getWalletPassbook({
+					data: { page, pageSize: PASSBOOK_PAGE_SIZE },
+				});
+				setTransactions(passbook.transactions);
+			}
+		} catch (cause) {
+			setError(formatError(cause));
+		} finally {
+			setLoading(false);
+		}
+	}, [page, variant]);
+
+	useEffect(() => {
+		load();
+	}, [load]);
+
+	const submitTopUp = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		const topUpAmount = Number(amount);
+		if (!(Number.isFinite(topUpAmount) && topUpAmount >= 10)) {
+			setError("Enter an amount of at least ₹10.");
+			return;
+		}
+		setSubmitting(true);
+		setError("");
+		setNotice("");
+		try {
+			const result = await topUpWallet({
+				data: { amount: topUpAmount, method },
+			});
+			setAccount((current) =>
+				current ? { ...current, balance: result.balance } : current
+			);
+			setNotice(`Added ${money(topUpAmount)} to your wallet.`);
+		} catch (cause) {
+			setError(formatError(cause));
+		} finally {
+			setSubmitting(false);
+		}
+	};
+
+	if (loading) {
+		return <p className="text-ink-600">Loading your wallet…</p>;
+	}
+
+	if (!account) {
+		return (
+			<p className="rounded-xl border border-danger-500/30 bg-danger-500/10 px-4 py-3 text-danger-500 text-sm">
+				{error || "Your wallet is unavailable right now."}
+			</p>
+		);
+	}
+
+	return (
+		<div className="max-w-2xl space-y-6">
+			<WalletBalance account={account} />
 
 			{variant === "account" ? (
-				<div className="grid gap-3 sm:grid-cols-2">
-					<Button size="lg">Add money</Button>
-					<Button size="lg" variant="secondary">
-						Manage KYC
+				<form
+					className="space-y-4 rounded-2xl border border-ink-100 bg-surface p-5 shadow-card"
+					onSubmit={submitTopUp}
+				>
+					<div>
+						<h2 className="font-bold font-display text-ink-900 text-xl">
+							Add money
+						</h2>
+						<p className="mt-1 text-ink-500 text-sm">
+							Payments are securely simulated in this concept build.
+						</p>
+					</div>
+					<Field label="Amount">
+						{(id) => (
+							<Input
+								id={id}
+								min={10}
+								name="amount"
+								onChange={(event) => setAmount(event.target.value)}
+								required
+								step="0.01"
+								type="number"
+								value={amount}
+							/>
+						)}
+					</Field>
+					<Field label="Payment method">
+						{(id) => (
+							<Select
+								id={id}
+								name="method"
+								onChange={(event) =>
+									setMethod(event.target.value as PaymentMethod)
+								}
+								value={method}
+							>
+								<option value="upi">UPI</option>
+								<option value="card">Card</option>
+								<option value="netbanking">Netbanking</option>
+							</Select>
+						)}
+					</Field>
+					<Button
+						className="w-full"
+						disabled={submitting}
+						size="lg"
+						type="submit"
+					>
+						{submitting ? "Adding money…" : "Add money"}
 					</Button>
-				</div>
+				</form>
 			) : (
 				<div className="overflow-hidden rounded-2xl border border-ink-100 bg-surface shadow-card">
-					{TRANSACTIONS.map((txn) => (
-						<div
-							className="flex items-center justify-between border-ink-100 border-b px-4 py-3 last:border-b-0"
-							key={`${txn.date}-${txn.desc}`}
-						>
-							<div>
-								<p className="font-medium text-ink-800 text-sm">{txn.desc}</p>
-								<p className="text-ink-400 text-xs">{txn.date}</p>
-							</div>
-							<span
-								className={`font-semibold text-sm ${
-									txn.amount < 0 ? "text-ink-700" : "text-brand-600"
-								}`}
-							>
-								{txn.amount < 0 ? "−" : "+"}₹{Math.abs(txn.amount)}
-							</span>
-						</div>
-					))}
+					{transactions.length ? (
+						transactions.map((transaction) => (
+							<TransactionRow key={transaction.id} transaction={transaction} />
+						))
+					) : (
+						<p className="px-4 py-8 text-center text-ink-500 text-sm">
+							No wallet transactions yet.
+						</p>
+					)}
 				</div>
 			)}
+
+			{variant === "passbook" ? (
+				<div className="flex justify-between gap-3">
+					<Button
+						disabled={page === 1}
+						onClick={() => setPage((current) => current - 1)}
+						variant="secondary"
+					>
+						Previous
+					</Button>
+					<Button
+						disabled={transactions.length < PASSBOOK_PAGE_SIZE}
+						onClick={() => setPage((current) => current + 1)}
+						variant="secondary"
+					>
+						Next
+					</Button>
+				</div>
+			) : null}
+
+			{error ? (
+				<p className="text-danger-500 text-sm" role="alert">
+					{error}
+				</p>
+			) : null}
+			{notice ? (
+				<p aria-live="polite" className="text-sm text-success-700">
+					{notice}
+				</p>
+			) : null}
 		</div>
 	);
 }

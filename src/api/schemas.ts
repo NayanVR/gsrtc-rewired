@@ -90,7 +90,8 @@ export const Booking = v.object({
 export const WalletAccount = v.object({
 	balance: Rupees,
 	kycStatus: v.picklist(["verified", "pending", "none"]),
-	linkedMobile: Mobile,
+	// Email/password users do not have a phone until task 14 verifies one.
+	linkedMobile: v.optional(Mobile),
 });
 
 export const Transaction = v.object({
@@ -151,7 +152,8 @@ export const JourneyProgress = v.object({
 
 export const User = v.object({
 	id: v.string(),
-	mobile: Mobile,
+	// Email/password accounts exist before a phone number is verified in task 14.
+	mobile: v.optional(Mobile),
 	name: v.string(),
 });
 
@@ -164,7 +166,35 @@ export const PageSection = v.object({
 	paragraphs: v.optional(v.array(v.string())),
 });
 
+export const PageFormField = v.object({
+	full: v.optional(v.boolean()),
+	label: v.string(),
+	name: v.string(),
+	options: v.optional(v.array(v.string())),
+	placeholder: v.optional(v.string()),
+	type: v.optional(
+		v.picklist([
+			"text",
+			"tel",
+			"email",
+			"date",
+			"password",
+			"select",
+			"textarea",
+		])
+	),
+});
+
+export const PageForm = v.object({
+	external: v.optional(v.string()),
+	fields: v.array(PageFormField),
+	intro: v.string(),
+	note: v.optional(v.string()),
+	submit: v.string(),
+});
+
 export const ContentPage = v.object({
+	form: v.optional(PageForm),
 	intro: v.optional(v.string()),
 	sections: v.array(PageSection),
 	slug: v.string(),
@@ -176,6 +206,7 @@ export const Faq = v.object({ answer: v.string(), question: v.string() });
 // ── Inferred TS types (handy for the front-end) ───────────────────────────
 export type Trip = v.InferOutput<typeof Trip>;
 export type Booking = v.InferOutput<typeof Booking>;
+export type Passenger = v.InferOutput<typeof Passenger>;
 export type Seat = v.InferOutput<typeof Seat>;
 export type SeatMap = v.InferOutput<typeof SeatMap>;
 export type WalletAccount = v.InferOutput<typeof WalletAccount>;
@@ -185,3 +216,5 @@ export type VehiclePosition = v.InferOutput<typeof VehiclePosition>;
 export type JourneyProgress = v.InferOutput<typeof JourneyProgress>;
 export type JourneyStop = v.InferOutput<typeof JourneyStop>;
 export type ContentPage = v.InferOutput<typeof ContentPage>;
+export type PageForm = v.InferOutput<typeof PageForm>;
+export type PageFormField = v.InferOutput<typeof PageFormField>;
