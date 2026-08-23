@@ -121,3 +121,14 @@ Biome's linter will catch most issues automatically. Focus your attention on:
 ---
 
 Most formatting and common issues are automatically fixed by Biome. Run `bun x ultracite fix` before committing to ensure compliance.
+
+---
+
+## Commit attribution
+
+For commits created with Codex assistance, append this trailer to the commit
+message:
+
+```
+Assisted-by: OpenAI Codex
+```
