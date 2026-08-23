@@ -12,6 +12,7 @@ import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
 import { Button } from "#/components/ui/button";
 import { formatTime } from "#/data/trips";
+import { formatTrackingAge, isTrackingStale } from "#/lib/tracking-status";
 
 export const Route = createFileRoute("/track")({ component: TrackPage });
 
@@ -140,6 +141,9 @@ function JourneyBoard({
 	onRefresh: () => void;
 }) {
 	const onTime = journey.delayMin <= 0;
+	const stale = isTrackingStale(journey.lastUpdated);
+	const freshness = formatTrackingAge(journey.lastUpdated);
+	const delay = delayLabel(journey.delayMin);
 	const total = journey.stops.length;
 	const departed = journey.stops.filter((s) => s.status === "departed").length;
 	const currentStop = journey.stops.find((s) => s.status === "current");
@@ -160,7 +164,7 @@ function JourneyBoard({
 									: "bg-saffron-50 text-saffron-700"
 							}`}
 						>
-							{delayLabel(journey.delayMin)}
+							{delay}
 						</span>
 					</div>
 					<p className="mt-2 font-bold font-display text-ink-900 text-lg">
@@ -177,6 +181,20 @@ function JourneyBoard({
 					Refresh
 				</Button>
 			</div>
+			<p
+				aria-live="polite"
+				className={`border-y px-5 py-3 text-sm sm:px-6 ${
+					stale
+						? "border-saffron-200 bg-saffron-50 text-saffron-800"
+						: "border-ink-100 bg-canvas text-ink-600"
+				}`}
+				role="status"
+			>
+				{stale
+					? `Tracking data may be out of date — ${freshness}.`
+					: `Tracking data is current — ${freshness}.`}{" "}
+				{delay}.
+			</p>
 
 			{/* Live next-stop banner + overall progress */}
 			{currentStop ? (
@@ -227,7 +245,7 @@ function JourneyBoard({
 			</ol>
 
 			<p className="border-ink-100 border-t px-5 py-3 text-ink-400 text-xs sm:px-6">
-				Last updated {formatTime(journey.lastUpdated)} · times are scheduled
+				Times are scheduled
 			</p>
 		</div>
 	);

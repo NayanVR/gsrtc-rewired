@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "booked_seats_active_trip_seat_unique" ON "booked_seats" USING btree ("trip_id","seat_no") WHERE "booked_seats"."state" IN ('held', 'booked');

@@ -174,6 +174,14 @@ export function MenuIcon(props: IconProps) {
 	);
 }
 
+export function CloseIcon(props: IconProps) {
+	return (
+		<svg {...base(props)}>
+			<path d="m6 6 12 12M18 6 6 18" />
+		</svg>
+	);
+}
+
 export function PhoneIcon(props: IconProps) {
 	return (
 		<svg {...base(props)}>

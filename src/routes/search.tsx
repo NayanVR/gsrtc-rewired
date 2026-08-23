@@ -81,6 +81,7 @@ function departureHour(trip: Trip): number {
 function SearchResults() {
 	const { from, to, date, passengers } = Route.useSearch();
 	const { trips } = Route.useLoaderData();
+	const navigate = Route.useNavigate();
 
 	const [sort, setSort] = useState<SortId>("departure");
 	const [activeType, setActiveType] = useState<BusType | "ALL">("ALL");
@@ -144,6 +145,17 @@ function SearchResults() {
 		});
 	};
 
+	const clearFilters = () => {
+		setActiveType("ALL");
+		setBands(new Set());
+		navigate({
+			search: { date, from, passengers, to },
+			to: "/search",
+		});
+	};
+
+	const hasActiveFilters = activeType !== "ALL" || bands.size > 0;
+
 	return (
 		<>
 			<SiteHeader />
@@ -201,7 +213,12 @@ function SearchResults() {
 						{modifyOpen ? (
 							<div className="mt-4">
 								<SearchForm
-									initial={{ from, to, date, passengers }}
+									initial={{
+										date,
+										from,
+										passengers,
+										to,
+									}}
 									variant="bar"
 								/>
 							</div>
@@ -285,18 +302,15 @@ function SearchResults() {
 								</div>
 							</div>
 
-							{(activeType !== "ALL" || bands.size > 0) && (
+							{hasActiveFilters ? (
 								<button
 									className="mt-4 font-semibold text-saffron-600 text-sm hover:text-saffron-700"
-									onClick={() => {
-										setActiveType("ALL");
-										setBands(new Set());
-									}}
+									onClick={clearFilters}
 									type="button"
 								>
 									Clear all filters
 								</button>
-							)}
+							) : null}
 						</div>
 					</aside>
 

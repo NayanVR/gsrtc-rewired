@@ -1,7 +1,12 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Fragment, useMemo, useState } from "react";
-import { getSeatMap, getTrip } from "#/api/fns";
-import type { Seat, Trip } from "#/api/schemas";
+import { createBooking, getSeatMap, getTrip, holdSeats } from "#/api/fns";
+import type {
+	Passenger as ApiPassenger,
+	Booking,
+	Seat,
+	Trip,
+} from "#/api/schemas";
 import {
 	ArrowRightIcon,
 	CheckIcon,
@@ -58,10 +63,43 @@ const SEAT_LEGEND = [
 	{ className: "border-pink-400 bg-pink-100", label: "Ladies" },
 ] as const;
 
-interface Passenger {
+type PassengerGender = ApiPassenger["gender"];
+
+interface PassengerForm {
 	age: string;
-	gender: string;
+	gender: PassengerGender;
 	name: string;
+}
+
+function isPassengerGender(value: string): value is PassengerGender {
+	return value === "male" || value === "female" || value === "other";
+}
+
+function toBookingPassengers(
+	seatNos: string[],
+	people: Record<string, PassengerForm>
+): ApiPassenger[] | null {
+	const passengers: ApiPassenger[] = [];
+	for (const seatNo of seatNos) {
+		const person = people[seatNo];
+		const age = Number(person?.age);
+		if (
+			!person ||
+			person.name.trim().length < 2 ||
+			!Number.isInteger(age) ||
+			age < 0 ||
+			age > 120
+		) {
+			return null;
+		}
+		passengers.push({
+			age,
+			gender: person.gender,
+			name: person.name.trim(),
+			seatNo,
+		});
+	}
+	return passengers;
 }
 
 function isSelectable(seat: Seat): boolean {
@@ -76,7 +114,12 @@ function BookPage() {
 	const [email, setEmail] = useState("");
 	const [mobile, setMobile] = useState("");
 	const [journalist, setJournalist] = useState(false);
-	const [people, setPeople] = useState<Record<string, Passenger>>({});
+	const [people, setPeople] = useState<Record<string, PassengerForm>>({});
+	const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(
+		null
+	);
+	const [bookingError, setBookingError] = useState<string | null>(null);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const toggleSeat = (seat: Seat) => {
 		if (!isSelectable(seat)) {
@@ -93,11 +136,11 @@ function BookPage() {
 		});
 	};
 
-	const setPerson = (seatNo: string, patch: Partial<Passenger>) => {
+	const setPerson = (seatNo: string, patch: Partial<PassengerForm>) => {
 		setPeople((current) => {
 			const existing = current[seatNo] ?? {
 				age: "",
-				gender: "Male",
+				gender: "male",
 				name: "",
 			};
 			return { ...current, [seatNo]: { ...existing, ...patch } };
@@ -109,8 +152,40 @@ function BookPage() {
 		.reduce((sum, seat) => sum + seat.fare, 0);
 	const fees = selected.length * SERVICE_FEE;
 	const total = seatFares + fees;
+	const bookingPassengers = toBookingPassengers(selected, people);
 	const canProceed =
-		selected.length === passengers && email !== "" && mobile !== "";
+		selected.length === passengers &&
+		email !== "" &&
+		mobile !== "" &&
+		bookingPassengers !== null;
+
+	const submitBooking = async () => {
+		if (!bookingPassengers) {
+			return;
+		}
+		setBookingError(null);
+		setIsSubmitting(true);
+		try {
+			const hold = await holdSeats({
+				data: { seatNos: selected, tripId: trip.id },
+			});
+			const booking = await createBooking({
+				data: {
+					contact: { email, mobile },
+					holdId: hold.holdId,
+					passengers: bookingPassengers,
+					tripId: trip.id,
+				},
+			});
+			setConfirmedBooking(booking);
+		} catch {
+			setBookingError(
+				"We could not confirm this booking. Refresh the seats and try again."
+			);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
 
 	return (
 		<>
@@ -208,13 +283,15 @@ function BookPage() {
 													aria-label={`Gender for seat ${seatNo}`}
 													className="rounded-lg border border-ink-200 bg-surface px-3 py-2 text-ink-900 text-sm outline-none focus-visible:border-saffron-400"
 													onChange={(e) =>
-														setPerson(seatNo, { gender: e.target.value })
+														isPassengerGender(e.target.value)
+															? setPerson(seatNo, { gender: e.target.value })
+															: undefined
 													}
-													value={person?.gender ?? "Male"}
+													value={person?.gender ?? "male"}
 												>
-													<option>Male</option>
-													<option>Female</option>
-													<option>Other</option>
+													<option value="male">Male</option>
+													<option value="female">Female</option>
+													<option value="other">Other</option>
 												</select>
 											</div>
 										);
@@ -280,14 +357,35 @@ function BookPage() {
 								</div>
 							) : null}
 
-							<button
-								className="gradient-surface mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold text-white shadow-sm transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-								disabled={!canProceed}
-								type="button"
-							>
-								Book & pay
-								{canProceed ? <ArrowRightIcon height={18} width={18} /> : null}
-							</button>
+							{confirmedBooking ? (
+								<div
+									aria-live="polite"
+									className="mt-5 rounded-xl bg-success-50 px-4 py-3 text-sm text-success-700"
+								>
+									Booking confirmed. PNR:{" "}
+									<span className="font-semibold">{confirmedBooking.pnr}</span>
+								</div>
+							) : (
+								<button
+									className="gradient-surface mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold text-white shadow-sm transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+									disabled={!canProceed || isSubmitting}
+									onClick={submitBooking}
+									type="button"
+								>
+									{isSubmitting ? "Confirming…" : "Book & pay"}
+									{canProceed && !isSubmitting ? (
+										<ArrowRightIcon height={18} width={18} />
+									) : null}
+								</button>
+							)}
+							{bookingError ? (
+								<p
+									aria-live="assertive"
+									className="mt-3 text-error-600 text-sm"
+								>
+									{bookingError}
+								</p>
+							) : null}
 
 							<div className="mt-4 space-y-2 text-ink-500 text-xs">
 								<p className="flex items-start gap-1.5">

@@ -4,6 +4,7 @@ import { BrandMark } from "#/components/brand-mark";
 import {
 	BellIcon,
 	ChevronDownIcon,
+	CloseIcon,
 	GlobeIcon,
 	MailIcon,
 	MenuIcon,
@@ -12,10 +13,11 @@ import {
 } from "#/components/icons";
 import { SiteSearch } from "#/components/site-search";
 import { NAV, type NavGroup, slugify } from "#/data/site-nav";
-import { LANGUAGES, useLanguage } from "#/lib/i18n";
+import { LANGUAGES, useLanguage, useTranslation } from "#/lib/i18n";
 
 export function SiteHeader() {
 	const [menuOpen, setMenuOpen] = useState(false);
+	const { t } = useTranslation();
 
 	return (
 		<header className="sticky top-0 z-40 bg-surface/85 backdrop-blur-md">
@@ -27,7 +29,7 @@ export function SiteHeader() {
 						<BrandMark className="shrink-0" size={46} />
 						<span className="leading-tight">
 							<span className="block font-bold font-display text-base text-ink-900 tracking-tight sm:text-lg">
-								Gujarat State Road Transport
+								{t("Gujarat State Road Transport")}
 							</span>
 							<span className="block text-ink-500 text-xs">
 								ગુજરાત રાજ્ય માર્ગ વાહન વ્યવહાર નિગમ
@@ -35,21 +37,25 @@ export function SiteHeader() {
 						</span>
 					</Link>
 
-					<div className="flex flex-1 justify-center">
-						<div className="w-full max-w-md">
+					<div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
+						<div className="hidden w-full max-w-md sm:block">
 							<SiteSearch />
 						</div>
-					</div>
 
-					<button
-						aria-expanded={menuOpen}
-						aria-label="Toggle navigation menu"
-						className="shrink-0 rounded-full border border-ink-200 p-2 text-ink-700 transition hover:border-saffron-300 hover:text-saffron-700"
-						onClick={() => setMenuOpen((value) => !value)}
-						type="button"
-					>
-						<MenuIcon />
-					</button>
+						<button
+							aria-expanded={menuOpen}
+							aria-label={
+								menuOpen
+									? t("Close navigation menu")
+									: t("Open navigation menu")
+							}
+							className="shrink-0 rounded-full border border-ink-200 p-2 text-ink-700 transition hover:border-saffron-300 hover:text-saffron-700"
+							onClick={() => setMenuOpen((value) => !value)}
+							type="button"
+						>
+							{menuOpen ? <CloseIcon /> : <MenuIcon />}
+						</button>
+					</div>
 				</div>
 			</div>
 
@@ -59,6 +65,7 @@ export function SiteHeader() {
 }
 
 function UtilityStrip() {
+	const { t } = useTranslation();
 	return (
 		<div className="border-ink-100 border-b bg-canvas-2/80">
 			<div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-5 gap-y-1 px-4 py-1.5 text-xs sm:px-6">
@@ -90,11 +97,18 @@ function UtilityStrip() {
 				<div className="flex flex-1 items-center justify-end gap-x-4 gap-y-1 text-ink-600">
 					<Link
 						className="flex items-center gap-1 hover:text-brand-600"
+						to="/login"
+					>
+						<UserIcon height={13} width={13} />
+						{t("Passenger Login")}
+					</Link>
+					<Link
+						className="flex items-center gap-1 hover:text-brand-600"
 						params={{ slug: "gsrtc-agent-login" }}
 						to="/p/$slug"
 					>
 						<UserIcon height={13} width={13} />
-						GSRTC Login
+						{t("GSRTC Login")}
 					</Link>
 					<Link
 						className="flex items-center gap-1 hover:text-brand-600"
@@ -102,7 +116,7 @@ function UtilityStrip() {
 						to="/p/$slug"
 					>
 						<UserIcon height={13} width={13} />
-						Bus Pass Login
+						{t("Bus Pass Login")}
 					</Link>
 					<Link
 						className="flex items-center gap-1 font-semibold text-saffron-600 hover:text-saffron-700"
@@ -110,7 +124,7 @@ function UtilityStrip() {
 						to="/p/$slug"
 					>
 						<BellIcon height={13} width={13} />
-						Alert
+						{t("Alert")}
 					</Link>
 					<LanguageMenu />
 				</div>
@@ -121,6 +135,7 @@ function UtilityStrip() {
 
 function LanguageMenu() {
 	const { lang, setLang } = useLanguage();
+	const { t } = useTranslation();
 	const [open, setOpen] = useState(false);
 	const current = LANGUAGES.find((item) => item.code === lang) ?? LANGUAGES[0];
 
@@ -128,7 +143,7 @@ function LanguageMenu() {
 		<div className="relative" data-no-translate>
 			<button
 				aria-expanded={open}
-				aria-label="Change language"
+				aria-label={t("Change language")}
 				className="flex items-center gap-1 hover:text-brand-600"
 				onClick={() => setOpen((value) => !value)}
 				type="button"
@@ -166,8 +181,8 @@ function LanguageMenu() {
 // bar. Groups flow into columns so it stays compact on wider screens.
 function NavMenu({ onNavigate }: { onNavigate: () => void }) {
 	return (
-		<nav className="border-ink-100 border-b bg-surface">
-			<div className="mx-auto grid max-w-6xl gap-x-6 gap-y-1 px-4 py-3 sm:grid-cols-2 sm:px-6 lg:grid-cols-3">
+		<nav className="absolute inset-x-0 top-full z-50 px-3 pt-3 sm:px-6">
+			<div className="mx-auto grid max-w-6xl gap-x-6 gap-y-1 rounded-2xl border border-ink-100 bg-surface p-3 shadow-pop sm:grid-cols-2 lg:grid-cols-3">
 				{NAV.map((group) => (
 					<MobileNavItem
 						group={group}
@@ -191,6 +206,7 @@ function MobileNavItem({
 	onNavigate: () => void;
 }) {
 	const [open, setOpen] = useState(false);
+	const { t } = useTranslation();
 
 	if (!group.children) {
 		return (
@@ -200,7 +216,7 @@ function MobileNavItem({
 				params={{ slug: slugify(group.label) }}
 				to="/p/$slug"
 			>
-				{group.label}
+				{t(group.label)}
 			</Link>
 		);
 	}
@@ -213,7 +229,7 @@ function MobileNavItem({
 				onClick={() => setOpen((value) => !value)}
 				type="button"
 			>
-				{group.label}
+				{t(group.label)}
 				<ChevronDownIcon height={16} width={16} />
 			</button>
 			{open ? (
@@ -226,7 +242,7 @@ function MobileNavItem({
 							params={{ slug: slugify(label) }}
 							to="/p/$slug"
 						>
-							{label}
+							{t(label)}
 						</Link>
 					))}
 				</div>

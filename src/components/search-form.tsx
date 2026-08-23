@@ -13,6 +13,7 @@ import {
 	SEARCH_CONTROL_CLASS,
 	SearchField,
 } from "#/components/ui/search-field";
+import { useTranslation } from "#/lib/i18n";
 
 const MAX_PASSENGERS = 6;
 
@@ -30,7 +31,12 @@ function todayIso(): string {
 }
 
 interface SearchFormProps {
-	initial?: { from?: string; to?: string; date?: string; passengers?: number };
+	initial?: {
+		date?: string;
+		from?: string;
+		passengers?: number;
+		to?: string;
+	};
 	showTabs?: boolean;
 	variant?: "hero" | "bar";
 }
@@ -41,6 +47,7 @@ export function SearchForm({
 	initial,
 }: SearchFormProps) {
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 	const fromId = useId();
 	const toId = useId();
 	const dateId = useId();
@@ -66,7 +73,15 @@ export function SearchForm({
 
 	const submit = (event: FormEvent) => {
 		event.preventDefault();
-		navigate({ search: { date, from, passengers, to }, to: "/search" });
+		navigate({
+			search: {
+				date,
+				from,
+				passengers,
+				to,
+			},
+			to: "/search",
+		});
 	};
 
 	const isBar = variant === "bar";
@@ -94,7 +109,7 @@ export function SearchForm({
 								onClick={() => setTab(label)}
 								type="button"
 							>
-								{label}
+								{t(label)}
 								{active ? (
 									<span className="gradient-surface absolute inset-x-3 bottom-0 h-0.5 rounded-full" />
 								) : null}
@@ -107,32 +122,32 @@ export function SearchForm({
 			<form className={isBar ? "" : "bg-canvas p-4 sm:p-5"} onSubmit={submit}>
 				<div className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
 					<div className="relative grid gap-3 sm:grid-cols-2 md:col-span-2">
-						<SearchField icon={<PinIcon />} id={fromId} label="Source">
+						<SearchField icon={<PinIcon />} id={fromId} label={t("Source")}>
 							<input
 								autoComplete="off"
 								className={`${SEARCH_CONTROL_CLASS} appearance-none`}
 								id={fromId}
 								list={listId}
 								onChange={(event) => setFrom(event.target.value)}
-								placeholder="Origin city"
+								placeholder={t("Origin city")}
 								value={from}
 							/>
 						</SearchField>
 
-						<SearchField icon={<PinIcon />} id={toId} label="Destination">
+						<SearchField icon={<PinIcon />} id={toId} label={t("Destination")}>
 							<input
 								autoComplete="off"
 								className={`${SEARCH_CONTROL_CLASS} appearance-none`}
 								id={toId}
 								list={listId}
 								onChange={(event) => setTo(event.target.value)}
-								placeholder="Destination city"
+								placeholder={t("Destination city")}
 								value={to}
 							/>
 						</SearchField>
 
 						<button
-							aria-label="Swap source and destination"
+							aria-label={t("Swap source and destination")}
 							className="absolute top-1/2 left-1/2 hidden h-9 w-9 translate-x-[-50%] -translate-y-1/2 place-items-center rounded-full border border-ink-200 bg-surface text-saffron-600 shadow-sm transition-transform duration-300 hover:rotate-180 hover:border-saffron-300 active:scale-90 motion-reduce:hover:rotate-0 sm:grid"
 							onClick={swap}
 							type="button"
@@ -144,7 +159,7 @@ export function SearchForm({
 					<SearchField
 						icon={<CalendarIcon />}
 						id={dateId}
-						label="Date of journey"
+						label={t("Date of journey")}
 					>
 						<input
 							className={`${SEARCH_CONTROL_CLASS} appearance-none [&::-webkit-calendar-picker-indicator]:hidden`}
@@ -158,7 +173,7 @@ export function SearchForm({
 					</SearchField>
 
 					<div className="flex gap-3">
-						<SearchField icon={<UsersIcon />} id={paxId} label="Seats">
+						<SearchField icon={<UsersIcon />} id={paxId} label={t("Seats")}>
 							<div className="relative">
 								<select
 									className={`${SEARCH_CONTROL_CLASS} appearance-none pr-6`}
@@ -186,7 +201,7 @@ export function SearchForm({
 						</SearchField>
 
 						<Button className="shrink-0 px-6" size="lg" type="submit">
-							Search
+							{t("Search")}
 						</Button>
 					</div>
 				</div>
@@ -198,7 +213,7 @@ export function SearchForm({
 						onChange={(event) => setSingleLady(event.target.checked)}
 						type="checkbox"
 					/>
-					Single Lady
+					{t("Single Lady")}
 				</label>
 
 				<datalist id={listId}>

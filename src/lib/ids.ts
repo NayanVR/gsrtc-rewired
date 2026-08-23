@@ -19,6 +19,14 @@ export function generateApplicationNo(): string {
 	return `PASS${randomCode(7)}`;
 }
 
+export function generateAgentApplicationNo(): string {
+	return `AGAPP${randomCode(7)}`;
+}
+
+export function generateAgentCode(): string {
+	return `AGT${randomCode(7)}`;
+}
+
 export function generateRefundRef(): string {
 	return `RF${randomCode(8)}`;
 }
