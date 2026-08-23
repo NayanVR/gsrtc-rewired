@@ -10,10 +10,23 @@
 
 ## Why this happens in the current architecture
 
-The URL structure itself is a clue: `/OPRSPhonepe` exists as its own module
-alongside the Paytm integration referenced in reviews, meaning **each
-payment gateway is its own bespoke integration**, not a shared abstraction
-behind one interface. That structural choice explains every symptom:
+The URL structure is the clue: `/OPRSPhonepe` is a separately-deployed web
+application — `/OPRSPhonepe/preGatewayTransactionStatus.do` responds with its
+own `JSESSIONID; Path=/OPRSPhonepe/` — sitting alongside the booking modules
+rather than inside them. A payment gateway that gets its own deployment and
+its own session scope is a bespoke integration, not an adapter behind a
+shared interface. And because that cookie is path-scoped, the booking
+module's session is *not* carried into the payment module's requests:
+whatever ties a payment back to a booking has to be re-established
+explicitly at the boundary.
+
+(On "only Paytm": a PhonePe module plainly exists. Users may be seeing Paytm
+as the only option *offered at checkout*, with `/OPRSPhonepe` dormant,
+backend-only, or limited to certain flows. Which of those is true isn't
+determinable from outside.)
+
+Everything below is inference from those observable facts plus the public
+complaint patterns — not from GSRTC's source:
 
 - **No idempotency key tying a payment attempt to a booking attempt.** If
   "charge the card" and "create the booking record" are two separate calls
@@ -24,18 +37,20 @@ behind one interface. That structural choice explains every symptom:
   completed" reports). There's no way to safely retry without risking a
   second charge, hence double debits.
 - **Confirmation likely depends on a synchronous callback from the gateway
-  reaching the JSP servlet.** On a slow or dropped network, the user sees
+  reaching the booking module.** On a slow or dropped network, the user sees
   "freeze" or a blank payment-options screen while the server-side state
-  either never updates or updates without the client ever finding out.
+  either never updates or updates without the client ever finding out. The
+  session split between the two modules gives this failure somewhere to
+  hide.
 - **Adding a new payment method means writing a new module** (mirroring
-  `OPRSPhonepe`), which is exactly why GPay/UPI-intent isn't offered
+  `OPRSPhonepe`), which is a plausible reason GPay/UPI-intent isn't offered
   generically — it isn't a config change, it's new bespoke integration
   work, so it doesn't happen until someone prioritizes it.
-- **Refund-on-failure is a manual/offline reconciliation**, not a real-time
-  reversal, because there's no shared transaction ledger the web layer and
-  the payment layer both trust — hence the 7–21 day window even for
-  "payment succeeded, booking failed" cases that should, in principle, be
-  instantly reversible.
+- **Refund-on-failure is likely a manual/offline reconciliation**, not a
+  real-time reversal, because there's no shared transaction ledger the web
+  layer and the payment layer both trust — which would explain the 7–21 day
+  window even for "payment succeeded, booking failed" cases that should, in
+  principle, be instantly reversible.
 
 ## Plan of action
 
@@ -63,3 +78,13 @@ behind one interface. That structural choice explains every symptom:
 - Because a hold has a TTL (`seat_holds.expiresAt`), a payment that never
   completes doesn't need a manual cleanup process — the seat frees itself,
   removing the "phantom booked seat" class of bug entirely.
+
+## Sources
+
+Observable facts (Verified 2026-08-22.)
+
+- <https://gsrtc.in/OPRSPhonepe/preGatewayTransactionStatus.do> — 200, sets
+  `JSESSIONID; Path=/OPRSPhonepe/`, confirming a separate webapp context.
+
+Complaint patterns: public app-store reviews and citizen complaint forums;
+not individually cited, and not independently verified.
