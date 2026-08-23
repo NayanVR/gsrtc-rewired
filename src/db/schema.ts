@@ -1,3 +1,4 @@
+import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
 	index,
@@ -7,38 +8,132 @@ import {
 	pgTable,
 	text,
 	timestamp,
+	uniqueIndex,
 } from "drizzle-orm/pg-core";
+import type { Passenger } from "#/api/schemas";
 
-// ── Identity ─────────────────────────────────────────────────────────────
-// A user row exists once a mobile number has completed OTP verification.
-// Most domains (tickets, refunds, passes) are looked up by mobile directly
-// and don't require a user row — only wallet is gated behind a real session.
-export const users = pgTable("users", {
-	createdAt: timestamp("created_at", { withTimezone: true })
-		.notNull()
-		.defaultNow(),
-	email: text("email"),
+// ── Identity (Better Auth) ───────────────────────────────────────────────
+// Generated from Better Auth 1.7.1 with the phone-number plugin. Better Auth
+// owns all identity and session state; passenger-facing mobile fields remain
+// deliberately independent so people can book without an account.
+export const user = pgTable("user", {
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	email: text("email").notNull().unique(),
+	emailVerified: boolean("email_verified").default(false).notNull(),
 	id: text("id").primaryKey(),
-	mobile: text("mobile").notNull().unique(),
-	name: text("name").notNull().default("Guest"),
+	image: text("image"),
+	name: text("name").notNull(),
+	phoneNumber: text("phone_number").unique(),
+	phoneNumberVerified: boolean("phone_number_verified"),
+	updatedAt: timestamp("updated_at")
+		.defaultNow()
+		.$onUpdate(() => new Date())
+		.notNull(),
 });
 
-export const otpCodes = pgTable(
-	"otp_codes",
+export const session = pgTable(
+	"session",
 	{
-		attempts: integer("attempts").notNull().default(0),
-		codeHash: text("code_hash").notNull(),
-		consumedAt: timestamp("consumed_at", { withTimezone: true }),
-		createdAt: timestamp("created_at", { withTimezone: true })
-			.notNull()
-			.defaultNow(),
-		expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		expiresAt: timestamp("expires_at").notNull(),
 		id: text("id").primaryKey(),
-		mobile: text("mobile").notNull(),
-		requestId: text("request_id").notNull().unique(),
+		ipAddress: text("ip_address"),
+		token: text("token").notNull().unique(),
+		updatedAt: timestamp("updated_at")
+			.$onUpdate(() => new Date())
+			.notNull(),
+		userAgent: text("user_agent"),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
 	},
-	(table) => [index("otp_codes_mobile_idx").on(table.mobile)]
+	(table) => [index("session_userId_idx").on(table.userId)]
 );
+
+export const account = pgTable(
+	"account",
+	{
+		accessToken: text("access_token"),
+		accessTokenExpiresAt: timestamp("access_token_expires_at"),
+		accountId: text("account_id").notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		id: text("id").primaryKey(),
+		idToken: text("id_token"),
+		issuer: text("issuer").notNull(),
+		password: text("password"),
+		providerId: text("provider_id").notNull(),
+		refreshToken: text("refresh_token"),
+		refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+		scope: text("scope"),
+		updatedAt: timestamp("updated_at")
+			.$onUpdate(() => new Date())
+			.notNull(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+	},
+	(table) => [
+		uniqueIndex("account_issuer_accountId_uidx").on(
+			table.issuer,
+			table.accountId
+		),
+		index("account_userId_idx").on(table.userId),
+	]
+);
+
+export const verification = pgTable(
+	"verification",
+	{
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		expiresAt: timestamp("expires_at").notNull(),
+		id: text("id").primaryKey(),
+		identifier: text("identifier").notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => new Date())
+			.notNull(),
+		value: text("value").notNull(),
+	},
+	(table) => [index("verification_identifier_idx").on(table.identifier)]
+);
+
+// ── Content configuration ───────────────────────────────────────────────
+// Transactional page forms are editable content. Their fields stay JSONB so a
+// page author can add, reorder, or relabel controls without a schema migration.
+export interface StoredPageFormField {
+	full?: boolean;
+	label: string;
+	name: string;
+	options?: string[];
+	placeholder?: string;
+	type?: "text" | "tel" | "email" | "date" | "password" | "select" | "textarea";
+}
+
+export const pageForms = pgTable("page_forms", {
+	external: text("external"),
+	fields: jsonb("fields").$type<StoredPageFormField[]>().notNull(),
+	intro: text("intro").notNull(),
+	note: text("note"),
+	slug: text("slug").primaryKey(),
+	submit: text("submit").notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true })
+		.defaultNow()
+		.$onUpdate(() => new Date())
+		.notNull(),
+});
+
+export const userRelations = relations(user, ({ many }) => ({
+	accounts: many(account),
+	sessions: many(session),
+}));
+
+export const sessionRelations = relations(session, ({ one }) => ({
+	user: one(user, { fields: [session.userId], references: [user.id] }),
+}));
+
+export const accountRelations = relations(account, ({ one }) => ({
+	user: one(user, { fields: [account.userId], references: [user.id] }),
+}));
 
 // ── Bookings ─────────────────────────────────────────────────────────────
 // Trips themselves stay synthetic (generated from the search leg, mirroring
@@ -71,6 +166,9 @@ export const bookedSeats = pgTable(
 		tripId: text("trip_id").notNull(),
 	},
 	(table) => [
+		uniqueIndex("booked_seats_active_trip_seat_unique")
+			.on(table.tripId, table.seatNo)
+			.where(sql`${table.state} IN ('held', 'booked')`),
 		index("booked_seats_trip_idx").on(table.tripId),
 		index("booked_seats_pnr_idx").on(table.pnr),
 	]
@@ -87,9 +185,7 @@ export const bookings = pgTable(
 			.defaultNow(),
 		from: text("from").notNull(),
 		journeyDate: text("journey_date").notNull(),
-		passengers: jsonb("passengers")
-			.$type<{ name: string; age: number; gender: string; seatNo: string }[]>()
-			.notNull(),
+		passengers: jsonb("passengers").$type<Passenger[]>().notNull(),
 		pnr: text("pnr").primaryKey(),
 		seatNos: jsonb("seat_nos").$type<string[]>().notNull(),
 		singleLady: boolean("single_lady").notNull().default(false),
@@ -114,7 +210,7 @@ export const walletAccounts = pgTable("wallet_accounts", {
 		.default("none"),
 	userId: text("user_id")
 		.primaryKey()
-		.references(() => users.id),
+		.references(() => user.id),
 });
 
 export const walletTransactions = pgTable(
@@ -129,9 +225,57 @@ export const walletTransactions = pgTable(
 		type: text("type", { enum: ["credit", "debit"] }).notNull(),
 		userId: text("user_id")
 			.notNull()
-			.references(() => users.id),
+			.references(() => user.id),
 	},
 	(table) => [index("wallet_transactions_user_idx").on(table.userId)]
+);
+
+// ── Agents ───────────────────────────────────────────────────────────────
+// Agent identity stays separate from Better Auth users: an agent application
+// can exist before approval, while Better Auth remains the only session store.
+export const agents = pgTable(
+	"agents",
+	{
+		agentCode: text("agent_code").primaryKey(),
+		allottedRoutes: jsonb("allotted_routes").$type<string[]>().notNull(),
+		allottedSeats: integer("allotted_seats").notNull().default(0),
+		applicationNo: text("application_no").notNull().unique(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		division: text("division").notNull(),
+		email: text("email").notNull(),
+		mobile: text("mobile").notNull(),
+		name: text("name").notNull(),
+		pan: text("pan").notNull(),
+		status: text("status", { enum: ["applied", "active", "rejected"] })
+			.notNull()
+			.default("applied"),
+	},
+	(table) => [
+		index("agents_application_no_idx").on(table.applicationNo),
+		index("agents_mobile_idx").on(table.mobile),
+	]
+);
+
+export const agentETopTransactions = pgTable(
+	"agent_etop_transactions",
+	{
+		agentCode: text("agent_code")
+			.notNull()
+			.references(() => agents.agentCode),
+		amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		status: text("status", {
+			enum: ["success", "pending", "failed"],
+		}).notNull(),
+		transactionId: text("transaction_id").primaryKey(),
+	},
+	(table) => [
+		index("agent_etop_transactions_agent_code_idx").on(table.agentCode),
+	]
 );
 
 // ── Passes ───────────────────────────────────────────────────────────────

@@ -1,10 +1,11 @@
-import { type FormEvent, useRef } from "react";
+import { type FormEvent, useRef, useState } from "react";
+import { applyPass, getRefundStatus, raiseRefundComplaint } from "#/api/fns";
+import type { PageForm, PageFormField } from "#/api/schemas";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Select } from "#/components/ui/select";
 import { Textarea } from "#/components/ui/textarea";
-import type { FormField, PageForm } from "#/data/page-forms";
 
 // Renders a designed (concept) form for a transactional GSRTC page. When the
 // flow isn't owned by this build, `external` (the page's live OPRS URL) turns
@@ -12,12 +13,73 @@ import type { FormField, PageForm } from "#/data/page-forms";
 export function ActionForm({
 	form,
 	external,
+	formId,
 }: {
 	form: PageForm;
 	external?: string;
+	formId?: string;
 }) {
-	const submit = (event: FormEvent) => event.preventDefault();
-	const portalUrl = form.external ?? external;
+	const [feedback, setFeedback] = useState<string | null>(null);
+	const isRefundForm =
+		formId === "refund-complaint" || formId === "refund-transaction-enquiry";
+	const isPassForm = formId === "new-commuter-bus-pass";
+	const isInternalForm = isPassForm || isRefundForm;
+	const portalUrl = isInternalForm ? undefined : (form.external ?? external);
+	const submit = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		if (!isInternalForm) {
+			return;
+		}
+		setFeedback(null);
+		const values = new FormData(event.currentTarget);
+		try {
+			if (isPassForm) {
+				const type = formValue(values, "type");
+				if (!isPassType(type)) {
+					setFeedback("Choose a pass type before applying.");
+					return;
+				}
+				const pass = await applyPass({
+					data: {
+						from: formValue(values, "from"),
+						mobile: formValue(values, "mobile"),
+						name: formValue(values, "name"),
+						to: formValue(values, "to"),
+						type,
+					},
+				});
+				setFeedback(
+					`Pass application submitted. Reference: ${pass.applicationNo}`
+				);
+				return;
+			}
+			if (formId === "refund-transaction-enquiry") {
+				const refund = await getRefundStatus({
+					data: {
+						mobile: formValue(values, "mobile"),
+						ref: formValue(values, "txn"),
+					},
+				});
+				setFeedback(
+					`Refund ${refund.ref} is ${refund.status}. Amount: ₹${refund.amount.toFixed(2)}${refund.expectedBy ? ` · expected by ${refund.expectedBy}` : ""}`
+				);
+				return;
+			}
+			const complaint = await raiseRefundComplaint({
+				data: {
+					email: formValue(values, "email"),
+					message: formValue(values, "details"),
+					mobile: formValue(values, "mobile"),
+					ticketNo: formValue(values, "ticket"),
+				},
+			});
+			setFeedback(`Complaint submitted. Reference: ${complaint.complaintId}`);
+		} catch {
+			setFeedback(
+				"We could not process this request. Check the details and try again."
+			);
+		}
+	};
 
 	return (
 		<div className="max-w-2xl">
@@ -50,9 +112,25 @@ export function ActionForm({
 				{form.note ? (
 					<p className="mt-4 text-ink-500 text-sm">{form.note}</p>
 				) : null}
+				{feedback ? (
+					<p aria-live="polite" className="mt-4 text-ink-700 text-sm">
+						{feedback}
+					</p>
+				) : null}
 			</form>
 		</div>
 	);
+}
+
+function formValue(values: FormData, name: string): string {
+	const value = values.get(name);
+	return typeof value === "string" ? value : "";
+}
+
+function isPassType(
+	value: string
+): value is "Daily" | "Monthly" | "Quarterly" | "Student" {
+	return ["Daily", "Monthly", "Quarterly", "Student"].includes(value);
 }
 
 // The concept build doesn't own these transactional flows yet, so the button
@@ -114,13 +192,15 @@ function LeaveToPortal({ label, url }: { label: string; url: string }) {
 	);
 }
 
-function Control({ field, id }: { field: FormField; id: string }) {
+function Control({ field, id }: { field: PageFormField; id: string }) {
 	if (field.type === "textarea") {
-		return <Textarea id={id} placeholder={field.placeholder} />;
+		return (
+			<Textarea id={id} name={field.name} placeholder={field.placeholder} />
+		);
 	}
 	if (field.type === "select") {
 		return (
-			<Select defaultValue="" id={id}>
+			<Select defaultValue="" id={id} name={field.name}>
 				<option disabled value="">
 					Select…
 				</option>
@@ -135,6 +215,7 @@ function Control({ field, id }: { field: FormField; id: string }) {
 	return (
 		<Input
 			id={id}
+			name={field.name}
 			placeholder={field.placeholder}
 			type={field.type ?? "text"}
 		/>

@@ -1,114 +1,25 @@
 import { implement } from "@orpc/server";
+import { eq } from "drizzle-orm";
 import { appContract } from "#/api/contract";
+import { agentHandlers } from "#/api/handlers/agents";
+import { authHandlers } from "#/api/handlers/auth";
+import { bookingHandlers } from "#/api/handlers/booking";
+import { passHandlers } from "#/api/handlers/passes";
+import { refundHandlers } from "#/api/handlers/refunds";
+import { ticketHandlers } from "#/api/handlers/tickets";
+import { walletHandlers } from "#/api/handlers/wallet";
+import { BUS_TYPES, buildTrip } from "#/api/trips";
 import { PAGE_CONTENT } from "#/data/page-content";
 import { PAGE_TITLES } from "#/data/site-nav";
 import { CITIES } from "#/data/trips";
+import { getDb } from "#/db/client";
+import { pageForms } from "#/db/schema";
 
 // Server-side implementation of the typed contract. Backed by mock data for the
 // concept build — each resolver is where a real OPRS adapter call will slot in.
 // Only the Phase-1 read domains are implemented so far; unimplemented procedures
 // are simply absent from the router and 404 until their phase lands.
 const os = implement(appContract);
-
-// ── Mock trip catalogue ─────────────────────────────────────────────────
-// Trips are generated deterministically from the search leg, and their id
-// encodes the leg so a single trip / its seat map can be rebuilt on the booking
-// screen without any store. `~` is safe: no city name or ISO date contains it.
-const BUS_TYPES = [
-	"Volvo AC Sleeper",
-	"AC Seater",
-	"Sleeper",
-	"Express",
-	"Gurjar Nagari",
-	"Electric",
-] as const;
-
-const HOURS_PER_DAY = 24;
-const MIN_PER_HOUR = 60;
-const FIRST_DEPART_HOUR = 6;
-const HOURS_BETWEEN = 3;
-const BASE_DURATION = 150;
-const BASE_FARE = 147;
-const FARE_STEP = 45;
-const BASE_SEATS = 40;
-const SEATS_STEP = 5;
-const SEAT_COUNT = 40;
-
-interface Leg {
-	date: string;
-	from: string;
-	index: number;
-	to: string;
-}
-
-function parseTripId(tripId: string): Leg | null {
-	const [from, to, date, indexStr] = tripId.split("~");
-	const index = Number(indexStr);
-	if (
-		!(from && to && date) ||
-		Number.isNaN(index) ||
-		index >= BUS_TYPES.length
-	) {
-		return null;
-	}
-	return { date, from, index, to };
-}
-
-function isoAt(date: string, totalMinutes: number): string {
-	const hour = Math.floor(totalMinutes / MIN_PER_HOUR) % HOURS_PER_DAY;
-	const min = totalMinutes % MIN_PER_HOUR;
-	return `${date}T${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}:00+05:30`;
-}
-
-function buildTrip({ from, to, date, index }: Leg) {
-	const departMinutes =
-		(FIRST_DEPART_HOUR + index * HOURS_BETWEEN) * MIN_PER_HOUR + 15;
-	const durationMin = BASE_DURATION + index * 20;
-	return {
-		amenities: ["charging", "water", "cctv"],
-		arrival: isoAt(date, departMinutes + durationMin),
-		busType: BUS_TYPES[index],
-		departure: isoAt(date, departMinutes),
-		durationMin,
-		fareFrom: BASE_FARE + index * FARE_STEP,
-		from,
-		id: `${from}~${to}~${date}~${index}`,
-		seatsAvailable: BASE_SEATS - index * SEATS_STEP,
-		to,
-	};
-}
-
-function buildSeats(tripId: string) {
-	const leg = parseTripId(tripId);
-	const index = leg ? leg.index : 0;
-	const busType = BUS_TYPES[index];
-	const isSleeper = busType.includes("Sleeper");
-	const fare = BASE_FARE + index * FARE_STEP;
-	const seats: {
-		deck: "lower" | "upper";
-		fare: number;
-		kind: "seater" | "sleeper";
-		no: string;
-		status: "available" | "booked" | "ladies" | "held";
-	}[] = [];
-	for (let n = 1; n <= SEAT_COUNT; n += 1) {
-		const hash = (n * 7 + index * 3) % 10;
-		let status: (typeof seats)[number]["status"] = "available";
-		if (hash < 3) {
-			status = "booked";
-		} else if (hash === 3 && n <= 8) {
-			status = "ladies";
-		}
-		seats.push({
-			deck: isSleeper && n > SEAT_COUNT / 2 ? "upper" : "lower",
-			fare,
-			kind: isSleeper ? "sleeper" : "seater",
-			no: String(n),
-			status,
-		});
-	}
-	return seats;
-}
 
 // ── search ────────────────────────────────────────────────────────────────
 const cities = os.search.cities.handler(({ input }) => {
@@ -124,24 +35,10 @@ const trips = os.search.trips.handler(({ input }) => {
 		buildTrip({ date: input.date, from: input.from, index, to: input.to })
 	);
 	const filtered = input.busType
-		? all.filter((t) => t.busType === input.busType)
+		? all.filter((trip) => trip.busType === input.busType)
 		: all;
 	return { trips: filtered };
 });
-
-// ── booking (read side) ─────────────────────────────────────────────────
-const trip = os.booking.trip.handler(({ input, errors }) => {
-	const leg = parseTripId(input.tripId);
-	if (!leg) {
-		throw errors.NOT_FOUND();
-	}
-	return buildTrip(leg);
-});
-
-const seatMap = os.booking.seatMap.handler(({ input }) => ({
-	seats: buildSeats(input.tripId),
-	tripId: input.tripId,
-}));
 
 // ── tracking ────────────────────────────────────────────────────────────
 // A fixed demo corridor. The real adapter would resolve the vehicle's actual
@@ -220,13 +117,27 @@ const progress = os.tracking.progress.handler(({ input }) => {
 });
 
 // ── content ─────────────────────────────────────────────────────────────
-const page = os.content.page.handler(({ input }) => {
+const page = os.content.page.handler(async ({ input }) => {
 	const title = PAGE_TITLES[input.slug];
 	if (!title) {
 		return null;
 	}
 	const content = PAGE_CONTENT[input.slug];
+	const [form] = await getDb()
+		.select()
+		.from(pageForms)
+		.where(eq(pageForms.slug, input.slug))
+		.limit(1);
 	return {
+		form: form
+			? {
+					external: form.external ?? undefined,
+					fields: form.fields,
+					intro: form.intro,
+					note: form.note ?? undefined,
+					submit: form.submit,
+				}
+			: undefined,
 		intro: content?.intro,
 		sections: content?.sections ?? [],
 		slug: input.slug,
@@ -255,8 +166,14 @@ const faqs = os.content.faqs.handler(() => ({
 }));
 
 export const router = {
-	booking: { seatMap, trip },
+	agents: agentHandlers,
+	auth: authHandlers,
+	booking: bookingHandlers,
 	content: { faqs, page },
+	passes: passHandlers,
+	refunds: refundHandlers,
 	search: { cities, trips },
+	tickets: ticketHandlers,
 	tracking: { progress },
+	wallet: walletHandlers,
 };

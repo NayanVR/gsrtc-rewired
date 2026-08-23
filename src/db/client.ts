@@ -1,27 +1,37 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import {
+	account,
+	agentETopTransactions,
+	agents,
 	bookedSeats,
 	bookings,
-	otpCodes,
+	pageForms,
 	passes,
 	refundComplaints,
 	refunds,
 	seatHolds,
-	users,
+	session,
+	user,
+	verification,
 	walletAccounts,
 	walletTransactions,
 } from "#/db/schema";
 
 const schema = {
+	account,
+	agentETopTransactions,
+	agents,
 	bookedSeats,
 	bookings,
-	otpCodes,
+	pageForms,
 	passes,
 	refundComplaints,
 	refunds,
 	seatHolds,
-	users,
+	session,
+	user,
+	verification,
 	walletAccounts,
 	walletTransactions,
 };
@@ -33,7 +43,7 @@ function createDb() {
 	const url = process.env.DATABASE_URL;
 	if (!url) {
 		throw new Error(
-			"DATABASE_URL is not set. Point it at a Postgres instance (Neon, Supabase, or any Postgres) to enable bookings, wallet, tickets, passes and refunds."
+			"DATABASE_URL is not set. Point it at a Postgres instance (Neon, Supabase, or any Postgres) to enable bookings, agents, wallet, tickets, passes and refunds."
 		);
 	}
 	const client = postgres(url, { prepare: false });

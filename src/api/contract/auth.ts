@@ -3,6 +3,10 @@ import { base } from "#/api/contract/base";
 import { Mobile, Session, User } from "#/api/schemas";
 
 export const auth = {
+	// Deliberately unimplemented: Better Auth owns credential sign-in at
+	// /api/auth/sign-in/phone-number. OTP-created accounts have no credential
+	// account, so this frozen mobile/password operation would not serve the
+	// mobile OTP flow. The browser uses Better Auth's client SDK directly.
 	login: base
 		.route({ method: "POST", path: "/auth/login", summary: "Password login" })
 		.input(v.object({ mobile: Mobile, password: v.string() }))
