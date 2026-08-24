@@ -48,16 +48,14 @@ The production stack is Caddy, this Node/Nitro app, and Postgres in one Compose
 project. Caddy is the only service that publishes host ports and obtains the
 HTTPS certificate.
 
-1. Point the public DNS name at the VPS and install Docker Compose and rclone.
+1. Point the public DNS name at the VPS and install Docker Compose.
    In Dokploy, set the values below in the Compose deployment's Environment
    editor. The Compose file injects each value explicitly; it does not use
-   `env_file`.
+ `env_file`.
 2. Set the production `POSTGRES_PASSWORD`, `DATABASE_URL` (with host `db`),
-   `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_DOMAIN`, and
-   `BACKUP_RCLONE_REMOTE`. `VITE_SENTRY_DSN` is optional and is passed at image
-   build time only.
-3. Configure the rclone remote named by `BACKUP_RCLONE_REMOTE`, then build and
-   start the stack:
+   `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and `APP_DOMAIN`.
+   `VITE_SENTRY_DSN` is optional and is passed at image build time only. Then
+   build and start the stack:
 
    ```bash
    docker compose up -d --build
@@ -65,24 +63,6 @@ HTTPS certificate.
    ```
 
    The `migrate` container must finish with exit code 0 before `app` starts.
-
-4. Schedule the off-box backup every night (adjust the directory for the VPS).
-   Pass `BACKUP_RCLONE_REMOTE` to the scheduled job as an environment variable:
-
-   ```cron
-   0 2 * * * cd /srv/gsrtc-rewired && ./scripts/backup.sh >> /var/log/gsrtc-backup.log 2>&1
-   ```
-
-`scripts/backup.sh` streams a custom-format `pg_dump` directly to the rclone
-remote; it does not leave a database copy on the VPS. Before cutover, rehearse
-a restore into a disposable database:
-
-```bash
-docker compose exec -T db createdb --username=postgres gsrtc_rewired_restore
-rclone cat "$BACKUP_RCLONE_REMOTE/gsrtc-rewired-YYYY-MM-DDTHHMMSSZ.dump" \
-  | docker compose exec -T db pg_restore --exit-on-error --username=postgres --dbname=gsrtc_rewired_restore
-docker compose exec -T db dropdb --username=postgres gsrtc_rewired_restore
-```
 
 The Node build output is `.output`, not `dist`. To run it without Compose:
 
