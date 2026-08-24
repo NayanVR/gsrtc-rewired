@@ -1,9 +1,9 @@
 services:
   db:
     image: postgres:17
-    env_file: .env
     environment:
       POSTGRES_DB: gsrtc_rewired
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_USER: postgres
     healthcheck:
       test: ["CMD-SHELL", "pg_isready --username=$$POSTGRES_USER --dbname=$$POSTGRES_DB"]
@@ -23,7 +23,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
     restart: "no"
 
   app:
@@ -35,8 +36,10 @@ services:
       migrate:
         condition: service_completed_successfully
     environment:
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?BETTER_AUTH_URL is required}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       PORT: "3000"
-    env_file: .env
     restart: unless-stopped
 
   caddy:
@@ -44,7 +47,8 @@ services:
     depends_on:
       app:
         condition: service_started
-    env_file: .env
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?APP_DOMAIN is required}
     ports:
       - "80:80"
       - "443:443"
