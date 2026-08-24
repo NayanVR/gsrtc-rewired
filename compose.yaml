@@ -42,21 +42,7 @@ services:
       PORT: "3000"
     expose:
       - "3000"
-    labels:
-      traefik.docker.network: dokploy-network
-      traefik.enable: "true"
-      traefik.http.routers.gsrtc-rewired.entrypoints: websecure
-      traefik.http.routers.gsrtc-rewired.rule: Host(`${APP_DOMAIN:?APP_DOMAIN is required}`)
-      traefik.http.routers.gsrtc-rewired.tls.certresolver: letsencrypt
-      traefik.http.services.gsrtc-rewired.loadbalancer.server.port: "3000"
-    networks:
-      - default
-      - dokploy-network
     restart: unless-stopped
 
 volumes:
   postgres_data:
-
-networks:
-  dokploy-network:
-    external: true

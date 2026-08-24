@@ -45,15 +45,15 @@ bun --bun run check
 ## Deploy with Dokploy
 
 The production stack is Dokploy's Traefik proxy, this Node/Nitro app, and
-Postgres in one Compose project. Only the app is connected to Dokploy's proxy
-network; Postgres remains private to the Compose project.
+Postgres in one Compose project. The Domains UI connects only the selected app
+to Dokploy's proxy network; Postgres remains private to the Compose project.
 
 1. Point the public DNS name at the VPS and install Docker Compose.
    In Dokploy, set the values below in the Compose deployment's Environment
    editor. The Compose file injects each value explicitly; it does not use
  `env_file`.
 2. Set the production `POSTGRES_PASSWORD`, `DATABASE_URL` (with host `db`),
-   `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and `APP_DOMAIN`.
+   `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL`.
    `VITE_SENTRY_DSN` is optional and is passed at image build time only. Then
    build and start the stack:
 
