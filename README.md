@@ -42,11 +42,11 @@ bun --bun run check
 ```
 
 
-## Deploy on a VPS
+## Deploy with Dokploy
 
-The production stack is Caddy, this Node/Nitro app, and Postgres in one Compose
-project. Caddy is the only service that publishes host ports and obtains the
-HTTPS certificate.
+The production stack is Dokploy's Traefik proxy, this Node/Nitro app, and
+Postgres in one Compose project. Only the app is connected to Dokploy's proxy
+network; Postgres remains private to the Compose project.
 
 1. Point the public DNS name at the VPS and install Docker Compose.
    In Dokploy, set the values below in the Compose deployment's Environment
