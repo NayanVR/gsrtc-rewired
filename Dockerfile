@@ -10,7 +10,7 @@ COPY . .
 # Vite exposes VITE_* values while building. This DSN is intentionally a build
 # argument because setting it on the runtime container has no effect.
 ARG VITE_SENTRY_DSN
-RUN VITE_SENTRY_DSN="$VITE_SENTRY_DSN" bun run build
+RUN NITRO_PRESET=node-server VITE_SENTRY_DSN="$VITE_SENTRY_DSN" bun run build
 
 FROM node:22-slim AS runtime
 
