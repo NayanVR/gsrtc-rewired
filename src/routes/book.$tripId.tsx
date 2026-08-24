@@ -1,12 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { createBooking, getSeatMap, getTrip, holdSeats } from "#/api/fns";
-import type {
-	Passenger as ApiPassenger,
-	Booking,
-	Seat,
-	Trip,
-} from "#/api/schemas";
+import type { Passenger as ApiPassenger, Booking, Seat } from "#/api/schemas";
 import {
 	ArrowRightIcon,
 	CheckIcon,
@@ -16,6 +11,7 @@ import {
 import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
 import { formatDuration, formatFare, formatTime } from "#/data/trips";
+import type { PaymentMethod } from "#/lib/mock-payment";
 
 interface BookSearch {
 	date: string;
@@ -64,6 +60,12 @@ const SEAT_LEGEND = [
 ] as const;
 
 type PassengerGender = ApiPassenger["gender"];
+type BookingStep = "details" | "payment-method" | "payment";
+
+interface SeatHold {
+	expiresAt: string;
+	holdId: string;
+}
 
 interface PassengerForm {
 	age: string;
@@ -106,15 +108,49 @@ function isSelectable(seat: Seat): boolean {
 	return seat.status === "available" || seat.status === "ladies";
 }
 
+function formatHoldCountdown(seconds: number): string {
+	const minutes = Math.floor(seconds / 60);
+	const remainingSeconds = seconds % 60;
+	return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+}
+
+function remainingHoldSeconds(expiresAt: string): number {
+	return Math.max(
+		0,
+		Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 1000)
+	);
+}
+
+function isConflictError(error: unknown): boolean {
+	if (!error || typeof error !== "object") {
+		return false;
+	}
+	return "code" in error && error.code === "CONFLICT";
+}
+
+function refreshSeatMap(
+	tripId: string,
+	setSeatMap: (seats: Seat[]) => void
+): void {
+	getSeatMap({ data: tripId })
+		.then((updatedMap) => setSeatMap(updatedMap.seats))
+		.catch(() => undefined);
+}
+
 function BookPage() {
 	const { trip, seats } = Route.useLoaderData();
 	const { date, passengers } = Route.useSearch();
 
+	const [bookingStep, setBookingStep] = useState<BookingStep>("details");
+	const [seatMap, setSeatMap] = useState(seats);
 	const [selected, setSelected] = useState<string[]>([]);
 	const [email, setEmail] = useState("");
 	const [mobile, setMobile] = useState("");
 	const [journalist, setJournalist] = useState(false);
 	const [people, setPeople] = useState<Record<string, PassengerForm>>({});
+	const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("upi");
+	const [seatHold, setSeatHold] = useState<SeatHold | null>(null);
+	const [remainingSeconds, setRemainingSeconds] = useState(0);
 	const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(
 		null
 	);
@@ -147,7 +183,33 @@ function BookPage() {
 		});
 	};
 
-	const seatFares = seats
+	useEffect(() => {
+		if (!seatHold) {
+			return;
+		}
+
+		const updateCountdown = () => {
+			const seconds = remainingHoldSeconds(seatHold.expiresAt);
+			setRemainingSeconds(seconds);
+			if (seconds !== 0) {
+				return;
+			}
+			setSeatHold(null);
+			setSelected([]);
+			setPeople({});
+			setBookingStep("details");
+			setBookingError(
+				"Your 10-minute seat hold expired. Please choose your seats again."
+			);
+			refreshSeatMap(trip.id, setSeatMap);
+		};
+
+		updateCountdown();
+		const interval = window.setInterval(updateCountdown, 1000);
+		return () => window.clearInterval(interval);
+	}, [seatHold, trip.id]);
+
+	const seatFares = seatMap
 		.filter((seat) => selected.includes(seat.no))
 		.reduce((sum, seat) => sum + seat.fare, 0);
 	const fees = selected.length * SERVICE_FEE;
@@ -159,8 +221,16 @@ function BookPage() {
 		mobile !== "" &&
 		bookingPassengers !== null;
 
-	const submitBooking = async () => {
+	const continueToPaymentMethod = () => {
 		if (!bookingPassengers) {
+			return;
+		}
+		setBookingError(null);
+		setBookingStep("payment-method");
+	};
+
+	const lockSeats = async () => {
+		if (!bookingPassengers || seatHold) {
 			return;
 		}
 		setBookingError(null);
@@ -169,18 +239,51 @@ function BookPage() {
 			const hold = await holdSeats({
 				data: { seatNos: selected, tripId: trip.id },
 			});
+			setSeatHold(hold);
+			setRemainingSeconds(remainingHoldSeconds(hold.expiresAt));
+		} catch (error) {
+			setBookingError(
+				isConflictError(error)
+					? "One or more selected seats were just taken. Please choose your seats again."
+					: "We could not lock these seats. Please try again."
+			);
+			refreshSeatMap(trip.id, setSeatMap);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const continueToPayment = () => {
+		if (!seatHold || remainingSeconds === 0) {
+			return;
+		}
+		setBookingError(null);
+		setBookingStep("payment");
+	};
+
+	const submitPayment = async () => {
+		if (!(bookingPassengers && seatHold) || remainingSeconds === 0) {
+			return;
+		}
+		setBookingError(null);
+		setIsSubmitting(true);
+		try {
 			const booking = await createBooking({
 				data: {
 					contact: { email, mobile },
-					holdId: hold.holdId,
+					holdId: seatHold.holdId,
+					paymentMethod,
 					passengers: bookingPassengers,
 					tripId: trip.id,
 				},
 			});
 			setConfirmedBooking(booking);
-		} catch {
+			setSeatHold(null);
+		} catch (error) {
 			setBookingError(
-				"We could not confirm this booking. Refresh the seats and try again."
+				isConflictError(error)
+					? "This seat hold is no longer available. Please choose your seats again."
+					: "We could not process this payment. Please try again before the hold expires."
 			);
 		} finally {
 			setIsSubmitting(false);
@@ -195,122 +298,144 @@ function BookPage() {
 				<div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_360px]">
 					<div className="space-y-6">
 						<TripSummary date={date} trip={trip} />
+						<BookingStepIndicator step={bookingStep} />
 
-						<section className="rounded-2xl border border-ink-100 bg-surface p-5 sm:p-6">
-							<div className="flex items-center justify-between">
-								<h2 className="font-bold font-display text-ink-900 text-lg">
-									Select your seats
-								</h2>
-								<p className="text-ink-500 text-sm">
-									{selected.length}/{passengers} chosen
-								</p>
-							</div>
+						{bookingStep === "details" ? (
+							<>
+								<section className="rounded-2xl border border-ink-100 bg-surface p-5 sm:p-6">
+									<div className="flex items-center justify-between">
+										<h2 className="font-bold font-display text-ink-900 text-lg">
+											Select your seats
+										</h2>
+										<p className="text-ink-500 text-sm">
+											{selected.length}/{passengers} chosen
+										</p>
+									</div>
 
-							<SeatLegend />
+									<SeatLegend />
 
-							<div className="mt-5 overflow-x-auto">
-								<SeatDeck
-									onToggle={toggleSeat}
-									seats={seats}
-									selected={selected}
-								/>
-							</div>
-						</section>
+									<div className="mt-5 overflow-x-auto">
+										<SeatDeck
+											onToggle={toggleSeat}
+											seats={seatMap}
+											selected={selected}
+										/>
+									</div>
+								</section>
 
-						{/* Passenger details */}
-						<section className="rounded-2xl border border-ink-100 bg-surface p-5 sm:p-6">
-							<h2 className="font-bold font-display text-ink-900 text-lg">
-								Passenger details
-							</h2>
-							<div className="mt-4 grid gap-3 sm:grid-cols-2">
-								<TextField
-									label="Email ID"
-									onChange={setEmail}
-									placeholder="you@example.com"
-									required
-									type="email"
-									value={email}
-								/>
-								<TextField
-									label="Mobile number"
-									onChange={setMobile}
-									placeholder="10-digit mobile"
-									required
-									type="tel"
-									value={mobile}
-								/>
-							</div>
+								<section className="rounded-2xl border border-ink-100 bg-surface p-5 sm:p-6">
+									<h2 className="font-bold font-display text-ink-900 text-lg">
+										Passenger details
+									</h2>
+									<div className="mt-4 grid gap-3 sm:grid-cols-2">
+										<TextField
+											label="Email ID"
+											onChange={setEmail}
+											placeholder="you@example.com"
+											required
+											type="email"
+											value={email}
+										/>
+										<TextField
+											label="Mobile number"
+											onChange={setMobile}
+											placeholder="10-digit mobile"
+											required
+											type="tel"
+											value={mobile}
+										/>
+									</div>
 
-							<p className="mt-5 mb-2 font-semibold text-ink-700 text-sm">
-								Traveller information
-							</p>
-							{selected.length === 0 ? (
-								<p className="rounded-xl bg-canvas px-4 py-3 text-ink-500 text-sm">
-									Select a seat above to add traveller details.
-								</p>
-							) : (
-								<div className="space-y-3">
-									{selected.map((seatNo) => {
-										const person = people[seatNo];
-										return (
-											<div
-												className="grid gap-2 rounded-xl border border-ink-100 bg-canvas p-3 sm:grid-cols-[auto_1fr_5rem_7rem]"
-												key={seatNo}
-											>
-												<span className="grid place-items-center rounded-lg bg-ink-900 px-3 font-semibold text-sm text-white">
-													Seat {seatNo}
-												</span>
-												<input
-													aria-label={`Name for seat ${seatNo}`}
-													className="rounded-lg border border-ink-200 bg-surface px-3 py-2 text-ink-900 text-sm outline-none focus-visible:border-saffron-400"
-													onChange={(e) =>
-														setPerson(seatNo, { name: e.target.value })
-													}
-													placeholder="Full name"
-													value={person?.name ?? ""}
-												/>
-												<input
-													aria-label={`Age for seat ${seatNo}`}
-													className="rounded-lg border border-ink-200 bg-surface px-3 py-2 text-ink-900 text-sm outline-none focus-visible:border-saffron-400"
-													onChange={(e) =>
-														setPerson(seatNo, { age: e.target.value })
-													}
-													placeholder="Age"
-													type="number"
-													value={person?.age ?? ""}
-												/>
-												<select
-													aria-label={`Gender for seat ${seatNo}`}
-													className="rounded-lg border border-ink-200 bg-surface px-3 py-2 text-ink-900 text-sm outline-none focus-visible:border-saffron-400"
-													onChange={(e) =>
-														isPassengerGender(e.target.value)
-															? setPerson(seatNo, { gender: e.target.value })
-															: undefined
-													}
-													value={person?.gender ?? "male"}
-												>
-													<option value="male">Male</option>
-													<option value="female">Female</option>
-													<option value="other">Other</option>
-												</select>
-											</div>
-										);
-									})}
-								</div>
-							)}
+									<p className="mt-5 mb-2 font-semibold text-ink-700 text-sm">
+										Traveller information
+									</p>
+									{selected.length === 0 ? (
+										<p className="rounded-xl bg-canvas px-4 py-3 text-ink-500 text-sm">
+											Select a seat above to add traveller details.
+										</p>
+									) : (
+										<div className="space-y-3">
+											{selected.map((seatNo) => {
+												const person = people[seatNo];
+												return (
+													<div
+														className="grid gap-2 rounded-xl border border-ink-100 bg-canvas p-3 sm:grid-cols-[auto_1fr_5rem_7rem]"
+														key={seatNo}
+													>
+														<span className="grid place-items-center rounded-lg bg-ink-900 px-3 font-semibold text-sm text-white">
+															Seat {seatNo}
+														</span>
+														<input
+															aria-label={`Name for seat ${seatNo}`}
+															className="rounded-lg border border-ink-200 bg-surface px-3 py-2 text-ink-900 text-sm outline-none focus-visible:border-saffron-400"
+															onChange={(e) =>
+																setPerson(seatNo, { name: e.target.value })
+															}
+															placeholder="Full name"
+															value={person?.name ?? ""}
+														/>
+														<input
+															aria-label={`Age for seat ${seatNo}`}
+															className="rounded-lg border border-ink-200 bg-surface px-3 py-2 text-ink-900 text-sm outline-none focus-visible:border-saffron-400"
+															onChange={(e) =>
+																setPerson(seatNo, { age: e.target.value })
+															}
+															placeholder="Age"
+															type="number"
+															value={person?.age ?? ""}
+														/>
+														<select
+															aria-label={`Gender for seat ${seatNo}`}
+															className="rounded-lg border border-ink-200 bg-surface px-3 py-2 text-ink-900 text-sm outline-none focus-visible:border-saffron-400"
+															onChange={(e) =>
+																isPassengerGender(e.target.value)
+																	? setPerson(seatNo, {
+																			gender: e.target.value,
+																		})
+																	: undefined
+															}
+															value={person?.gender ?? "male"}
+														>
+															<option value="male">Male</option>
+															<option value="female">Female</option>
+															<option value="other">Other</option>
+														</select>
+													</div>
+												);
+											})}
+										</div>
+									)}
 
-							<label className="mt-4 flex w-fit cursor-pointer items-center gap-2 text-ink-600 text-sm">
-								<input
-									checked={journalist}
-									className="h-4 w-4 rounded border-ink-300 accent-saffron-500"
-									onChange={(e) => setJournalist(e.target.checked)}
-									type="checkbox"
-								/>
-								Are you a Journalist?
-							</label>
-						</section>
+									<label className="mt-4 flex w-fit cursor-pointer items-center gap-2 text-ink-600 text-sm">
+										<input
+											checked={journalist}
+											className="h-4 w-4 rounded border-ink-300 accent-saffron-500"
+											onChange={(e) => setJournalist(e.target.checked)}
+											type="checkbox"
+										/>
+										Are you a Journalist?
+									</label>
+								</section>
+							</>
+						) : null}
 
-						{/* Info links */}
+						{bookingStep === "payment-method" ? (
+							<PaymentMethodStep
+								disabled={Boolean(seatHold)}
+								onSelect={setPaymentMethod}
+								paymentMethod={paymentMethod}
+								seatHold={seatHold}
+							/>
+						) : null}
+
+						{bookingStep === "payment" ? (
+							<PaymentConfirmation
+								onBack={() => setBookingStep("payment-method")}
+								paymentMethod={paymentMethod}
+								selectedSeats={selected}
+							/>
+						) : null}
+
 						<div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl border border-ink-100 bg-surface px-5 py-3">
 							{TRIP_INFO_LINKS.map((label) => (
 								<button
@@ -357,27 +482,28 @@ function BookPage() {
 								</div>
 							) : null}
 
-							{confirmedBooking ? (
-								<div
-									aria-live="polite"
-									className="mt-5 rounded-xl bg-success-50 px-4 py-3 text-sm text-success-700"
-								>
-									Booking confirmed. PNR:{" "}
-									<span className="font-semibold">{confirmedBooking.pnr}</span>
+							{seatHold ? (
+								<div className="mt-4 rounded-xl bg-success-50 px-3 py-3 text-sm text-success-700">
+									<p className="font-semibold">Seats locked for you</p>
+									<p className="mt-1">
+										Complete payment in {formatHoldCountdown(remainingSeconds)}.
+									</p>
 								</div>
-							) : (
-								<button
-									className="gradient-surface mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold text-white shadow-sm transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-									disabled={!canProceed || isSubmitting}
-									onClick={submitBooking}
-									type="button"
-								>
-									{isSubmitting ? "Confirming…" : "Book & pay"}
-									{canProceed && !isSubmitting ? (
-										<ArrowRightIcon height={18} width={18} />
-									) : null}
-								</button>
-							)}
+							) : null}
+
+							<BookingPrimaryAction
+								bookingStep={bookingStep}
+								canProceed={canProceed}
+								confirmedBooking={confirmedBooking}
+								isSubmitting={isSubmitting}
+								onContinueToPayment={continueToPayment}
+								onContinueToPaymentMethod={continueToPaymentMethod}
+								onLockSeats={lockSeats}
+								onSubmitPayment={submitPayment}
+								remainingSeconds={remainingSeconds}
+								seatHold={seatHold}
+								total={total}
+							/>
 							{bookingError ? (
 								<p
 									aria-live="assertive"
@@ -394,8 +520,8 @@ function BookPage() {
 										height={14}
 										width={14}
 									/>
-									Note 1: Complete payment within 7 minutes, or the seat is
-									released for other passengers.
+									Note 1: Once seats are locked, complete payment within 10
+									minutes, or the seat is released for other passengers.
 								</p>
 								<p className="pl-5">
 									Note 2: E-Wallet — provide a valid email &amp; mobile to
@@ -408,6 +534,260 @@ function BookPage() {
 			</main>
 			<SiteFooter />
 		</>
+	);
+}
+
+function BookingStepIndicator({ step }: { step: BookingStep }) {
+	const steps: { id: BookingStep; label: string }[] = [
+		{ id: "details", label: "Seats & details" },
+		{ id: "payment-method", label: "Payment method" },
+		{ id: "payment", label: "Payment" },
+	];
+	const activeIndex = steps.findIndex((item) => item.id === step);
+
+	return (
+		<nav aria-label="Booking progress">
+			<ol className="grid grid-cols-3 gap-2 rounded-2xl border border-ink-100 bg-surface p-3">
+				{steps.map((item, index) => {
+					const isActive = index === activeIndex;
+					const isComplete = index < activeIndex;
+					return (
+						<li
+							className={`rounded-xl px-2 py-2 text-center font-semibold text-xs sm:text-sm ${getStepClassName(isActive, isComplete)}`}
+							key={item.id}
+						>
+							{index + 1}. {item.label}
+						</li>
+					);
+				})}
+			</ol>
+		</nav>
+	);
+}
+
+function getStepClassName(isActive: boolean, isComplete: boolean): string {
+	if (isActive) {
+		return "gradient-surface text-white";
+	}
+	if (isComplete) {
+		return "bg-success-50 text-success-700";
+	}
+	return "text-ink-400";
+}
+
+function BookingPrimaryAction({
+	bookingStep,
+	canProceed,
+	confirmedBooking,
+	isSubmitting,
+	onContinueToPayment,
+	onContinueToPaymentMethod,
+	onLockSeats,
+	onSubmitPayment,
+	remainingSeconds,
+	seatHold,
+	total,
+}: {
+	bookingStep: BookingStep;
+	canProceed: boolean;
+	confirmedBooking: Booking | null;
+	isSubmitting: boolean;
+	onContinueToPayment: () => void;
+	onContinueToPaymentMethod: () => void;
+	onLockSeats: () => void;
+	onSubmitPayment: () => void;
+	remainingSeconds: number;
+	seatHold: SeatHold | null;
+	total: number;
+}) {
+	const buttonClassName =
+		"gradient-surface mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold text-white shadow-sm transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50";
+
+	if (confirmedBooking) {
+		return (
+			<div
+				aria-live="polite"
+				className="mt-5 rounded-xl bg-success-50 px-4 py-3 text-sm text-success-700"
+			>
+				Booking confirmed. PNR:{" "}
+				<span className="font-semibold">{confirmedBooking.pnr}</span>
+			</div>
+		);
+	}
+
+	if (bookingStep === "details") {
+		return (
+			<button
+				className={buttonClassName}
+				disabled={!canProceed}
+				onClick={onContinueToPaymentMethod}
+				type="button"
+			>
+				Continue to payment method
+				{canProceed ? <ArrowRightIcon height={18} width={18} /> : null}
+			</button>
+		);
+	}
+
+	if (bookingStep === "payment-method" && !seatHold) {
+		return (
+			<button
+				className={buttonClassName}
+				disabled={isSubmitting}
+				onClick={onLockSeats}
+				type="button"
+			>
+				{isSubmitting ? "Locking seats…" : "Lock seats for 10 minutes"}
+				{isSubmitting ? null : <ArrowRightIcon height={18} width={18} />}
+			</button>
+		);
+	}
+
+	if (bookingStep === "payment-method") {
+		return (
+			<button
+				className={buttonClassName}
+				disabled={remainingSeconds === 0}
+				onClick={onContinueToPayment}
+				type="button"
+			>
+				Continue to payment
+				<ArrowRightIcon height={18} width={18} />
+			</button>
+		);
+	}
+
+	return (
+		<button
+			className={buttonClassName}
+			disabled={!seatHold || remainingSeconds === 0 || isSubmitting}
+			onClick={onSubmitPayment}
+			type="button"
+		>
+			{isSubmitting ? "Processing payment…" : `Pay ${formatFare(total)}`}
+			{isSubmitting ? null : <ArrowRightIcon height={18} width={18} />}
+		</button>
+	);
+}
+
+function PaymentMethodStep({
+	disabled,
+	onSelect,
+	paymentMethod,
+	seatHold,
+}: {
+	disabled: boolean;
+	onSelect: (method: PaymentMethod) => void;
+	paymentMethod: PaymentMethod;
+	seatHold: SeatHold | null;
+}) {
+	const methods: { description: string; id: PaymentMethod; label: string }[] = [
+		{ description: "Pay from any UPI app", id: "upi", label: "UPI" },
+		{ description: "Debit or credit card", id: "card", label: "Card" },
+		{
+			description: "Use your internet banking account",
+			id: "netbanking",
+			label: "Net banking",
+		},
+	];
+
+	return (
+		<section className="rounded-2xl border border-ink-100 bg-surface p-5 sm:p-6">
+			<h2 className="font-bold font-display text-ink-900 text-lg">
+				Choose payment method
+			</h2>
+			<p className="mt-1 text-ink-500 text-sm">
+				Your seats are checked and locked only when you continue from this step.
+			</p>
+			<div className="mt-5 grid gap-3 sm:grid-cols-3">
+				{methods.map((method) => {
+					const selected = method.id === paymentMethod;
+					return (
+						<button
+							aria-pressed={selected}
+							className={`rounded-xl border p-4 text-left transition disabled:cursor-not-allowed ${
+								selected
+									? "border-brand-500 bg-brand-50 text-brand-800"
+									: "border-ink-200 text-ink-700 hover:border-saffron-400"
+							}`}
+							disabled={disabled}
+							key={method.id}
+							onClick={() => onSelect(method.id)}
+							type="button"
+						>
+							<span className="block font-semibold">{method.label}</span>
+							<span className="mt-1 block text-ink-500 text-xs">
+								{method.description}
+							</span>
+						</button>
+					);
+				})}
+			</div>
+			{seatHold ? (
+				<p className="mt-5 rounded-xl bg-success-50 px-4 py-3 text-sm text-success-700">
+					Your seats are locked. Continue to the payment page before the timer
+					expires.
+				</p>
+			) : null}
+		</section>
+	);
+}
+
+function PaymentConfirmation({
+	onBack,
+	paymentMethod,
+	selectedSeats,
+}: {
+	onBack: () => void;
+	paymentMethod: PaymentMethod;
+	selectedSeats: string[];
+}) {
+	const paymentLabels: Record<PaymentMethod, string> = {
+		card: "Card",
+		netbanking: "Net banking",
+		upi: "UPI",
+	};
+
+	return (
+		<section className="rounded-2xl border border-ink-100 bg-surface p-5 sm:p-6">
+			<div className="flex flex-wrap items-start justify-between gap-3">
+				<div>
+					<h2 className="font-bold font-display text-ink-900 text-lg">
+						Payment confirmation
+					</h2>
+					<p className="mt-1 text-ink-500 text-sm">
+						Review the payment details, then complete your booking.
+					</p>
+				</div>
+				<button
+					className="font-semibold text-brand-600 text-sm hover:underline"
+					onClick={onBack}
+					type="button"
+				>
+					Change method
+				</button>
+			</div>
+			<div className="mt-5 grid gap-3 rounded-xl bg-canvas p-4 text-sm sm:grid-cols-2">
+				<div>
+					<p className="text-ink-500 text-xs">Payment method</p>
+					<p className="mt-1 font-semibold text-ink-900">
+						{paymentLabels[paymentMethod]}
+					</p>
+				</div>
+				<div>
+					<p className="text-ink-500 text-xs">Seats</p>
+					<p className="mt-1 font-semibold text-ink-900">
+						{[...selectedSeats]
+							.sort((a, b) => Number(a) - Number(b))
+							.join(", ")}
+					</p>
+				</div>
+			</div>
+			<p className="mt-4 text-ink-500 text-xs">
+				Payments are simulated in this concept build. The selected method is
+				included in the booking request.
+			</p>
+		</section>
 	);
 }
 

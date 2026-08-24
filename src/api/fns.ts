@@ -38,6 +38,7 @@ export const createBooking = createServerFn()
 		(data: {
 			contact: { email?: string; mobile: string };
 			holdId: string;
+			paymentMethod?: "upi" | "card" | "netbanking";
 			passengers: {
 				age: number;
 				gender: "male" | "female" | "other";

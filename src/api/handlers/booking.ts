@@ -11,7 +11,7 @@ import { buildSeats, buildTrip, parseTripId } from "#/api/trips";
 import { getDb } from "#/db/client";
 import { bookedSeats, bookings, seatHolds } from "#/db/schema";
 import { generatePnr } from "#/lib/ids";
-import { mockCharge } from "#/lib/mock-payment";
+import { mockCharge, type PaymentMethod } from "#/lib/mock-payment";
 
 const os = implement(appContract);
 const SERVICE_FEE_PER_SEAT = 15;
@@ -24,6 +24,7 @@ interface CreateBookingInput {
 	contact: { email?: string; mobile: string };
 	holdId: string;
 	passengers: Passenger[];
+	paymentMethod?: PaymentMethod;
 	singleLady?: boolean;
 	tripId: string;
 }
@@ -170,7 +171,7 @@ async function confirmLiveHold(
 	const charge = mockCharge({
 		amount,
 		idempotencyKey: holdRow.id,
-		method: "upi",
+		method: input.paymentMethod ?? "upi",
 	});
 	if (charge.status !== "success") {
 		throw errors.PAYMENT_FAILED();

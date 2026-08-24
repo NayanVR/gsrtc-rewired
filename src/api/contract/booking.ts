@@ -20,6 +20,7 @@ export const booking = {
 				}),
 				holdId: v.string(),
 				passengers: v.array(Passenger),
+				paymentMethod: v.optional(v.picklist(["upi", "card", "netbanking"])),
 				singleLady: v.optional(v.boolean()),
 				tripId: v.string(),
 			})

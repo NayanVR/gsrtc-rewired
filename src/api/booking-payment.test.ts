@@ -39,6 +39,7 @@ describe("booking confirmation", () => {
 			contact: { mobile: TEST_MOBILE },
 			holdId: hold.holdId,
 			passengers: [passenger("1")],
+			paymentMethod: "card" as const,
 			tripId: TEST_TRIP_ID,
 		};
 
@@ -48,7 +49,10 @@ describe("booking confirmation", () => {
 		expect(retryBooking.pnr).toBe(firstBooking.pnr);
 		expect(charge).toHaveBeenCalledTimes(1);
 		expect(charge).toHaveBeenCalledWith(
-			expect.objectContaining({ idempotencyKey: hold.holdId })
+			expect.objectContaining({
+				idempotencyKey: hold.holdId,
+				method: "card",
+			})
 		);
 
 		const savedSeats = await getDb()
