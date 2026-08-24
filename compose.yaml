@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:17
+    env_file: .env
+    environment:
+      POSTGRES_DB: gsrtc_rewired
+      POSTGRES_USER: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username=$$POSTGRES_USER --dbname=$$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  migrate:
+    build:
+      context: .
+      target: build
+    command: ["bun", "run", "db:migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      args:
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PORT: "3000"
+    env_file: .env
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    depends_on:
+      app:
+        condition: service_started
+    env_file: .env
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_config:
+  caddy_data:
+  postgres_data:

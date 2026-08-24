@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.git
+.output
+.tanstack
+.vinxi
+dist
+dist-ssr
+node_modules
+coverage
+*.log

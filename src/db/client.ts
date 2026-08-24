@@ -36,9 +36,8 @@ const schema = {
 	walletTransactions,
 };
 
-// Server-only Postgres connection (Neon / Supabase / any wire-compatible
-// Postgres). One connection pool per server process; never import this from
-// client code.
+// Server-only direct Postgres connection. One connection pool per server
+// process; never import this from client code.
 function createDb() {
 	const url = process.env.DATABASE_URL;
 	if (!url) {
@@ -46,7 +45,9 @@ function createDb() {
 			"DATABASE_URL is not set. Point it at a Postgres instance (Neon, Supabase, or any Postgres) to enable bookings, agents, wallet, tickets, passes and refunds."
 		);
 	}
-	const client = postgres(url, { prepare: false });
+	// Prepared statements are safe for a direct Postgres connection. They were
+	// disabled only for Supabase's transaction pooler.
+	const client = postgres(url, { prepare: true });
 	return drizzle(client, { schema });
 }
 

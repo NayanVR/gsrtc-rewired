@@ -42,18 +42,52 @@ bun --bun run check
 ```
 
 
-## Deploy with Nitro
+## Deploy on a VPS
 
-This project uses Nitro as a generic server adapter, so it can run on any Node-compatible host.
+The production stack is Caddy, this Node/Nitro app, and Postgres in one Compose
+project. Caddy is the only service that publishes host ports and obtains the
+HTTPS certificate.
+
+1. Point the public DNS name at the VPS, install Docker Compose and rclone, and
+   copy `.env.example` to an uncommitted `.env`.
+2. Set the production `POSTGRES_PASSWORD`, `DATABASE_URL` (with host `db`),
+   `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_DOMAIN`, and
+   `BACKUP_RCLONE_REMOTE`. `VITE_SENTRY_DSN` is optional and is passed at image
+   build time only.
+3. Configure the rclone remote named by `BACKUP_RCLONE_REMOTE`, then build and
+   start the stack:
+
+   ```bash
+   docker compose up -d --build
+   docker compose ps
+   ```
+
+   The `migrate` container must finish with exit code 0 before `app` starts.
+
+4. Schedule the off-box backup every night (adjust the directory for the VPS):
+
+   ```cron
+   0 2 * * * cd /srv/gsrtc-rewired && ./scripts/backup.sh >> /var/log/gsrtc-backup.log 2>&1
+   ```
+
+`scripts/backup.sh` streams a custom-format `pg_dump` directly to the rclone
+remote; it does not leave a database copy on the VPS. Before cutover, rehearse
+a restore into a disposable database:
 
 ```bash
-npm run build
-node dist/server/index.mjs
+set -a; source .env; set +a
+docker compose exec -T db createdb --username=postgres gsrtc_rewired_restore
+rclone cat "$BACKUP_RCLONE_REMOTE/gsrtc-rewired-YYYY-MM-DDTHHMMSSZ.dump" \
+  | docker compose exec -T db pg_restore --exit-on-error --username=postgres --dbname=gsrtc_rewired_restore
+docker compose exec -T db dropdb --username=postgres gsrtc_rewired_restore
 ```
 
-The build output is a self-contained Node server. To deploy, push the `dist/` directory to your host (Render, Fly.io, your own VPS, etc.) and run the server command above.
+The Node build output is `.output`, not `dist`. To run it without Compose:
 
-For host-specific presets (Vercel, Netlify, Cloudflare, AWS Lambda, etc.) and tuning, see https://v3.nitro.build/deploy.
+```bash
+bun run build
+node .output/server/index.mjs
+```
 
 
 
