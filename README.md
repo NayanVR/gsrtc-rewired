@@ -44,7 +44,7 @@ bun --bun run check
 
 ## Deploy with Dokploy
 
-The production stack is Dokploy's Traefik proxy, this Node/Nitro app, and
+The production stack is Dokploy's Traefik proxy, this Bun/Nitro app, and
 Postgres in one Compose project. The Domains UI connects only the selected app
 to Dokploy's proxy network; Postgres remains private to the Compose project.
 
@@ -64,11 +64,11 @@ to Dokploy's proxy network; Postgres remains private to the Compose project.
 
    The `migrate` container must finish with exit code 0 before `app` starts.
 
-The Node build output is `.output`, not `dist`. To run it without Compose:
+The Nitro build output is `.output`, not `dist`. To run it without Compose:
 
 ```bash
 bun run build
-node .output/server/index.mjs
+bun .output/server/index.mjs
 ```
 
 
