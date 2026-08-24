@@ -37,6 +37,21 @@ export const booking = {
 		.input(v.object({ seatNos: v.array(v.string()), tripId: v.string() }))
 		.output(v.object({ expiresAt: Timestamp, holdId: v.string() })),
 
+	holdStatus: base
+		.route({
+			method: "GET",
+			path: "/bookings/hold/{holdId}",
+			summary: "Fetch an active seat hold",
+		})
+		.input(v.object({ holdId: v.string(), tripId: v.string() }))
+		.output(
+			v.object({
+				expiresAt: Timestamp,
+				holdId: v.string(),
+				seatNos: v.array(v.string()),
+			})
+		),
+
 	seatMap: base
 		.route({
 			method: "GET",

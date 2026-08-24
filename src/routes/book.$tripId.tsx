@@ -1,6 +1,12 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { createBooking, getSeatMap, getTrip, holdSeats } from "#/api/fns";
+import {
+	createBooking,
+	getSeatHold,
+	getSeatMap,
+	getTrip,
+	holdSeats,
+} from "#/api/fns";
 import type { Passenger as ApiPassenger, Booking, Seat } from "#/api/schemas";
 import {
 	ArrowRightIcon,
@@ -65,6 +71,16 @@ type BookingStep = "details" | "payment-method" | "payment";
 interface SeatHold {
 	expiresAt: string;
 	holdId: string;
+}
+
+interface BookingSession {
+	bookingStep: Exclude<BookingStep, "details">;
+	email: string;
+	holdId: string;
+	journalist: boolean;
+	mobile: string;
+	paymentMethod: PaymentMethod;
+	people: Record<string, PassengerForm>;
 }
 
 interface PassengerForm {
@@ -137,6 +153,71 @@ function refreshSeatMap(
 		.catch(() => undefined);
 }
 
+function bookingSessionKey(tripId: string): string {
+	return `gsrtc-booking:${tripId}`;
+}
+
+function isBookingSession(value: unknown): value is BookingSession {
+	if (!value || typeof value !== "object") {
+		return false;
+	}
+	const session = value as Record<string, unknown>;
+	return (
+		(session.bookingStep === "payment-method" ||
+			session.bookingStep === "payment") &&
+		typeof session.email === "string" &&
+		typeof session.holdId === "string" &&
+		typeof session.journalist === "boolean" &&
+		typeof session.mobile === "string" &&
+		(session.paymentMethod === "upi" ||
+			session.paymentMethod === "card" ||
+			session.paymentMethod === "netbanking") &&
+		typeof session.people === "object" &&
+		session.people !== null
+	);
+}
+
+function readBookingSession(tripId: string): BookingSession | null {
+	if (typeof window === "undefined") {
+		return null;
+	}
+	try {
+		const stored = window.sessionStorage.getItem(bookingSessionKey(tripId));
+		if (!stored) {
+			return null;
+		}
+		const parsed = JSON.parse(stored) as unknown;
+		return isBookingSession(parsed) ? parsed : null;
+	} catch {
+		return null;
+	}
+}
+
+function writeBookingSession(tripId: string, session: BookingSession): void {
+	if (typeof window === "undefined") {
+		return;
+	}
+	try {
+		window.sessionStorage.setItem(
+			bookingSessionKey(tripId),
+			JSON.stringify(session)
+		);
+	} catch {
+		// A blocked browser storage area should not prevent the booking flow.
+	}
+}
+
+function clearBookingSession(tripId: string): void {
+	if (typeof window === "undefined") {
+		return;
+	}
+	try {
+		window.sessionStorage.removeItem(bookingSessionKey(tripId));
+	} catch {
+		// A blocked browser storage area has no persisted booking state to clear.
+	}
+}
+
 function BookPage() {
 	const { trip, seats } = Route.useLoaderData();
 	const { date, passengers } = Route.useSearch();
@@ -156,6 +237,22 @@ function BookPage() {
 	);
 	const [bookingError, setBookingError] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	const saveProgress = (
+		hold: SeatHold,
+		step: Exclude<BookingStep, "details">,
+		method = paymentMethod
+	) => {
+		writeBookingSession(trip.id, {
+			bookingStep: step,
+			email,
+			holdId: hold.holdId,
+			journalist,
+			mobile,
+			paymentMethod: method,
+			people,
+		});
+	};
 
 	const toggleSeat = (seat: Seat) => {
 		if (!isSelectable(seat)) {
@@ -183,6 +280,49 @@ function BookPage() {
 		});
 	};
 
+	const selectPaymentMethod = (method: PaymentMethod) => {
+		setPaymentMethod(method);
+		if (seatHold && bookingStep !== "details") {
+			saveProgress(seatHold, bookingStep, method);
+		}
+	};
+
+	useEffect(() => {
+		const savedSession = readBookingSession(trip.id);
+		if (!savedSession) {
+			return;
+		}
+		let cancelled = false;
+
+		const restoreProgress = async () => {
+			try {
+				const activeHold = await getSeatHold({
+					data: { holdId: savedSession.holdId, tripId: trip.id },
+				});
+				if (cancelled) {
+					return;
+				}
+				setEmail(savedSession.email);
+				setJournalist(savedSession.journalist);
+				setMobile(savedSession.mobile);
+				setPaymentMethod(savedSession.paymentMethod);
+				setPeople(savedSession.people);
+				setSelected(activeHold.seatNos);
+				setSeatHold(activeHold);
+				setRemainingSeconds(remainingHoldSeconds(activeHold.expiresAt));
+				setBookingStep(savedSession.bookingStep);
+			} catch {
+				clearBookingSession(trip.id);
+				refreshSeatMap(trip.id, setSeatMap);
+			}
+		};
+
+		restoreProgress();
+		return () => {
+			cancelled = true;
+		};
+	}, [trip.id]);
+
 	useEffect(() => {
 		if (!seatHold) {
 			return;
@@ -198,6 +338,7 @@ function BookPage() {
 			setSelected([]);
 			setPeople({});
 			setBookingStep("details");
+			clearBookingSession(trip.id);
 			setBookingError(
 				"Your 10-minute seat hold expired. Please choose your seats again."
 			);
@@ -241,6 +382,7 @@ function BookPage() {
 			});
 			setSeatHold(hold);
 			setRemainingSeconds(remainingHoldSeconds(hold.expiresAt));
+			saveProgress(hold, "payment-method");
 		} catch (error) {
 			setBookingError(
 				isConflictError(error)
@@ -258,7 +400,15 @@ function BookPage() {
 			return;
 		}
 		setBookingError(null);
+		saveProgress(seatHold, "payment");
 		setBookingStep("payment");
+	};
+
+	const returnToPaymentMethod = () => {
+		if (seatHold) {
+			saveProgress(seatHold, "payment-method");
+		}
+		setBookingStep("payment-method");
 	};
 
 	const submitPayment = async () => {
@@ -279,6 +429,7 @@ function BookPage() {
 			});
 			setConfirmedBooking(booking);
 			setSeatHold(null);
+			clearBookingSession(trip.id);
 		} catch (error) {
 			setBookingError(
 				isConflictError(error)
@@ -421,8 +572,8 @@ function BookPage() {
 
 						{bookingStep === "payment-method" ? (
 							<PaymentMethodStep
-								disabled={Boolean(seatHold)}
-								onSelect={setPaymentMethod}
+								disabled={isSubmitting}
+								onSelect={selectPaymentMethod}
 								paymentMethod={paymentMethod}
 								seatHold={seatHold}
 							/>
@@ -430,7 +581,7 @@ function BookPage() {
 
 						{bookingStep === "payment" ? (
 							<PaymentConfirmation
-								onBack={() => setBookingStep("payment-method")}
+								onBack={returnToPaymentMethod}
 								paymentMethod={paymentMethod}
 								selectedSeats={selected}
 							/>

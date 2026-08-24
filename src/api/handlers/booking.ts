@@ -125,6 +125,24 @@ const hold = os.booking.hold.handler(async ({ input, errors }) => {
 	}
 });
 
+const holdStatus = os.booking.holdStatus.handler(async ({ input, errors }) => {
+	const [holdRow] = await getDb()
+		.select()
+		.from(seatHolds)
+		.where(
+			and(eq(seatHolds.id, input.holdId), eq(seatHolds.tripId, input.tripId))
+		)
+		.limit(1);
+	if (!holdRow || holdRow.consumedAt || holdRow.expiresAt <= new Date()) {
+		throw errors.NOT_FOUND();
+	}
+	return {
+		expiresAt: holdRow.expiresAt.toISOString(),
+		holdId: holdRow.id,
+		seatNos: holdRow.seatNos,
+	};
+});
+
 async function findBookingForConsumedHold(tx: DbTransaction, holdId: string) {
 	const [bookedSeat] = await tx
 		.select({ pnr: bookedSeats.pnr })
@@ -254,4 +272,11 @@ const get = os.booking.get.handler(async ({ input, errors }) => {
 	return toBooking(booking);
 });
 
-export const bookingHandlers = { create, get, hold, seatMap, trip };
+export const bookingHandlers = {
+	create,
+	get,
+	hold,
+	holdStatus,
+	seatMap,
+	trip,
+};

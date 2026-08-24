@@ -33,6 +33,10 @@ export const holdSeats = createServerFn()
 	.validator((data: { seatNos: string[]; tripId: string }) => data)
 	.handler(({ data }) => api.booking.hold(data));
 
+export const getSeatHold = createServerFn()
+	.validator((data: { holdId: string; tripId: string }) => data)
+	.handler(({ data }) => api.booking.holdStatus(data));
+
 export const createBooking = createServerFn()
 	.validator(
 		(data: {
