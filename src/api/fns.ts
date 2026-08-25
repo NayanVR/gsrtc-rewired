@@ -85,6 +85,27 @@ export const getBooking = createServerFn()
 	.validator((data: { mobile: string; pnr: string }) => data)
 	.handler(({ data }) => api.booking.get(data));
 
+export const getTicketHistory = createServerFn()
+	.validator((data: { mobile: string }) => data)
+	.handler(({ data }) => api.tickets.history(data));
+
+export const printTicket = createServerFn()
+	.validator(
+		(data: { channel: "sms" | "email"; mobile: string; ticketNo: string }) =>
+			data
+	)
+	.handler(({ data }) => api.tickets.print(data));
+
+export const cancelTicket = createServerFn()
+	.validator((data: { mobile: string; ticketNo: string }) => data)
+	.handler(({ data }) => api.tickets.cancel(data));
+
+export const rescheduleTicket = createServerFn()
+	.validator(
+		(data: { mobile: string; newDate: string; ticketNo: string }) => data
+	)
+	.handler(({ data }) => api.tickets.reschedule(data));
+
 export const getRefundStatus = createServerFn()
 	.validator((data: { mobile: string; ref: string }) => data)
 	.handler(({ data }) => api.refunds.status(data));
