@@ -4,6 +4,8 @@ import {
 	Booking,
 	Mobile,
 	Passenger,
+	PaymentIntentStatus,
+	Rupees,
 	SeatMap,
 	Timestamp,
 	Trip,
@@ -52,6 +54,23 @@ export const booking = {
 			})
 		),
 
+	paymentStatus: base
+		.route({
+			method: "GET",
+			path: "/bookings/payment/{paymentIntentId}",
+			summary: "Fetch payment status",
+		})
+		.input(v.object({ paymentIntentId: v.string() }))
+		.output(
+			v.object({
+				balance: v.optional(Rupees),
+				booking: v.optional(Booking),
+				failureReason: v.optional(v.string()),
+				purpose: v.picklist(["booking", "wallet_topup"]),
+				status: PaymentIntentStatus,
+			})
+		),
+
 	seatMap: base
 		.route({
 			method: "GET",
@@ -60,6 +79,31 @@ export const booking = {
 		})
 		.input(v.object({ tripId: v.string() }))
 		.output(SeatMap),
+	startPayment: base
+		.route({
+			method: "POST",
+			path: "/bookings/payment",
+			summary: "Start hosted booking payment",
+		})
+		.input(
+			v.object({
+				contact: v.object({
+					email: v.optional(v.pipe(v.string(), v.email())),
+					mobile: Mobile,
+				}),
+				holdId: v.string(),
+				passengers: v.array(Passenger),
+				singleLady: v.optional(v.boolean()),
+				tripId: v.string(),
+			})
+		)
+		.output(
+			v.object({
+				checkoutUrl: v.string(),
+				expiresAt: Timestamp,
+				paymentIntentId: v.string(),
+			})
+		),
 	trip: base
 		.route({ method: "GET", path: "/trips/{tripId}", summary: "Trip detail" })
 		.input(v.object({ tripId: v.string() }))

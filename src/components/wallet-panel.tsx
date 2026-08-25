@@ -1,5 +1,11 @@
 import { type FormEvent, useCallback, useEffect, useState } from "react";
-import { getWalletAccount, getWalletPassbook, topUpWallet } from "#/api/fns";
+import {
+	getPaymentProvider,
+	getWalletAccount,
+	getWalletPassbook,
+	startWalletTopUp,
+	topUpWallet,
+} from "#/api/fns";
 import type { Transaction, WalletAccount } from "#/api/schemas";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
@@ -83,6 +89,15 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 	const [notice, setNotice] = useState("");
 	const [amount, setAmount] = useState("500");
 	const [method, setMethod] = useState<PaymentMethod>("upi");
+	const [paymentProvider, setPaymentProvider] = useState<"dodo" | "mock">(
+		"mock"
+	);
+
+	useEffect(() => {
+		getPaymentProvider()
+			.then(setPaymentProvider)
+			.catch(() => undefined);
+	}, []);
 
 	const load = useCallback(async () => {
 		setLoading(true);
@@ -118,6 +133,13 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 		setError("");
 		setNotice("");
 		try {
+			if (paymentProvider === "dodo") {
+				const payment = await startWalletTopUp({
+					data: { amount: topUpAmount },
+				});
+				window.location.assign(payment.checkoutUrl);
+				return;
+			}
 			const result = await topUpWallet({
 				data: { amount: topUpAmount, method },
 			});
@@ -158,7 +180,9 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 							Add money
 						</h2>
 						<p className="mt-1 text-ink-500 text-sm">
-							Payments are securely simulated in this concept build.
+							{paymentProvider === "dodo"
+								? "Test mode — no real payment is taken."
+								: "Payments are securely simulated in this concept build."}
 						</p>
 					</div>
 					<Field label="Amount">
@@ -175,22 +199,24 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 							/>
 						)}
 					</Field>
-					<Field label="Payment method">
-						{(id) => (
-							<Select
-								id={id}
-								name="method"
-								onChange={(event) =>
-									setMethod(event.target.value as PaymentMethod)
-								}
-								value={method}
-							>
-								<option value="upi">UPI</option>
-								<option value="card">Card</option>
-								<option value="netbanking">Netbanking</option>
-							</Select>
-						)}
-					</Field>
+					{paymentProvider === "mock" ? (
+						<Field label="Payment method">
+							{(id) => (
+								<Select
+									id={id}
+									name="method"
+									onChange={(event) =>
+										setMethod(event.target.value as PaymentMethod)
+									}
+									value={method}
+								>
+									<option value="upi">UPI</option>
+									<option value="card">Card</option>
+									<option value="netbanking">Netbanking</option>
+								</Select>
+							)}
+						</Field>
+					) : null}
 					<Button
 						className="w-full"
 						disabled={submitting}

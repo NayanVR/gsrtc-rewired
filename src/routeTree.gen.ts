@@ -15,7 +15,9 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as TrackRouteImport } from './routes/track'
 import { Route as BookTripIdRouteImport } from './routes/book.$tripId'
 import { Route as PSlugRouteImport } from './routes/p.$slug'
+import { Route as PaymentReturnRouteImport } from './routes/payment.return'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiPaymentsDodoWebhookRouteImport } from './routes/api/payments/dodo/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -47,9 +49,19 @@ const PSlugRoute = PSlugRouteImport.update({
   path: '/p/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PaymentReturnRoute = PaymentReturnRouteImport.update({
+  id: '/payment/return',
+  path: '/payment/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentsDodoWebhookRoute = ApiPaymentsDodoWebhookRouteImport.update({
+  id: '/api/payments/dodo/webhook',
+  path: '/api/payments/dodo/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -60,7 +72,9 @@ export interface FileRoutesByFullPath {
   '/track': typeof TrackRoute
   '/book/$tripId': typeof BookTripIdRoute
   '/p/$slug': typeof PSlugRoute
+  '/payment/return': typeof PaymentReturnRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/payments/dodo/webhook': typeof ApiPaymentsDodoWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -69,7 +83,9 @@ export interface FileRoutesByTo {
   '/track': typeof TrackRoute
   '/book/$tripId': typeof BookTripIdRoute
   '/p/$slug': typeof PSlugRoute
+  '/payment/return': typeof PaymentReturnRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/payments/dodo/webhook': typeof ApiPaymentsDodoWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,7 +95,9 @@ export interface FileRoutesById {
   '/track': typeof TrackRoute
   '/book/$tripId': typeof BookTripIdRoute
   '/p/$slug': typeof PSlugRoute
+  '/payment/return': typeof PaymentReturnRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/payments/dodo/webhook': typeof ApiPaymentsDodoWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -90,7 +108,9 @@ export interface FileRouteTypes {
     | '/track'
     | '/book/$tripId'
     | '/p/$slug'
+    | '/payment/return'
     | '/api/auth/$'
+    | '/api/payments/dodo/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -99,7 +119,9 @@ export interface FileRouteTypes {
     | '/track'
     | '/book/$tripId'
     | '/p/$slug'
+    | '/payment/return'
     | '/api/auth/$'
+    | '/api/payments/dodo/webhook'
   id:
     | '__root__'
     | '/'
@@ -108,7 +130,9 @@ export interface FileRouteTypes {
     | '/track'
     | '/book/$tripId'
     | '/p/$slug'
+    | '/payment/return'
     | '/api/auth/$'
+    | '/api/payments/dodo/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -118,7 +142,9 @@ export interface RootRouteChildren {
   TrackRoute: typeof TrackRoute
   BookTripIdRoute: typeof BookTripIdRoute
   PSlugRoute: typeof PSlugRoute
+  PaymentReturnRoute: typeof PaymentReturnRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiPaymentsDodoWebhookRoute: typeof ApiPaymentsDodoWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -165,11 +191,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/payment/return': {
+      id: '/payment/return'
+      path: '/payment/return'
+      fullPath: '/payment/return'
+      preLoaderRoute: typeof PaymentReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments/dodo/webhook': {
+      id: '/api/payments/dodo/webhook'
+      path: '/api/payments/dodo/webhook'
+      fullPath: '/api/payments/dodo/webhook'
+      preLoaderRoute: typeof ApiPaymentsDodoWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -182,7 +222,9 @@ const rootRouteChildren: RootRouteChildren = {
   TrackRoute: TrackRoute,
   BookTripIdRoute: BookTripIdRoute,
   PSlugRoute: PSlugRoute,
+  PaymentReturnRoute: PaymentReturnRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiPaymentsDodoWebhookRoute: ApiPaymentsDodoWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

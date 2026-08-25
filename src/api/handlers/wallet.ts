@@ -2,8 +2,10 @@ import { implement } from "@orpc/server";
 import { desc, eq, sql } from "drizzle-orm";
 import { appContract } from "#/api/contract";
 import { requireSession } from "#/api/handlers/auth";
+import { startWalletTopUp } from "#/api/services/payments";
 import { getDb } from "#/db/client";
 import { walletAccounts, walletTransactions } from "#/db/schema";
+import { getPaymentsProvider } from "#/lib/dodo";
 import { mockCharge } from "#/lib/mock-payment";
 
 const os = implement(appContract);
@@ -79,6 +81,9 @@ const passbook = os.wallet.passbook.handler(async ({ input, errors }) => {
 
 const topUp = os.wallet.topUp.handler(async ({ input, errors }) => {
 	const currentSession = await requireSession(errors.UNAUTHORIZED);
+	if (getPaymentsProvider() === "dodo") {
+		throw errors.PAYMENT_FAILED();
+	}
 	return getDb().transaction(async (tx) => {
 		await tx
 			.insert(walletAccounts)
@@ -125,4 +130,12 @@ const topUp = os.wallet.topUp.handler(async ({ input, errors }) => {
 	});
 });
 
-export const walletHandlers = { account, passbook, topUp };
+const startTopUp = os.wallet.startTopUp.handler(async ({ input, errors }) => {
+	const currentSession = await requireSession(errors.UNAUTHORIZED);
+	if (getPaymentsProvider() !== "dodo") {
+		throw errors.PAYMENT_FAILED();
+	}
+	return startWalletTopUp(input.amount, currentSession.user, errors);
+});
+
+export const walletHandlers = { account, passbook, startTopUp, topUp };

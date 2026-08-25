@@ -32,6 +32,8 @@ that apply to every task; individual task files do not repeat them.
 | 12 | [Tracking degradation & staleness](./12-tracking-degradation.md) | done | — | 1 | 04 |
 | 13 | [OpenAPI spec](./13-openapi.md) | done | — | 4 | 06 |
 | 14 | [Mobile OTP (phone-number plugin)](./14-mobile-otp.md) | done | 07 | 2 | — |
+| 15 | [Self-host on a VPS](./15-vps-self-host.md) | todo | 02 | 0 | — |
+| 16 | [Dodo Payments (test mode)](./16-dodo-payments.md) | todo | 04, 08, 15 | 3 | 02 |
 
 Status values: `todo` / `in progress` / `done` / `blocked`.
 Phase numbers refer to [`../migration-plan.md`](../migration-plan.md) §6.
@@ -41,7 +43,11 @@ Pain point numbers refer to [`../pain-points/`](../pain-points/).
 
 Tasks 01 and 02 unblock everything else and should be done first.
 Tasks 11, 12 and 13 have no dependencies and can be done at any point.
+Task 15 is deployment-only and can be done at any point after 02.
 The transaction chain 03 → 04 → 05 → 06 is strictly ordered.
+Task 16 replaces the simulated charge on both paying surfaces (booking and
+wallet) and must come after that chain is green. It needs a public HTTPS URL
+for webhooks, which task 15's Dokploy deployment already provides.
 
 Task 07 (better-auth) is the single session layer **and the single identity
 store**. It deletes the `users` and `otp_codes` tables; better-auth's user
@@ -56,7 +62,8 @@ deliberate: booking without an account must keep working.
 
 ## What is deliberately not here
 
-- Real payment gateway integration. `mockCharge()` stays; see task 04.
+- Real *money*. Task 16 integrates Dodo Payments but is locked to test mode;
+  `mockCharge()` stays as the default provider for local development and CI.
 - Real OPRS adapters. Every handler reads this project's own storage or
   synthetic data; see `00-conventions.md`.
 - Anything requiring GSRTC credentials or infrastructure access.

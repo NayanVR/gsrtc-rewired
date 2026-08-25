@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { api } from "#/api/server";
 import { isValidMobileNumber } from "#/lib/auth-identity";
+import { getPaymentsProvider } from "#/lib/dodo";
 import { getDevelopmentOtp as readDevelopmentOtp } from "#/lib/mock-otp-delivery";
 
 // The client↔server boundary. Each server function wraps a contract call; the
@@ -55,6 +56,31 @@ export const createBooking = createServerFn()
 	)
 	.handler(({ data }) => api.booking.create(data));
 
+export const startBookingPayment = createServerFn()
+	.validator(
+		(data: {
+			contact: { email?: string; mobile: string };
+			holdId: string;
+			passengers: {
+				age: number;
+				gender: "male" | "female" | "other";
+				name: string;
+				seatNo: string;
+			}[];
+			singleLady?: boolean;
+			tripId: string;
+		}) => data
+	)
+	.handler(({ data }) => api.booking.startPayment(data));
+
+export const getPaymentStatus = createServerFn()
+	.validator((data: { paymentIntentId: string }) => data)
+	.handler(({ data }) => api.booking.paymentStatus(data));
+
+export const getPaymentProvider = createServerFn().handler(() =>
+	getPaymentsProvider()
+);
+
 export const getBooking = createServerFn()
 	.validator((data: { mobile: string; pnr: string }) => data)
 	.handler(({ data }) => api.booking.get(data));
@@ -108,6 +134,10 @@ export const topUpWallet = createServerFn()
 		(data: { amount: number; method: "upi" | "card" | "netbanking" }) => data
 	)
 	.handler(({ data }) => api.wallet.topUp(data));
+
+export const startWalletTopUp = createServerFn()
+	.validator((data: { amount: number }) => data)
+	.handler(({ data }) => api.wallet.startTopUp(data));
 
 export const trackJourney = createServerFn()
 	.validator((vehicleNo: string) => vehicleNo)

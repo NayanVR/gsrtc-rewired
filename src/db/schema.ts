@@ -230,6 +230,76 @@ export const walletTransactions = pgTable(
 	(table) => [index("wallet_transactions_user_idx").on(table.userId)]
 );
 
+// ── Payments ─────────────────────────────────────────────────────────────
+// An intent is written before redirecting to Dodo. It retains the data a
+// webhook needs to fulfil an account-free booking without a browser session.
+export const paymentIntents = pgTable(
+	"payment_intents",
+	{
+		amountPaise: integer("amount_paise").notNull(),
+		checkoutUrl: text("checkout_url"),
+		contactEmail: text("contact_email"),
+		contactMobile: text("contact_mobile"),
+		createdAt: timestamp("created_at", { withTimezone: true })
+			.notNull()
+			.defaultNow(),
+		currency: text("currency").notNull().default("INR"),
+		dodoPaymentId: text("dodo_payment_id"),
+		dodoSessionId: text("dodo_session_id"),
+		expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+		failureCode: text("failure_code"),
+		failureMessage: text("failure_message"),
+		holdId: text("hold_id"),
+		id: text("id").primaryKey(),
+		incidentReason: text("incident_reason"),
+		lastWebhookAt: timestamp("last_webhook_at", { withTimezone: true }),
+		lastWebhookId: text("last_webhook_id"),
+		passengers: jsonb("passengers").$type<Passenger[]>(),
+		pnr: text("pnr"),
+		purpose: text("purpose", { enum: ["booking", "wallet_topup"] }).notNull(),
+		refundId: text("refund_id"),
+		singleLady: boolean("single_lady"),
+		status: text("status", {
+			enum: [
+				"created",
+				"processing",
+				"succeeded",
+				"failed",
+				"orphaned",
+				"expired",
+				"refunded",
+			],
+		}).notNull(),
+		tripId: text("trip_id"),
+		updatedAt: timestamp("updated_at", { withTimezone: true })
+			.notNull()
+			.defaultNow()
+			.$onUpdate(() => new Date()),
+		userId: text("user_id").references(() => user.id),
+	},
+	(table) => [
+		index("payment_intents_hold_id_idx").on(table.holdId),
+		index("payment_intents_user_id_idx").on(table.userId),
+		index("payment_intents_dodo_payment_id_idx").on(table.dodoPaymentId),
+		index("payment_intents_status_idx").on(table.status),
+		index("payment_intents_incident_idx")
+			.on(table.createdAt)
+			.where(sql`${table.incidentReason} IS NOT NULL`),
+	]
+);
+
+export const paymentWebhookEvents = pgTable("payment_webhook_events", {
+	eventType: text("event_type").notNull(),
+	payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+	paymentIntentId: text("payment_intent_id"),
+	processedAt: timestamp("processed_at", { withTimezone: true }),
+	processingError: text("processing_error"),
+	receivedAt: timestamp("received_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
+	webhookId: text("webhook_id").primaryKey(),
+});
+
 // ── Agents ───────────────────────────────────────────────────────────────
 // Agent identity stays separate from Better Auth users: an agent application
 // can exist before approval, while Better Auth remains the only session store.

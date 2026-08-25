@@ -2,12 +2,19 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import {
 	createBooking,
+	getPaymentProvider,
 	getSeatHold,
 	getSeatMap,
 	getTrip,
 	holdSeats,
+	startBookingPayment,
 } from "#/api/fns";
-import type { Passenger as ApiPassenger, Booking, Seat } from "#/api/schemas";
+import type {
+	Passenger as ApiPassenger,
+	Booking,
+	Seat,
+	Trip,
+} from "#/api/schemas";
 import {
 	ArrowRightIcon,
 	CheckIcon,
@@ -237,6 +244,21 @@ function BookPage() {
 	);
 	const [bookingError, setBookingError] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [paymentProvider, setPaymentProvider] = useState<"dodo" | "mock">(
+		"mock"
+	);
+
+	useEffect(() => {
+		let cancelled = false;
+		getPaymentProvider().then((provider) => {
+			if (!cancelled) {
+				setPaymentProvider(provider);
+			}
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	const saveProgress = (
 		hold: SeatHold,
@@ -418,6 +440,18 @@ function BookPage() {
 		setBookingError(null);
 		setIsSubmitting(true);
 		try {
+			if (paymentProvider === "dodo") {
+				const payment = await startBookingPayment({
+					data: {
+						contact: { email, mobile },
+						holdId: seatHold.holdId,
+						passengers: bookingPassengers,
+						tripId: trip.id,
+					},
+				});
+				window.location.assign(payment.checkoutUrl);
+				return;
+			}
 			const booking = await createBooking({
 				data: {
 					contact: { email, mobile },
@@ -573,6 +607,7 @@ function BookPage() {
 						{bookingStep === "payment-method" ? (
 							<PaymentMethodStep
 								disabled={isSubmitting}
+								hostedCheckout={paymentProvider === "dodo"}
 								onSelect={selectPaymentMethod}
 								paymentMethod={paymentMethod}
 								seatHold={seatHold}
@@ -581,6 +616,7 @@ function BookPage() {
 
 						{bookingStep === "payment" ? (
 							<PaymentConfirmation
+								hostedCheckout={paymentProvider === "dodo"}
 								onBack={returnToPaymentMethod}
 								paymentMethod={paymentMethod}
 								selectedSeats={selected}
@@ -823,11 +859,13 @@ function BookingPrimaryAction({
 
 function PaymentMethodStep({
 	disabled,
+	hostedCheckout,
 	onSelect,
 	paymentMethod,
 	seatHold,
 }: {
 	disabled: boolean;
+	hostedCheckout: boolean;
 	onSelect: (method: PaymentMethod) => void;
 	paymentMethod: PaymentMethod;
 	seatHold: SeatHold | null;
@@ -845,35 +883,42 @@ function PaymentMethodStep({
 	return (
 		<section className="rounded-2xl border border-ink-100 bg-surface p-5 sm:p-6">
 			<h2 className="font-bold font-display text-ink-900 text-lg">
-				Choose payment method
+				{hostedCheckout ? "Secure checkout" : "Choose payment method"}
 			</h2>
 			<p className="mt-1 text-ink-500 text-sm">
 				Your seats are checked and locked only when you continue from this step.
 			</p>
-			<div className="mt-5 grid gap-3 sm:grid-cols-3">
-				{methods.map((method) => {
-					const selected = method.id === paymentMethod;
-					return (
-						<button
-							aria-pressed={selected}
-							className={`rounded-xl border p-4 text-left transition disabled:cursor-not-allowed ${
-								selected
-									? "border-brand-500 bg-brand-50 text-brand-800"
-									: "border-ink-200 text-ink-700 hover:border-saffron-400"
-							}`}
-							disabled={disabled}
-							key={method.id}
-							onClick={() => onSelect(method.id)}
-							type="button"
-						>
-							<span className="block font-semibold">{method.label}</span>
-							<span className="mt-1 block text-ink-500 text-xs">
-								{method.description}
-							</span>
-						</button>
-					);
-				})}
-			</div>
+			{hostedCheckout ? (
+				<p className="mt-5 rounded-xl bg-brand-50 px-4 py-3 text-brand-800 text-sm">
+					Test mode — no real payment is taken. You will choose a payment method
+					on Dodo’s secure checkout page.
+				</p>
+			) : (
+				<div className="mt-5 grid gap-3 sm:grid-cols-3">
+					{methods.map((method) => {
+						const selected = method.id === paymentMethod;
+						return (
+							<button
+								aria-pressed={selected}
+								className={`rounded-xl border p-4 text-left transition disabled:cursor-not-allowed ${
+									selected
+										? "border-brand-500 bg-brand-50 text-brand-800"
+										: "border-ink-200 text-ink-700 hover:border-saffron-400"
+								}`}
+								disabled={disabled}
+								key={method.id}
+								onClick={() => onSelect(method.id)}
+								type="button"
+							>
+								<span className="block font-semibold">{method.label}</span>
+								<span className="mt-1 block text-ink-500 text-xs">
+									{method.description}
+								</span>
+							</button>
+						);
+					})}
+				</div>
+			)}
 			{seatHold ? (
 				<p className="mt-5 rounded-xl bg-success-50 px-4 py-3 text-sm text-success-700">
 					Your seats are locked. Continue to the payment page before the timer
@@ -885,10 +930,12 @@ function PaymentMethodStep({
 }
 
 function PaymentConfirmation({
+	hostedCheckout,
 	onBack,
 	paymentMethod,
 	selectedSeats,
 }: {
+	hostedCheckout: boolean;
 	onBack: () => void;
 	paymentMethod: PaymentMethod;
 	selectedSeats: string[];
@@ -910,21 +957,25 @@ function PaymentConfirmation({
 						Review the payment details, then complete your booking.
 					</p>
 				</div>
-				<button
-					className="font-semibold text-brand-600 text-sm hover:underline"
-					onClick={onBack}
-					type="button"
-				>
-					Change method
-				</button>
+				{hostedCheckout ? null : (
+					<button
+						className="font-semibold text-brand-600 text-sm hover:underline"
+						onClick={onBack}
+						type="button"
+					>
+						Change method
+					</button>
+				)}
 			</div>
 			<div className="mt-5 grid gap-3 rounded-xl bg-canvas p-4 text-sm sm:grid-cols-2">
-				<div>
-					<p className="text-ink-500 text-xs">Payment method</p>
-					<p className="mt-1 font-semibold text-ink-900">
-						{paymentLabels[paymentMethod]}
-					</p>
-				</div>
+				{hostedCheckout ? null : (
+					<div>
+						<p className="text-ink-500 text-xs">Payment method</p>
+						<p className="mt-1 font-semibold text-ink-900">
+							{paymentLabels[paymentMethod]}
+						</p>
+					</div>
+				)}
 				<div>
 					<p className="text-ink-500 text-xs">Seats</p>
 					<p className="mt-1 font-semibold text-ink-900">
@@ -935,8 +986,9 @@ function PaymentConfirmation({
 				</div>
 			</div>
 			<p className="mt-4 text-ink-500 text-xs">
-				Payments are simulated in this concept build. The selected method is
-				included in the booking request.
+				{hostedCheckout
+					? "Test mode — no real payment is taken. Your booking is confirmed only after Dodo verifies payment."
+					: "Payments are simulated in this concept build. The selected method is included in the booking request."}
 			</p>
 		</section>
 	);

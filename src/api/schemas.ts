@@ -87,6 +87,16 @@ export const Booking = v.object({
 	tripId: v.string(),
 });
 
+export const PaymentIntentStatus = v.picklist([
+	"created",
+	"processing",
+	"succeeded",
+	"failed",
+	"orphaned",
+	"expired",
+	"refunded",
+]);
+
 export const WalletAccount = v.object({
 	balance: Rupees,
 	kycStatus: v.picklist(["verified", "pending", "none"]),

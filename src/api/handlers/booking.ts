@@ -1,7 +1,13 @@
 import { implement } from "@orpc/server";
 import { and, eq, gt, or } from "drizzle-orm";
 import { appContract } from "#/api/contract";
-import type { Passenger } from "#/api/schemas";
+import {
+	calculateBookingAmount,
+	confirmHold,
+	getHeldSeatNos,
+	hasMatchingSeatNos,
+} from "#/api/services/confirm-booking";
+import { getPaymentStatus, startBookingPayment } from "#/api/services/payments";
 import {
 	createSeatHold,
 	isUniqueViolation,
@@ -10,55 +16,13 @@ import {
 import { buildSeats, buildTrip, parseTripId } from "#/api/trips";
 import { getDb } from "#/db/client";
 import { bookedSeats, bookings, seatHolds } from "#/db/schema";
-import { generatePnr } from "#/lib/ids";
-import { mockCharge, type PaymentMethod } from "#/lib/mock-payment";
+import { getPaymentsProvider } from "#/lib/dodo";
+import { mockCharge } from "#/lib/mock-payment";
 
 const os = implement(appContract);
-const SERVICE_FEE_PER_SEAT = 15;
-
 type DbTransaction = Parameters<
 	Parameters<ReturnType<typeof getDb>["transaction"]>[0]
 >[0];
-
-interface CreateBookingInput {
-	contact: { email?: string; mobile: string };
-	holdId: string;
-	passengers: Passenger[];
-	paymentMethod?: PaymentMethod;
-	singleLady?: boolean;
-	tripId: string;
-}
-
-interface CreateBookingErrors {
-	CONFLICT: () => unknown;
-	NOT_FOUND: () => unknown;
-	PAYMENT_FAILED: () => unknown;
-}
-
-function hasMatchingSeatNos(
-	passengerSeatNos: string[],
-	heldSeatNos: string[]
-): boolean {
-	if (passengerSeatNos.length !== heldSeatNos.length) {
-		return false;
-	}
-	const sortedPassengerSeats = [...passengerSeatNos].sort();
-	const sortedHeldSeats = [...heldSeatNos].sort();
-	return sortedPassengerSeats.every(
-		(seatNo, index) => seatNo === sortedHeldSeats[index]
-	);
-}
-
-function calculateBookingAmount(tripId: string, seatNos: string[]): number {
-	const fareBySeatNo = new Map(
-		buildSeats(tripId).map((seat) => [seat.no, seat.fare])
-	);
-	const seatFare = seatNos.reduce(
-		(total, seatNo) => total + (fareBySeatNo.get(seatNo) ?? 0),
-		0
-	);
-	return seatFare + seatNos.length * SERVICE_FEE_PER_SEAT;
-}
 
 function toBooking(row: typeof bookings.$inferSelect) {
 	return {
@@ -160,81 +124,11 @@ async function findBookingForConsumedHold(tx: DbTransaction, holdId: string) {
 	return existingBooking ? toBooking(existingBooking) : null;
 }
 
-async function confirmLiveHold(
-	tx: DbTransaction,
-	holdRow: typeof seatHolds.$inferSelect,
-	input: CreateBookingInput,
-	errors: CreateBookingErrors
-) {
-	const heldSeats = await tx
-		.select({ seatNo: bookedSeats.seatNo })
-		.from(bookedSeats)
-		.where(
-			and(eq(bookedSeats.holdId, holdRow.id), eq(bookedSeats.state, "held"))
-		);
-	const heldSeatNos = heldSeats.map((seat) => seat.seatNo);
-	const passengerSeatNos = input.passengers.map(
-		(passenger) => passenger.seatNo
-	);
-	if (!hasMatchingSeatNos(passengerSeatNos, heldSeatNos)) {
-		throw errors.CONFLICT();
-	}
-
-	const leg = parseTripId(holdRow.tripId);
-	if (!leg) {
-		throw errors.NOT_FOUND();
-	}
-	const route = buildTrip(leg);
-	const amount = calculateBookingAmount(holdRow.tripId, heldSeatNos);
-	const charge = mockCharge({
-		amount,
-		idempotencyKey: holdRow.id,
-		method: input.paymentMethod ?? "upi",
-	});
-	if (charge.status !== "success") {
+const create = os.booking.create.handler(({ input, errors }) => {
+	if (getPaymentsProvider() === "dodo") {
 		throw errors.PAYMENT_FAILED();
 	}
-
-	const pnr = generatePnr();
-	const [createdBooking] = await tx
-		.insert(bookings)
-		.values({
-			amountPaid: amount.toFixed(2),
-			contactEmail: input.contact.email,
-			contactMobile: input.contact.mobile,
-			from: route.from,
-			journeyDate: leg.date,
-			passengers: input.passengers,
-			pnr,
-			seatNos: heldSeatNos,
-			singleLady: input.singleLady ?? false,
-			to: route.to,
-			tripId: holdRow.tripId,
-		})
-		.returning();
-	if (!createdBooking) {
-		throw errors.PAYMENT_FAILED();
-	}
-	const updatedSeats = await tx
-		.update(bookedSeats)
-		.set({ expiresAt: null, pnr, state: "booked" })
-		.where(
-			and(eq(bookedSeats.holdId, holdRow.id), eq(bookedSeats.state, "held"))
-		)
-		.returning({ seatNo: bookedSeats.seatNo });
-	if (updatedSeats.length !== heldSeatNos.length) {
-		throw errors.CONFLICT();
-	}
-	await tx
-		.update(seatHolds)
-		.set({ consumedAt: new Date() })
-		.where(eq(seatHolds.id, holdRow.id));
-
-	return toBooking(createdBooking);
-}
-
-const create = os.booking.create.handler(({ input, errors }) =>
-	getDb().transaction(async (tx) => {
+	return getDb().transaction(async (tx) => {
 		const [holdRow] = await tx
 			.select()
 			.from(seatHolds)
@@ -254,8 +148,46 @@ const create = os.booking.create.handler(({ input, errors }) =>
 			}
 			return existingBooking;
 		}
-		return confirmLiveHold(tx, holdRow, input, errors);
-	})
+		const heldSeatNos = await getHeldSeatNos(tx, holdRow.id);
+		if (
+			!hasMatchingSeatNos(
+				input.passengers.map((passenger) => passenger.seatNo),
+				heldSeatNos
+			)
+		) {
+			throw errors.CONFLICT();
+		}
+		const charge = mockCharge({
+			amount: calculateBookingAmount(holdRow.tripId, heldSeatNos),
+			idempotencyKey: holdRow.id,
+			method: input.paymentMethod ?? "upi",
+		});
+		if (charge.status !== "success") {
+			throw errors.PAYMENT_FAILED();
+		}
+		return confirmHold(
+			tx,
+			holdRow,
+			{
+				contact: input.contact,
+				passengers: input.passengers,
+				paymentRef: charge.transactionId,
+				singleLady: input.singleLady,
+			},
+			errors
+		);
+	});
+});
+
+const startPayment = os.booking.startPayment.handler(({ input, errors }) => {
+	if (getPaymentsProvider() !== "dodo") {
+		throw errors.PAYMENT_FAILED();
+	}
+	return startBookingPayment(input, errors);
+});
+
+const paymentStatus = os.booking.paymentStatus.handler(({ input, errors }) =>
+	getPaymentStatus(input.paymentIntentId, errors)
 );
 
 const get = os.booking.get.handler(async ({ input, errors }) => {
@@ -277,6 +209,8 @@ export const bookingHandlers = {
 	get,
 	hold,
 	holdStatus,
+	paymentStatus,
 	seatMap,
+	startPayment,
 	trip,
 };

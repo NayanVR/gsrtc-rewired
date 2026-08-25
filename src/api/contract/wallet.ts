@@ -15,6 +15,20 @@ export const wallet = {
 		.route({ method: "GET", path: "/wallet/passbook", summary: "Passbook" })
 		.input(PageInput)
 		.output(v.object({ balance: Rupees, transactions: v.array(Transaction) })),
+	startTopUp: base
+		.route({
+			method: "POST",
+			path: "/wallet/topup/session",
+			summary: "Start hosted wallet top-up",
+		})
+		.input(v.object({ amount: v.pipe(Rupees, v.minValue(10)) }))
+		.output(
+			v.object({
+				checkoutUrl: v.string(),
+				expiresAt: v.pipe(v.string(), v.isoTimestamp()),
+				paymentIntentId: v.string(),
+			})
+		),
 
 	topUp: base
 		.route({ method: "POST", path: "/wallet/topup", summary: "Add money" })
