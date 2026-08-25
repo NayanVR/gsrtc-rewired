@@ -151,6 +151,19 @@ function isConflictError(error: unknown): boolean {
 	return "code" in error && error.code === "CONFLICT";
 }
 
+function paymentFailureMessage(error: unknown): string {
+	if (
+		typeof error === "object" &&
+		error !== null &&
+		"message" in error &&
+		typeof error.message === "string" &&
+		error.message !== "Payment could not be completed."
+	) {
+		return error.message;
+	}
+	return "We could not process this payment. Please try again before the hold expires.";
+}
+
 function refreshSeatMap(
 	tripId: string,
 	setSeatMap: (seats: Seat[]) => void
@@ -469,7 +482,7 @@ function BookPage() {
 			setBookingError(
 				isConflictError(error)
 					? "This seat hold is no longer available. Please choose your seats again."
-					: "We could not process this payment. Please try again before the hold expires."
+					: paymentFailureMessage(error)
 			);
 		} finally {
 			setIsSubmitting(false);

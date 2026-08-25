@@ -35,7 +35,7 @@ const TERMINAL_PAYMENT_STATUSES = [
 interface PaymentErrors {
 	CONFLICT: () => unknown;
 	NOT_FOUND: () => unknown;
-	PAYMENT_FAILED: () => unknown;
+	PAYMENT_FAILED: (options?: { message?: string }) => unknown;
 	RATE_LIMITED: () => unknown;
 }
 
@@ -129,6 +129,40 @@ function isNonTestCheckoutUrlError(error: unknown): boolean {
 		error instanceof Error &&
 		error.message === "Dodo returned a checkout URL outside test mode."
 	);
+}
+
+export function checkoutFailureMessage(error: unknown): string {
+	if (
+		typeof error !== "object" ||
+		error === null ||
+		!("status" in error) ||
+		typeof error.status !== "number"
+	) {
+		return "Dodo checkout is temporarily unavailable. Please try again shortly.";
+	}
+	switch (error.status) {
+		case 401:
+		case 403:
+			return "Dodo test credentials are invalid or unavailable. Please contact support.";
+		case 404:
+			return "A Dodo test product could not be found. Please contact support.";
+		case 422:
+			return "This fare is outside the Dodo product's allowed test price range. Please contact support.";
+		case 429:
+			return "Dodo is receiving too many requests. Please try again shortly.";
+		default:
+			return "Dodo checkout is temporarily unavailable. Please try again shortly.";
+	}
+}
+
+function captureCheckoutFailure(
+	error: unknown,
+	paymentIntentId: string,
+	purpose: "booking" | "wallet_topup"
+): void {
+	captureException(error, {
+		tags: { payment_intent_id: paymentIntentId, purpose },
+	});
 }
 
 export async function startBookingPayment(
@@ -242,12 +276,13 @@ export async function startBookingPayment(
 			.where(eq(paymentIntents.id, intent.id));
 		return { ...toCheckoutResult(intent), checkoutUrl: session.checkoutUrl };
 	} catch (error) {
+		captureCheckoutFailure(error, intent.id, "booking");
 		await markSessionCreationFailed(
 			intent.id,
 			error,
 			isNonTestCheckoutUrlError(error)
 		);
-		throw errors.PAYMENT_FAILED();
+		throw errors.PAYMENT_FAILED({ message: checkoutFailureMessage(error) });
 	}
 }
 
@@ -305,12 +340,13 @@ export async function startWalletTopUp(
 			.where(eq(paymentIntents.id, intent.id));
 		return { ...toCheckoutResult(intent), checkoutUrl: session.checkoutUrl };
 	} catch (error) {
+		captureCheckoutFailure(error, intent.id, "wallet_topup");
 		await markSessionCreationFailed(
 			intent.id,
 			error,
 			isNonTestCheckoutUrlError(error)
 		);
-		throw errors.PAYMENT_FAILED();
+		throw errors.PAYMENT_FAILED({ message: checkoutFailureMessage(error) });
 	}
 }
 

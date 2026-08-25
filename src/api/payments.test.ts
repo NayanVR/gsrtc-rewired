@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "#/api/server";
 import { calculateBookingAmount } from "#/api/services/confirm-booking";
 import {
+	checkoutFailureMessage,
 	processVerifiedDodoWebhook,
 	type VerifiedDodoWebhook,
 } from "#/api/services/payments";
@@ -97,6 +98,12 @@ describe("Dodo Payments", () => {
 				"https://test.checkout.dodopayments.com/session/cks_test"
 			)
 		).toBe("https://test.checkout.dodopayments.com/session/cks_test");
+	});
+
+	it("maps Dodo setup failures to safe recovery messages", () => {
+		expect(checkoutFailureMessage({ status: 401 })).toContain("credentials");
+		expect(checkoutFailureMessage({ status: 404 })).toContain("product");
+		expect(checkoutFailureMessage({ status: 422 })).toContain("price range");
 	});
 
 	it("deduplicates a verified booking success webhook", async () => {
