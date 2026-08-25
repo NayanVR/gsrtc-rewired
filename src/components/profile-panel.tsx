@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import {
 	cancelTicket,
@@ -8,6 +8,7 @@ import {
 } from "#/api/fns";
 import type { Booking } from "#/api/schemas";
 import { Button } from "#/components/ui/button";
+import { authClient } from "#/lib/auth-client";
 
 const MONEY_FORMATTER = new Intl.NumberFormat("en-IN", {
 	currency: "INR",
@@ -239,11 +240,33 @@ export function ProfilePanel({
 	mobile?: string;
 	name: string;
 }) {
+	const navigate = useNavigate();
 	const [bookings, setBookings] = useState<Booking[]>([]);
 	const [error, setError] = useState("");
 	const [notice, setNotice] = useState("");
 	const [loading, setLoading] = useState(Boolean(mobile));
 	const [pendingAction, setPendingAction] = useState<string | null>(null);
+	const [signingOut, setSigningOut] = useState(false);
+
+	const signOut = async () => {
+		setError("");
+		setNotice("");
+		setSigningOut(true);
+		try {
+			const result = await authClient.signOut();
+			if (result.error) {
+				setError(
+					result.error.message ?? "We could not sign you out. Try again."
+				);
+				return;
+			}
+			await navigate({ to: "/" });
+		} catch (cause) {
+			setError(formatError(cause, "We could not sign you out. Try again."));
+		} finally {
+			setSigningOut(false);
+		}
+	};
 
 	const loadBookings = useCallback(async () => {
 		if (!mobile) {
@@ -348,6 +371,15 @@ export function ProfilePanel({
 				>
 					Sign in with mobile OTP
 				</Link>
+				<Button
+					className="ml-4"
+					disabled={signingOut}
+					onClick={signOut}
+					size="sm"
+					variant="secondary"
+				>
+					{signingOut ? "Signing out…" : "Sign out"}
+				</Button>
 			</div>
 		);
 	}
@@ -362,14 +394,24 @@ export function ProfilePanel({
 					</p>
 					<p className="mt-1 text-ink-600 text-sm">{mobile}</p>
 				</div>
-				<Button
-					disabled={loading}
-					onClick={loadBookings}
-					size="sm"
-					variant="secondary"
-				>
-					Refresh tickets
-				</Button>
+				<div className="flex flex-wrap gap-2">
+					<Button
+						disabled={loading}
+						onClick={loadBookings}
+						size="sm"
+						variant="secondary"
+					>
+						Refresh tickets
+					</Button>
+					<Button
+						disabled={signingOut}
+						onClick={signOut}
+						size="sm"
+						variant="secondary"
+					>
+						{signingOut ? "Signing out…" : "Sign out"}
+					</Button>
+				</div>
 			</div>
 
 			{error ? (

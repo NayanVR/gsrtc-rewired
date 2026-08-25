@@ -138,12 +138,25 @@ label {
   }
 }
 
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 .animate-fade-up {
   animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-pop-in {
   animation: pop-in 0.16s ease-out both;
+}
+
+.note-marquee {
+  animation: marquee 18s linear infinite;
 }
 
 /* Skip render work for off-screen sections on low-end devices. */
@@ -155,6 +168,9 @@ label {
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
   .animate-pop-in {
+    animation: none;
+  }
+  .note-marquee {
     animation: none;
   }
   * {

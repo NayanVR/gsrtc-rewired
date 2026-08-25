@@ -95,12 +95,15 @@ function Home() {
 }
 
 function NoteStrip() {
+	const message =
+		"Note: This is not official site of GSRTC 📌 આ જી.એસ.આર.ટી.સી.ની સાઇટ નથી.";
 	return (
 		<div className="border-saffron-200 border-b bg-saffron-50">
-			<div className="mx-auto max-w-6xl px-4 py-2 text-saffron-800 text-sm sm:px-6">
-				<span className="font-semibold">Note:</span> Please do not press the
-				forward or back buttons during a transaction. 📌 ટિકિટ બુક કરતા પહેલા
-				એકવાર બ્રાઉઝર હિસ્ટ્રી ક્લિયર કરવી.
+			<div className="overflow-hidden py-1.5 text-saffron-800 text-sm">
+				<p className="note-marquee flex w-max items-center gap-12 whitespace-nowrap">
+					<span>{message}</span>
+					<span aria-hidden>{message}</span>
+				</p>
 			</div>
 		</div>
 	);

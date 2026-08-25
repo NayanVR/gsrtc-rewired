@@ -26,14 +26,17 @@ export function SiteHeader() {
 			<UtilityStrip signedIn={Boolean(currentSession?.user)} />
 
 			<div className="border-ink-100 border-b">
-				<div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
+				<div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 sm:py-3">
 					<Link className="flex shrink-0 items-center gap-3" to="/">
-						<BrandMark className="shrink-0" size={46} />
+						<BrandMark
+							className="h-10 w-10 shrink-0 sm:h-[46px] sm:w-[46px]"
+							size={46}
+						/>
 						<span className="leading-tight">
 							<span className="block font-bold font-display text-base text-ink-900 tracking-tight sm:text-lg">
 								{t("Gujarat State Road Transport")}
 							</span>
-							<span className="block text-ink-500 text-xs">
+							<span className="hidden text-ink-500 text-xs sm:block">
 								ગુજરાત રાજ્ય માર્ગ વાહન વ્યવહાર નિગમ
 							</span>
 						</span>
@@ -75,9 +78,9 @@ function UtilityStrip({ signedIn }: { signedIn: boolean }) {
 	const { t } = useTranslation();
 	return (
 		<div className="border-ink-100 border-b bg-canvas-2/80">
-			<div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-5 gap-y-1 px-4 py-1.5 text-xs sm:px-6">
+			<div className="mx-auto flex h-8 max-w-6xl items-center px-4 text-xs sm:px-6">
 				<div
-					className="hidden items-center gap-4 text-ink-600 md:flex"
+					className="hidden items-center gap-4 text-ink-600 lg:flex"
 					data-no-translate
 				>
 					<a
@@ -101,7 +104,7 @@ function UtilityStrip({ signedIn }: { signedIn: boolean }) {
 						1800 233 666666
 					</a>
 				</div>
-				<div className="flex flex-1 items-center justify-end gap-x-4 gap-y-1 text-ink-600">
+				<div className="ml-auto flex shrink-0 flex-nowrap items-center gap-x-3 text-ink-600 sm:gap-x-4">
 					<Link
 						className="flex items-center gap-1 hover:text-brand-600"
 						to={signedIn ? "/profile" : "/login"}
@@ -109,24 +112,28 @@ function UtilityStrip({ signedIn }: { signedIn: boolean }) {
 						<UserIcon height={13} width={13} />
 						{signedIn ? t("My profile") : t("Passenger Login")}
 					</Link>
+					{signedIn ? null : (
+						<>
+							<Link
+								className="hidden items-center gap-1 hover:text-brand-600 sm:flex"
+								params={{ slug: "gsrtc-agent-login" }}
+								to="/p/$slug"
+							>
+								<UserIcon height={13} width={13} />
+								{t("GSRTC Login")}
+							</Link>
+							<Link
+								className="hidden items-center gap-1 hover:text-brand-600 md:flex"
+								params={{ slug: "new-commuter-bus-pass" }}
+								to="/p/$slug"
+							>
+								<UserIcon height={13} width={13} />
+								{t("Bus Pass Login")}
+							</Link>
+						</>
+					)}
 					<Link
-						className="flex items-center gap-1 hover:text-brand-600"
-						params={{ slug: "gsrtc-agent-login" }}
-						to="/p/$slug"
-					>
-						<UserIcon height={13} width={13} />
-						{t("GSRTC Login")}
-					</Link>
-					<Link
-						className="flex items-center gap-1 hover:text-brand-600"
-						params={{ slug: "new-commuter-bus-pass" }}
-						to="/p/$slug"
-					>
-						<UserIcon height={13} width={13} />
-						{t("Bus Pass Login")}
-					</Link>
-					<Link
-						className="flex items-center gap-1 font-semibold text-saffron-600 hover:text-saffron-700"
+						className="hidden items-center gap-1 font-semibold text-saffron-600 hover:text-saffron-700 sm:flex"
 						params={{ slug: "press-release" }}
 						to="/p/$slug"
 					>
@@ -209,7 +216,9 @@ function NavMenu({
 						</span>
 					</Link>
 				) : null}
-				{NAV.map((group) => (
+				{NAV.filter(
+					(group) => !signedIn || group.label !== "GSRTC / Agent Login"
+				).map((group) => (
 					<MobileNavItem
 						group={group}
 						key={group.label}
