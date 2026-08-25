@@ -24,6 +24,7 @@ import {
 import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
 import { formatDuration, formatFare, formatTime } from "#/data/trips";
+import { isValidMobileNumber } from "#/lib/auth-identity";
 import type { PaymentMethod } from "#/lib/mock-payment";
 
 interface BookSearch {
@@ -57,6 +58,7 @@ export const Route = createFileRoute("/book/$tripId")({
 const SERVICE_FEE = 15;
 const SEATS_PER_ROW = 4;
 const AISLE_AFTER = 2;
+const EMAIL_ADDRESS = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const TRIP_INFO_LINKS = [
 	"Discounts",
@@ -151,15 +153,21 @@ function isConflictError(error: unknown): boolean {
 	return "code" in error && error.code === "CONFLICT";
 }
 
+function isValidEmailAddress(value: string): boolean {
+	return EMAIL_ADDRESS.test(value);
+}
+
 function paymentFailureMessage(error: unknown): string {
 	if (
 		typeof error === "object" &&
 		error !== null &&
-		"message" in error &&
-		typeof error.message === "string" &&
-		error.message !== "Payment could not be completed."
+		"data" in error &&
+		typeof error.data === "object" &&
+		error.data !== null &&
+		"reason" in error.data &&
+		typeof error.data.reason === "string"
 	) {
-		return error.message;
+		return error.data.reason;
 	}
 	return "We could not process this payment. Please try again before the hold expires.";
 }
@@ -393,8 +401,8 @@ function BookPage() {
 	const bookingPassengers = toBookingPassengers(selected, people);
 	const canProceed =
 		selected.length === passengers &&
-		email !== "" &&
-		mobile !== "" &&
+		isValidEmailAddress(email.trim()) &&
+		isValidMobileNumber(mobile.trim()) &&
 		bookingPassengers !== null;
 
 	const continueToPaymentMethod = () => {
@@ -457,7 +465,7 @@ function BookPage() {
 			if (paymentProvider === "dodo") {
 				const payment = await startBookingPayment({
 					data: {
-						contact: { email, mobile },
+						contact: { email: email.trim(), mobile: mobile.trim() },
 						holdId: seatHold.holdId,
 						passengers: bookingPassengers,
 						tripId: trip.id,
@@ -468,7 +476,7 @@ function BookPage() {
 			}
 			const booking = await createBooking({
 				data: {
-					contact: { email, mobile },
+					contact: { email: email.trim(), mobile: mobile.trim() },
 					holdId: seatHold.holdId,
 					paymentMethod,
 					passengers: bookingPassengers,

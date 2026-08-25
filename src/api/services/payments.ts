@@ -35,7 +35,7 @@ const TERMINAL_PAYMENT_STATUSES = [
 interface PaymentErrors {
 	CONFLICT: () => unknown;
 	NOT_FOUND: () => unknown;
-	PAYMENT_FAILED: (options?: { message?: string }) => unknown;
+	PAYMENT_FAILED: (options?: { data?: { reason?: string } }) => unknown;
 	RATE_LIMITED: () => unknown;
 }
 
@@ -282,7 +282,9 @@ export async function startBookingPayment(
 			error,
 			isNonTestCheckoutUrlError(error)
 		);
-		throw errors.PAYMENT_FAILED({ message: checkoutFailureMessage(error) });
+		throw errors.PAYMENT_FAILED({
+			data: { reason: checkoutFailureMessage(error) },
+		});
 	}
 }
 
@@ -346,7 +348,9 @@ export async function startWalletTopUp(
 			error,
 			isNonTestCheckoutUrlError(error)
 		);
-		throw errors.PAYMENT_FAILED({ message: checkoutFailureMessage(error) });
+		throw errors.PAYMENT_FAILED({
+			data: { reason: checkoutFailureMessage(error) },
+		});
 	}
 }
 

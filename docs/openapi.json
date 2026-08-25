@@ -217,9 +217,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -479,9 +494,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -760,9 +790,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -1038,9 +1083,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -1320,9 +1380,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -1565,9 +1640,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -1828,9 +1918,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -2110,9 +2215,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -2368,9 +2488,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -2741,9 +2876,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -3069,9 +3219,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -3341,9 +3506,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -3616,9 +3796,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -3962,9 +4157,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -4245,9 +4455,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -4559,9 +4784,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -4868,9 +5108,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -5125,9 +5380,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -5474,9 +5744,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -5756,9 +6041,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -6018,9 +6318,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -6309,9 +6624,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -6584,9 +6914,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -6864,9 +7209,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -7119,9 +7479,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -7492,9 +7867,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -7764,9 +8154,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -8093,9 +8498,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -8364,9 +8784,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -8700,9 +9135,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -8962,9 +9412,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -9275,9 +9740,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -9566,9 +10046,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -9848,9 +10343,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -10102,9 +10612,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -10406,9 +10931,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -10676,9 +11216,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
@@ -10947,9 +11502,24 @@
                           "type": "string",
                           "default": "Payment could not be completed."
                         },
-                        "data": {}
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
                       },
-                      "required": ["defined", "code", "status", "message"]
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
                     },
                     {
                       "type": "object",
