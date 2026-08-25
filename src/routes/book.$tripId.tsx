@@ -404,7 +404,8 @@ function BookPage() {
 			});
 			setSeatHold(hold);
 			setRemainingSeconds(remainingHoldSeconds(hold.expiresAt));
-			saveProgress(hold, "payment-method");
+			saveProgress(hold, "payment");
+			setBookingStep("payment");
 		} catch (error) {
 			setBookingError(
 				isConflictError(error)
@@ -824,7 +825,7 @@ function BookingPrimaryAction({
 				onClick={onLockSeats}
 				type="button"
 			>
-				{isSubmitting ? "Locking seats…" : "Lock seats for 10 minutes"}
+				{isSubmitting ? "Locking seats…" : "Continue to payment"}
 				{isSubmitting ? null : <ArrowRightIcon height={18} width={18} />}
 			</button>
 		);
@@ -886,7 +887,7 @@ function PaymentMethodStep({
 				{hostedCheckout ? "Secure checkout" : "Choose payment method"}
 			</h2>
 			<p className="mt-1 text-ink-500 text-sm">
-				Your seats are checked and locked only when you continue from this step.
+				Your seats will be checked and locked when you continue to payment.
 			</p>
 			{hostedCheckout ? (
 				<p className="mt-5 rounded-xl bg-brand-50 px-4 py-3 text-brand-800 text-sm">
