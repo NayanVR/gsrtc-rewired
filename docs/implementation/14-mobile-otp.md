@@ -94,9 +94,10 @@ also remains deliberately unimplemented because mobile OTP accounts do not
 have credential-password records.
 
 `sendMockOtp` is the single development delivery seam. It retains the latest
-code for five minutes and the local login screen displays it as a toast through
-a development-only server function. It never logs the code and returns no code
-in production; replacing the mock with an SMS provider changes that one seam.
+code for five minutes and the login screen displays it in the OTP-entry view.
+It never logs the code. Production returns it only when the deployment
+explicitly sets `OTP_DELIVERY_MODE=mock`; otherwise it returns no code. Replace
+the mock with an SMS provider before enabling public passenger authentication.
 
 ## Acceptance criteria
 
@@ -107,7 +108,8 @@ in production; replacing the mock with an SMS provider changes that one seam.
       system.
 - [x] An expired code is rejected.
 - [x] Exceeding `allowedAttempts` stops accepting that code.
-- [x] The OTP is never logged and never returned in a production response.
+- [x] The OTP is never logged, and is returned in production only when the
+      deployment explicitly enables mock OTP mode.
 - [x] `phoneNumberValidator` and the contract's `Mobile` schema agree, tested.
 - [x] Attaching a phone already owned by another account is rejected, tested.
 - [x] A synthetic signup email is never displayed to the user as their email.

@@ -90,9 +90,11 @@ function LoginPage() {
 			}
 			setOtpSentFor(phoneNumber);
 			setNotice("OTP sent. Enter the code to sign in.");
-			if (import.meta.env.DEV) {
+			try {
 				const { code } = await getDevelopmentOtp({ data: phoneNumber });
 				setDevelopmentOtp(code);
+			} catch {
+				// A real SMS provider never returns its OTP to the browser.
 			}
 		} catch {
 			setError("We could not send an OTP. Try again.");
@@ -128,6 +130,13 @@ function LoginPage() {
 		} finally {
 			setSubmitting(false);
 		}
+	};
+
+	const useDifferentMobile = () => {
+		setDevelopmentOtp(null);
+		setError("");
+		setNotice("");
+		setOtpSentFor(null);
 	};
 
 	const signOut = async () => {
@@ -292,44 +301,36 @@ function LoginPage() {
 										{t("Sign in with mobile OTP")}
 									</h2>
 									<p className="mt-1 text-ink-500 text-sm">
-										{t(
-											"We’ll send a one-time password to verify your mobile number."
-										)}
+										{otpSentFor
+											? t(
+													"Enter the one-time password sent to your mobile number."
+												)
+											: t(
+													"We’ll send a one-time password to verify your mobile number."
+												)}
 									</p>
 								</div>
-								<form className="space-y-4" onSubmit={sendOtp}>
-									<Field label={t("Mobile number")}>
-										{(id) => (
-											<Input
-												autoComplete="tel"
-												id={id}
-												inputMode="numeric"
-												maxLength={10}
-												name="mobile"
-												pattern="[0-9]{10}"
-												placeholder={t("10-digit mobile number")}
-												required
-											/>
-										)}
-									</Field>
-									<Button
-										className="w-full"
-										disabled={submitting || sessionPending}
-										type="submit"
-									>
-										{submitting ? t("Sending OTP…") : t("Send OTP")}
-									</Button>
-								</form>
-
 								{otpSentFor ? (
-									<form
-										className="border-ink-100 border-t pt-4"
-										onSubmit={verifyOtp}
-									>
-										<Field
-											description={`Sent to ${otpSentFor}`}
-											label={t("One-time password")}
-										>
+									<form className="space-y-4" onSubmit={verifyOtp}>
+										<div className="flex items-center justify-between gap-3 rounded-xl bg-canvas px-4 py-3 text-sm">
+											<span className="text-ink-600">Sent to {otpSentFor}</span>
+											<button
+												className="font-semibold text-brand-700 hover:underline"
+												onClick={useDifferentMobile}
+												type="button"
+											>
+												Use a different number
+											</button>
+										</div>
+										{developmentOtp ? (
+											<div
+												aria-live="polite"
+												className="rounded-xl bg-ink-900 px-4 py-3 text-sm text-white"
+											>
+												{t("Test OTP:")} <strong>{developmentOtp}</strong>
+											</div>
+										) : null}
+										<Field label={t("One-time password")}>
 											{(id) => (
 												<Input
 													autoComplete="one-time-code"
@@ -350,7 +351,31 @@ function LoginPage() {
 											{submitting ? t("Verifying…") : t("Verify and sign in")}
 										</Button>
 									</form>
-								) : null}
+								) : (
+									<form className="space-y-4" onSubmit={sendOtp}>
+										<Field label={t("Mobile number")}>
+											{(id) => (
+												<Input
+													autoComplete="tel"
+													id={id}
+													inputMode="numeric"
+													maxLength={10}
+													name="mobile"
+													pattern="[0-9]{10}"
+													placeholder={t("10-digit mobile number")}
+													required
+												/>
+											)}
+										</Field>
+										<Button
+											className="w-full"
+											disabled={submitting || sessionPending}
+											type="submit"
+										>
+											{submitting ? t("Sending OTP…") : t("Send OTP")}
+										</Button>
+									</form>
+								)}
 							</div>
 						)}
 					</>
@@ -365,15 +390,6 @@ function LoginPage() {
 					<p aria-live="polite" className="mt-4 text-sm text-success-700">
 						{notice}
 					</p>
-				) : null}
-				{developmentOtp ? (
-					<div
-						aria-live="assertive"
-						className="fixed right-4 bottom-4 z-50 rounded-xl bg-ink-900 px-4 py-3 text-sm text-white shadow-card"
-						role="status"
-					>
-						{t("Development OTP:")} <strong>{developmentOtp}</strong>
-					</div>
 				) : null}
 			</div>
 		</PageShell>

@@ -211,6 +211,21 @@ describe("Better Auth identity contract", () => {
 		}
 	});
 
+	it("allows a mock OTP only when production mock mode is explicit", () => {
+		const phoneNumber = PRODUCTION_TEST_MOBILE;
+		const previousNodeEnv = process.env.NODE_ENV;
+		const previousOtpDeliveryMode = process.env.OTP_DELIVERY_MODE;
+		process.env.NODE_ENV = "production";
+		process.env.OTP_DELIVERY_MODE = "mock";
+		try {
+			sendMockOtp({ code: "123456", phoneNumber });
+			expect(getDevelopmentOtp(phoneNumber)).toBe("123456");
+		} finally {
+			process.env.NODE_ENV = previousNodeEnv;
+			process.env.OTP_DELIVERY_MODE = previousOtpDeliveryMode;
+		}
+	});
+
 	it("marks phone-only accounts with a synthetic email that the UI can hide", () => {
 		const email = createSyntheticPhoneEmail(OTP_TEST_MOBILE);
 		expect(isSyntheticPhoneEmail(email)).toBe(true);

@@ -144,7 +144,7 @@ export const trackJourney = createServerFn()
 	.handler(({ data }) => api.tracking.progress({ vehicleNo: data }));
 
 // This is deliberately outside the public API contract. It exists only for
-// the local mock SMS experience and cannot disclose a code in production.
+// local development and deployments explicitly configured with mock OTP mode.
 export const getDevelopmentOtp = createServerFn()
 	.validator((phoneNumber: string) => phoneNumber)
 	.handler(({ data }) => {

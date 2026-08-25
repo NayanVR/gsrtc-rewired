@@ -11,7 +11,10 @@ interface DevelopmentOtp {
 const developmentOtps = new Map<string, DevelopmentOtp>();
 
 function canExposeDevelopmentOtp(): boolean {
-	return process.env.NODE_ENV !== "production";
+	return (
+		process.env.NODE_ENV !== "production" ||
+		process.env.OTP_DELIVERY_MODE === "mock"
+	);
 }
 
 export function sendMockOtp(input: {
