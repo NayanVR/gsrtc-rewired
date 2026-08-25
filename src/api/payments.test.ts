@@ -93,8 +93,10 @@ describe("Dodo Payments", () => {
 			assertTestCheckoutUrl("https://live.dodopayments.com/checkout/test")
 		).toThrow("outside test mode");
 		expect(
-			assertTestCheckoutUrl("https://test.dodopayments.com/checkout/test")
-		).toBe("https://test.dodopayments.com/checkout/test");
+			assertTestCheckoutUrl(
+				"https://test.checkout.dodopayments.com/session/cks_test"
+			)
+		).toBe("https://test.checkout.dodopayments.com/session/cks_test");
 	});
 
 	it("deduplicates a verified booking success webhook", async () => {

@@ -3,7 +3,7 @@ import { DodoPayments } from "dodopayments";
 // Test mode is deliberately a source-level constant. A deployment variable
 // must never be able to turn a checkout into a live-money payment.
 export const DODO_ENVIRONMENT = "test_mode" as const;
-const TEST_CHECKOUT_HOST = "test.dodopayments.com";
+const TEST_CHECKOUT_HOST = "test.checkout.dodopayments.com";
 
 export type PaymentsProvider = "dodo" | "mock";
 

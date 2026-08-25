@@ -482,7 +482,7 @@ Defence in depth, because "we set the env var to test" is not a guarantee.
    `DODO_PAYMENTS_ENVIRONMENT` variable exists anywhere in the repo, so no
    deploy-time mistake can flip it.
 2. **The redirect URL is asserted.** Before `checkoutUrl` is stored or
-   returned, assert it starts with `https://test.dodopayments.com`. Anything
+   returned, assert it starts with `https://test.checkout.dodopayments.com`. Anything
    else → intent `failed`, incident, Sentry fatal, and **the customer is
    never redirected**. This guards the exact thing that matters: where the
    browser goes.
@@ -609,7 +609,7 @@ top-up success, and redeliver a wallet webhook twice (balance must move once).
 The Dodo SDK is stubbed with `vi.spyOn`; **no test may touch the network.**
 
 - [ ] The exported environment constant is `test_mode`, and a checkout URL
-      not on `test.dodopayments.com` is rejected without redirecting.
+      not on `test.checkout.dodopayments.com` is rejected without redirecting.
 - [ ] An invalid webhook signature returns 401 and mutates nothing.
 - [ ] The same `webhook-id` delivered twice yields one booking, one PNR, and
       one `succeeded` intent.
@@ -639,7 +639,7 @@ The Dodo SDK is stubbed with `vi.spyOn`; **no test may touch the network.**
       balance exactly once and writes one `wallet_transactions` row.
 - [ ] Live mode is unreachable without editing `src/lib/dodo.ts`; no
       environment variable can select it.
-- [ ] Every checkout URL handed to a browser is on `test.dodopayments.com`.
+- [ ] Every checkout URL handed to a browser is on `test.checkout.dodopayments.com`.
 - [ ] `booking.create` and `wallet.topUp` are both closed under the `dodo`
       provider.
 - [ ] Every verified webhook delivery has a row in
