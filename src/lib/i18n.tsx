@@ -109,8 +109,8 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		Password: "પાસવર્ડ",
 		"Payment failed": "ચુકવણી નિષ્ફળ ગઈ",
 		Performance: "કાર્યક્ષમતા",
-		"Pick your seats again — they may still be free.":
-			"તમારી સીટો ફરી પસંદ કરો — તે હજી ખાલી હોઈ શકે છે.",
+		"Pick your seats again. They may still be free.":
+			"તમારી સીટો ફરી પસંદ કરો. તે હજી ખાલી હોઈ શકે છે.",
 		"Policies & Governance": "નીતિઓ અને શાસન",
 		"Press Release": "પ્રેસ રિલીઝ",
 		"Print / SMS Ticket": "ટિકિટ પ્રિન્ટ / SMS",
@@ -139,8 +139,8 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 			"થોડા સમયની નિષ્ક્રિયતા પછી સત્ર સમાપ્ત થાય છે.",
 		"Sharvan Tirth Darshan": "શ્રવણ તીર્થ દર્શન",
 		"Sign in": "સાઇન ઇન",
-		"Sign in again — your booking details are saved.":
-			"ફરી સાઇન ઇન કરો — તમારી બુકિંગ વિગતો સાચવેલી છે.",
+		"Sign in again. Your booking details are saved.":
+			"ફરી સાઇન ઇન કરો. તમારી બુકિંગ વિગતો સાચવેલી છે.",
 		"Sign in instead": "તેના બદલે સાઇન ઇન કરો",
 		"Sign in required": "સાઇન ઇન જરૂરી છે",
 		"Sign in to continue.": "ચાલુ રાખવા માટે સાઇન ઇન કરો.",
@@ -165,7 +165,7 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"That seat was just booked": "તે સીટ હમણાં જ બુક થઈ ગઈ",
 		"This is not your fault and nothing was charged.":
 			"આ તમારી ભૂલ નથી અને કોઈ રકમ લેવામાં આવી નથી.",
-		"This page is part of the GSRTC redesign concept. The full experience is on its way — check back soon.":
+		"This page is part of the GSRTC redesign concept. The full experience is on its way. Check back soon.":
 			"આ પૃષ્ઠ GSRTC પુનઃડિઝાઇન ખ્યાલનો ભાગ છે. સંપૂર્ણ અનુભવ ટૂંક સમયમાં આવશે.",
 		"Toll Free": "ટોલ ફ્રી",
 		"Too many attempts": "ખૂબ વધુ પ્રયત્નો",
@@ -290,8 +290,8 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		Password: "पासवर्ड",
 		"Payment failed": "भुगतान विफल हो गया",
 		Performance: "प्रदर्शन",
-		"Pick your seats again — they may still be free.":
-			"अपनी सीटें फिर चुनें — वे अभी भी खाली हो सकती हैं।",
+		"Pick your seats again. They may still be free.":
+			"अपनी सीटें फिर चुनें। वे अभी भी खाली हो सकती हैं।",
 		"Policies & Governance": "नीतियां और प्रशासन",
 		"Press Release": "प्रेस विज्ञप्ति",
 		"Print / SMS Ticket": "टिकट प्रिंट / SMS",
@@ -320,8 +320,8 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 			"कुछ समय निष्क्रिय रहने पर सत्र समाप्त हो जाते हैं।",
 		"Sharvan Tirth Darshan": "श्रवण तीर्थ दर्शन",
 		"Sign in": "साइन इन",
-		"Sign in again — your booking details are saved.":
-			"फिर साइन इन करें — आपकी बुकिंग जानकारी सुरक्षित है।",
+		"Sign in again. Your booking details are saved.":
+			"फिर साइन इन करें। आपकी बुकिंग जानकारी सुरक्षित है।",
 		"Sign in instead": "इसके बजाय साइन इन करें",
 		"Sign in required": "साइन इन आवश्यक है",
 		"Sign in to continue.": "जारी रखने के लिए साइन इन करें।",
@@ -346,7 +346,7 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"That seat was just booked": "वह सीट अभी बुक हो गई",
 		"This is not your fault and nothing was charged.":
 			"यह आपकी गलती नहीं है और कोई पैसा नहीं काटा गया।",
-		"This page is part of the GSRTC redesign concept. The full experience is on its way — check back soon.":
+		"This page is part of the GSRTC redesign concept. The full experience is on its way. Check back soon.":
 			"यह पृष्ठ GSRTC रीडिज़ाइन अवधारणा का भाग है। पूरा अनुभव जल्द उपलब्ध होगा।",
 		"Toll Free": "टोल फ्री",
 		"Too many attempts": "बहुत अधिक प्रयास",

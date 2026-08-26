@@ -141,7 +141,7 @@ export const VehiclePosition = v.object({
 });
 
 // Stop-by-stop journey progress (a "where's my bus" timeline the adapter
-// derives from the raw GPS feed + the service timetable — not a live map).
+// derives from the raw GPS feed and the service timetable. It is not a live map.
 export const JourneyStop = v.object({
 	etaMin: v.optional(v.number()), // minutes until arrival, for current/upcoming
 	name: City,

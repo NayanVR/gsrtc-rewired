@@ -210,7 +210,7 @@ function BookingConfirmation({
 
 			<div className="p-7 sm:p-9">
 				<p className="mb-3 rounded-xl bg-brand-50 px-4 py-3 text-brand-800 text-sm">
-					Test mode — no real payment is taken.
+					Test mode. No real payment is taken.
 				</p>
 				<div className="rounded-2xl border border-ink-100 bg-canvas p-5">
 					<div className="flex items-center justify-between gap-4">

@@ -180,7 +180,7 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 						</h2>
 						<p className="mt-1 text-ink-500 text-sm">
 							{paymentProvider === "dodo"
-								? "Test mode — no real payment is taken."
+								? "Test mode. No real payment is taken."
 								: "Payments are securely simulated in this concept build."}
 						</p>
 					</div>

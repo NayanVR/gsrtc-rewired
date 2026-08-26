@@ -12,6 +12,7 @@ import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { Card } from "#/components/ui/card";
 import { formatTime } from "#/data/trips";
 import { toAppError } from "#/lib/error-copy";
 import { formatTrackingAge, isTrackingStale } from "#/lib/tracking-status";
@@ -63,10 +64,17 @@ function TrackPage() {
 			<main className="bg-canvas" id="main">
 				<div className="mesh-band relative overflow-hidden">
 					<div aria-hidden className="grain" />
-					<div className="relative mx-auto max-w-3xl px-4 py-10 text-white sm:px-6">
-						<div className="flex items-center gap-3">
-							<TrackIcon height={26} width={26} />
-							<h1 className="font-bold font-display text-2xl tracking-tight sm:text-3xl">
+					<div aria-hidden className="jali absolute inset-0 opacity-[0.07]" />
+					<div className="relative mx-auto max-w-4xl px-4 py-11 text-white sm:px-6 sm:py-14">
+						<p className="flex items-center gap-2 font-semibold text-sm text-white/70 uppercase tracking-[0.16em]">
+							<span className="h-2 w-2 rounded-full bg-saffron-300 motion-safe:animate-pulse" />
+							Live journey status
+						</p>
+						<div className="mt-2 flex items-center gap-3">
+							<span className="grid size-11 place-items-center rounded-2xl bg-white/12 ring-1 ring-white/20">
+								<TrackIcon height={25} width={25} />
+							</span>
+							<h1 className="font-bold font-display text-3xl tracking-tight sm:text-4xl">
 								Track your bus
 							</h1>
 						</div>
@@ -76,7 +84,7 @@ function TrackPage() {
 						</p>
 
 						<form
-							className="mt-5 flex flex-col gap-3 sm:flex-row"
+							className="mt-6 flex flex-col gap-3 rounded-2xl bg-white/10 p-2 ring-1 ring-white/15 backdrop-blur-sm sm:flex-row"
 							onSubmit={submit}
 						>
 							<label className="sr-only" htmlFor={inputId}>
@@ -84,14 +92,14 @@ function TrackPage() {
 							</label>
 							<input
 								autoComplete="off"
-								className="flex-1 rounded-xl border border-white/20 bg-white/95 px-4 py-3 text-ink-900 outline-none placeholder:text-ink-400 focus-visible:ring-2 focus-visible:ring-white/60"
+								className="flex-1 rounded-xl border border-transparent bg-white/95 px-4 py-3 text-ink-900 outline-none placeholder:text-ink-400 focus-visible:ring-2 focus-visible:ring-white/60"
 								id={inputId}
 								onChange={(event) => setVehicleNo(event.target.value)}
 								placeholder="e.g. GJ-18-Z-1234"
 								value={vehicleNo}
 							/>
 							<Button
-								className="shrink-0 bg-white text-brand-700 hover:bg-white/90"
+								className="shrink-0 shadow-none"
 								disabled={loading}
 								size="lg"
 								type="submit"
@@ -102,7 +110,7 @@ function TrackPage() {
 					</div>
 				</div>
 
-				<div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+				<div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
 					{error ? (
 						<p
 							className="rounded-xl border border-danger-500/30 bg-danger-500/10 px-4 py-3 text-danger-500 text-sm"
@@ -126,13 +134,13 @@ function TrackPage() {
 
 function EmptyState() {
 	return (
-		<div className="rounded-2xl border border-ink-200 border-dashed bg-surface p-12 text-center">
+		<Card className="p-12 text-center" jali tone="canvas">
 			<BusIcon className="mx-auto text-ink-300" height={32} width={32} />
 			<p className="mt-3 font-semibold text-ink-900">No bus tracked yet</p>
 			<p className="mt-1 text-ink-500 text-sm">
 				Enter a bus number above to see where it is on its route.
 			</p>
-		</div>
+		</Card>
 	);
 }
 
@@ -153,22 +161,14 @@ function JourneyBoard({
 	const progressPct = Math.round((departed / total) * 100);
 
 	return (
-		<div className="overflow-hidden rounded-2xl border border-ink-100 bg-surface shadow-card">
-			<div className="flex flex-wrap items-start justify-between gap-3 p-5 sm:p-6">
+		<Card className="overflow-hidden" jali>
+			<div className="flex flex-wrap items-start justify-between gap-4 p-6 sm:p-7">
 				<div>
 					<div className="flex items-center gap-2">
 						<Badge className="font-mono" tone="brand">
 							{journey.vehicleNo}
 						</Badge>
-						<span
-							className={`rounded-full px-2.5 py-0.5 font-semibold text-xs ${
-								onTime
-									? "bg-success-50 text-success-700"
-									: "bg-saffron-50 text-saffron-700"
-							}`}
-						>
-							{delay}
-						</span>
+						<Badge tone={onTime ? "success" : "saffron"}>{delay}</Badge>
 					</div>
 					<p className="mt-2 font-bold font-display text-ink-900 text-lg">
 						{journey.from}{" "}
@@ -186,7 +186,7 @@ function JourneyBoard({
 			</div>
 			<p
 				aria-live="polite"
-				className={`border-y px-5 py-3 text-sm sm:px-6 ${
+				className={`border-y px-6 py-3.5 text-sm sm:px-7 ${
 					stale
 						? "border-saffron-200 bg-saffron-50 text-saffron-800"
 						: "border-ink-100 bg-canvas text-ink-600"
@@ -194,14 +194,14 @@ function JourneyBoard({
 				role="status"
 			>
 				{stale
-					? `Tracking data may be out of date — ${freshness}.`
-					: `Tracking data is current — ${freshness}.`}{" "}
+					? `Tracking data may be out of date. ${freshness}.`
+					: `Tracking data is current. ${freshness}.`}{" "}
 				{delay}.
 			</p>
 
 			{/* Live next-stop banner + overall progress */}
 			{currentStop ? (
-				<div className="border-saffron-100 border-y bg-saffron-50/60 px-5 py-4 sm:px-6">
+				<div className="m-5 rounded-2xl border border-saffron-100 bg-saffron-50/70 px-5 py-4 sm:m-7 sm:px-6">
 					<div className="flex items-center justify-between gap-3">
 						<div className="inline-flex items-center gap-2">
 							<span
@@ -236,21 +236,25 @@ function JourneyBoard({
 				</div>
 			) : null}
 
-			<ol className="p-5 sm:p-6">
-				{journey.stops.map((stop, index) => (
-					<StopRow
-						isLast={index === total - 1}
-						key={stop.name}
-						nextIsCurrent={journey.stops[index + 1]?.status === "current"}
-						stop={stop}
-					/>
-				))}
-			</ol>
-
-			<p className="border-ink-100 border-t px-5 py-3 text-ink-400 text-xs sm:px-6">
-				Times are scheduled
-			</p>
-		</div>
+			<div className="border-ink-100 border-t px-5 py-5 sm:px-7 sm:py-6">
+				<div className="mb-5 flex items-center justify-between">
+					<h2 className="font-bold font-display text-ink-900">
+						Route progress
+					</h2>
+					<span className="text-ink-500 text-xs">Scheduled times</span>
+				</div>
+				<ol>
+					{journey.stops.map((stop, index) => (
+						<StopRow
+							isLast={index === total - 1}
+							key={stop.name}
+							nextIsCurrent={journey.stops[index + 1]?.status === "current"}
+							stop={stop}
+						/>
+					))}
+				</ol>
+			</div>
+		</Card>
 	);
 }
 

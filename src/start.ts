@@ -7,7 +7,7 @@ import { createStart } from "@tanstack/react-start";
 
 // Error + performance monitoring. This start entry is evaluated in both the
 // browser and the SSR/server bundle, so a single guarded init() wires Sentry on
-// both sides. Without VITE_SENTRY_DSN set, init() is a no-op — safe to ship
+// both sides. Without VITE_SENTRY_DSN set, init() is a no-op. It is safe to ship
 // unconfigured; drop a DSN in .env to switch it on.
 const dsn = import.meta.env.VITE_SENTRY_DSN;
 
@@ -21,7 +21,7 @@ if (dsn) {
 }
 
 // Global middleware instruments every server function + SSR request for tracing
-// and error capture — no per-handler wiring needed.
+// and error capture. No per-handler wiring is needed.
 export const startInstance = createStart(() => ({
 	functionMiddleware: [sentryGlobalFunctionMiddleware],
 	requestMiddleware: [sentryGlobalRequestMiddleware],

@@ -39,7 +39,7 @@
   --color-brand-800: #143f85;
   --color-brand-900: #14346f;
 
-  /* Saffron / marigold — the gradient's warm end (also GSRTC red family) */
+  /* Saffron / marigold forms the gradient's warm end and belongs to the GSRTC red family. */
   --color-saffron-50: #fff5ec;
   --color-saffron-100: #ffe7d1;
   --color-saffron-200: #ffcaa1;
@@ -92,7 +92,7 @@
     0 10px 30px -18px rgb(42 37 29 / 0.25);
   --shadow-pop: 0 20px 50px -20px rgb(42 37 29 / 0.32);
 
-  /* Signature spectrum — GSRTC blue → soft violet → warm, kept gentle so it
+  /* Signature spectrum: GSRTC blue → soft violet → warm. It stays gentle so it
      never reads as a harsh rainbow at small sizes. */
   --gradient-sarvam: linear-gradient(
     118deg,
@@ -223,9 +223,9 @@ label {
   background: var(--gradient-sarvam);
 }
 
-/* Dithered gradient — the signature spectrum with a fine grain overlay that
+/* Dithered gradient. The signature spectrum has a fine grain overlay that
    breaks up banding and gives the surface a crafted, tactile finish. */
-/* Atmospheric mesh gradient — soft color glows over a deep indigo base.
+/* Atmospheric mesh gradient. Soft color glows sit over a deep indigo base.
    Reads far calmer than a flat linear sweep and lets white text sit cleanly. */
 .mesh-hero {
   background-color: #122a63;
@@ -315,7 +315,7 @@ label {
   background-size: 4px 4px;
 }
 
-/* Jali lattice — a faint geometric weave overlay */
+/* Jali lattice. A faint geometric weave overlay. */
 .jali {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M24 0 48 24 24 48 0 24Z'/%3E%3Ccircle cx='24' cy='24' r='11'/%3E%3Cpath d='M0 0 12 12M48 0 36 12M48 48 36 36M0 48 12 36'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 48px 48px;

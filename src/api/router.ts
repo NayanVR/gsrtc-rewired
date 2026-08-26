@@ -17,7 +17,7 @@ import { pageForms } from "#/db/schema";
 import { addEventFields } from "#/lib/events";
 
 // Server-side implementation of the typed contract. Backed by mock data for the
-// concept build — each resolver is where a real OPRS adapter call will slot in.
+// concept build. Each resolver is where a real OPRS adapter call will slot in.
 // Only the Phase-1 read domains are implemented so far; unimplemented procedures
 // are simply absent from the router and 404 until their phase lands.
 const os = implement(appContract);

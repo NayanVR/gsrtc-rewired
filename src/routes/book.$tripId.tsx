@@ -801,7 +801,7 @@ function BookPage() {
 									minutes, or the seat is released for other passengers.
 								</p>
 								<p className="pl-5">
-									Note 2: E-Wallet — provide a valid email &amp; mobile to
+									Note 2: For E-Wallet, provide a valid email &amp; mobile to
 									create or retrieve your wallet.
 								</p>
 							</div>
@@ -994,7 +994,7 @@ function PaymentMethodStep({
 			</p>
 			{hostedCheckout ? (
 				<p className="mt-5 rounded-xl bg-brand-50 px-4 py-3 text-brand-800 text-sm">
-					Test mode — no real payment is taken. You will choose a payment method
+					Test mode. No real payment is taken. You will choose a payment method
 					on Dodo’s secure checkout page.
 				</p>
 			) : (
@@ -1091,7 +1091,7 @@ function PaymentConfirmation({
 			</div>
 			<p className="mt-4 text-ink-500 text-xs">
 				{hostedCheckout
-					? "Test mode — no real payment is taken. Your booking is confirmed only after Dodo verifies payment."
+					? "Test mode. No real payment is taken. Your booking is confirmed only after Dodo verifies payment."
 					: "Payments are simulated in this concept build. The selected method is included in the booking request."}
 			</p>
 		</section>

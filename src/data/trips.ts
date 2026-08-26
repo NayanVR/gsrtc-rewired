@@ -82,7 +82,7 @@ export function formatFare(amount: number): string {
 
 /**
  * Contract timestamps are ISO strings carrying an IST (+05:30) offset, so the
- * wall-clock time is the HH:MM slice — no timezone maths needed for display.
+ * wall-clock time is the HH:MM slice. No timezone maths is needed for display.
  */
 export function formatTime(iso: string): string {
 	return iso.slice(11, 16);

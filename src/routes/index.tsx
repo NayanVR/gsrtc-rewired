@@ -62,7 +62,7 @@ const DESTINATIONS = [
 	{
 		name: "Rann of Kutch",
 		tag: "Bhuj",
-		blurb: "The vast white salt desert at Dhordo — surreal and serene.",
+		blurb: "The vast white salt desert at Dhordo. It is surreal and serene.",
 		Art: RannOfKutchArt,
 	},
 	{
@@ -380,7 +380,7 @@ function LiveTracking() {
 					<span>
 						<span className="block font-semibold">Track a bus on the web</span>
 						<span className="block text-sm text-white/80">
-							See stop-by-stop progress — no app needed
+							See stop-by-stop progress. No app needed.
 						</span>
 					</span>
 				</span>
@@ -433,7 +433,7 @@ function Destinations() {
 				Top destinations
 			</h2>
 			<p className="mt-2 max-w-2xl text-ink-500">
-				Popular pilgrimage spots, tourist cities and key commercial hubs — GSRTC
+				Popular pilgrimage spots, tourist cities and key commercial hubs. GSRTC
 				connects you to every corner of Gujarat through its extensive network.
 			</p>
 			<div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

@@ -1,5 +1,5 @@
 /**
- * Mandala/lotus brand mark — concentric geometry inspired by Sarvam's
+ * Mandala/lotus brand mark with concentric geometry inspired by Sarvam's
  * mandala construction, filled with the signature blue→orange spectrum.
  */
 interface BrandMarkProps {

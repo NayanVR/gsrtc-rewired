@@ -191,7 +191,7 @@ function LanguageMenu() {
 	);
 }
 
-// Revealed by the single menu button — one panel instead of a permanent nav
+// The single menu button reveals one panel instead of a permanent navigation.
 // bar. Groups flow into columns so it stays compact on wider screens.
 function NavMenu({
 	onNavigate,

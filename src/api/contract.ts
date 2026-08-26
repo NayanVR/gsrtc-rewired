@@ -10,7 +10,7 @@ import { tracking } from "#/api/contract/tracking";
 import { wallet } from "#/api/contract/wallet";
 
 // The complete, type-safe GSRTC API surface. The server implements this and
-// the browser client is derived from it — a single source of truth. It is also
+// the browser client is derived from it. This creates a single source of truth. It is also
 // the source for the OpenAPI spec handed to GSRTC's existing integrators.
 export const appContract = {
 	agents,

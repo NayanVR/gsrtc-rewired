@@ -137,7 +137,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 // ── Bookings ─────────────────────────────────────────────────────────────
 // Trips themselves stay synthetic (generated from the search leg, mirroring
-// how the real adapter would read OPRS's live timetable) — only the seats
+// how the real adapter would read OPRS's live timetable. Only the seats
 // that have actually been touched by a hold or booking are persisted, as an
 // overlay on top of the deterministic baseline occupancy in router.ts.
 export const seatHolds = pgTable("seat_holds", {

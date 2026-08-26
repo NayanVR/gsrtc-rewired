@@ -66,7 +66,7 @@ const COPY: Record<
 		title: "This seat hold was already used",
 	},
 	hold_expired: {
-		action: "Pick your seats again — they may still be free.",
+		action: "Pick your seats again. They may still be free.",
 		detail:
 			"Seats are held for 10 minutes so they do not stay locked for others.",
 		recoverable: true,
@@ -164,7 +164,7 @@ const COPY: Record<
 		title: "That seat was just booked",
 	},
 	session_expired: {
-		action: "Sign in again — your booking details are saved.",
+		action: "Sign in again. Your booking details are saved.",
 		detail: "Sessions end after a period of inactivity.",
 		recoverable: true,
 		title: "You have been signed out",

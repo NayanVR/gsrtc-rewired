@@ -45,7 +45,7 @@ export function PageShell({ title, blurb, children }: PageShellProps) {
 							<div className="rounded-3xl border border-ink-100 bg-surface p-8 shadow-card">
 								<p className="text-ink-600 leading-relaxed">
 									{t(
-										"This page is part of the GSRTC redesign concept. The full experience is on its way — check back soon."
+										"This page is part of the GSRTC redesign concept. The full experience is on its way. Check back soon."
 									)}
 								</p>
 								<Link

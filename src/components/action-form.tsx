@@ -143,7 +143,7 @@ function isPassType(
 }
 
 // The concept build doesn't own these transactional flows yet, so the button
-// hands off to GSRTC's live portal — but only after the user confirms they're
+// hands off to GSRTC's live portal, but only after the user confirms they are
 // leaving. Uses the native <dialog> for a focus-trapped, Esc-dismissable modal.
 function LeaveToPortal({ label, url }: { label: string; url: string }) {
 	const dialogRef = useRef<HTMLDialogElement>(null);
