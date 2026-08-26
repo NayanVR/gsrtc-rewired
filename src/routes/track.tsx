@@ -75,12 +75,12 @@ function TrackPage() {
 								<TrackIcon height={25} width={25} />
 							</span>
 							<h1 className="font-bold font-display text-3xl tracking-tight sm:text-4xl">
-								Track your bus
+								Track your journey
 							</h1>
 						</div>
 						<p className="mt-2 text-sm text-white/85">
-							Enter the bus / service number to see its stop-by-stop progress
-							along the route.
+							Enter your PNR to see your journey's stop-by-stop progress along
+							the route.
 						</p>
 
 						<form
@@ -88,14 +88,14 @@ function TrackPage() {
 							onSubmit={submit}
 						>
 							<label className="sr-only" htmlFor={inputId}>
-								Bus or service number
+								PNR
 							</label>
 							<input
 								autoComplete="off"
 								className="flex-1 rounded-xl border border-transparent bg-white/95 px-4 py-3 text-ink-900 outline-none placeholder:text-ink-400 focus-visible:ring-2 focus-visible:ring-white/60"
 								id={inputId}
 								onChange={(event) => setVehicleNo(event.target.value)}
-								placeholder="e.g. GJ-18-Z-1234"
+								placeholder="Enter your PNR"
 								value={vehicleNo}
 							/>
 							<Button
@@ -136,9 +136,9 @@ function EmptyState() {
 	return (
 		<Card className="p-12 text-center" jali tone="canvas">
 			<BusIcon className="mx-auto text-ink-300" height={32} width={32} />
-			<p className="mt-3 font-semibold text-ink-900">No bus tracked yet</p>
+			<p className="mt-3 font-semibold text-ink-900">No journey tracked yet</p>
 			<p className="mt-1 text-ink-500 text-sm">
-				Enter a bus number above to see where it is on its route.
+				Enter your PNR above to see where your journey is on its route.
 			</p>
 		</Card>
 	);
