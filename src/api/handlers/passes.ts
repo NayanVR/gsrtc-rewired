@@ -94,7 +94,7 @@ const renew = os.passes.renew.handler(async ({ input, errors }) => {
 		.where(eq(passes.applicationNo, input.passNo))
 		.limit(1);
 	if (!existingPass) {
-		throw errors.NOT_FOUND();
+		throw errors.NOT_FOUND({ data: { reason: "pass_unknown" } });
 	}
 
 	const todayDate = today();
@@ -125,7 +125,7 @@ const status = os.passes.status.handler(async ({ input, errors }) => {
 		.where(eq(passes.applicationNo, input.applicationNo))
 		.limit(1);
 	if (!pass) {
-		throw errors.NOT_FOUND();
+		throw errors.NOT_FOUND({ data: { reason: "pass_unknown" } });
 	}
 	return toPass(pass);
 });

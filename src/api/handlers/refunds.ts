@@ -16,7 +16,7 @@ const status = os.refunds.status.handler(async ({ input, errors }) => {
 		.where(and(eq(refunds.mobile, input.mobile), eq(refunds.ref, input.ref)))
 		.limit(1);
 	if (!refund) {
-		throw errors.NOT_FOUND();
+		throw errors.NOT_FOUND({ data: { reason: "pnr_unknown" } });
 	}
 	return {
 		amount: Number(refund.amount),
@@ -38,7 +38,7 @@ const complaint = os.refunds.complaint.handler(async ({ input, errors }) => {
 		)
 		.limit(1);
 	if (!booking) {
-		throw errors.NOT_FOUND();
+		throw errors.NOT_FOUND({ data: { reason: "pnr_unknown" } });
 	}
 
 	const earliestAllowedComplaint = new Date(
@@ -54,7 +54,7 @@ const complaint = os.refunds.complaint.handler(async ({ input, errors }) => {
 			)
 		);
 	if (recentComplaints.length >= COMPLAINT_RATE_LIMIT) {
-		throw errors.RATE_LIMITED();
+		throw errors.RATE_LIMITED({ data: { reason: "too_many_hold_attempts" } });
 	}
 
 	const complaintId = generateComplaintId();

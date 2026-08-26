@@ -15,6 +15,7 @@ import type {
 	Seat,
 	Trip,
 } from "#/api/schemas";
+import { ErrorPanel } from "#/components/error-panel";
 import {
 	ArrowRightIcon,
 	CheckIcon,
@@ -25,6 +26,7 @@ import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
 import { formatDuration, formatFare, formatTime } from "#/data/trips";
 import { isValidMobileNumber } from "#/lib/auth-identity";
+import { type AppError, toAppError } from "#/lib/error-copy";
 import type { PaymentMethod } from "#/lib/mock-payment";
 
 interface BookSearch {
@@ -47,12 +49,15 @@ export const Route = createFileRoute("/book/$tripId")({
 				getSeatMap({ data: params.tripId }),
 			]);
 			return { seats: seatMap.seats, trip };
-		} catch {
-			// biome-ignore lint/style/useErrorCause: notFound() renders the 404 boundary; the underlying NOT_FOUND carries no user-facing detail
-			throw notFound();
+		} catch (error) {
+			if (isNotFoundError(error)) {
+				throw notFound();
+			}
+			throw error;
 		}
 	},
 	component: BookPage,
+	errorComponent: BookingRouteError,
 });
 
 const SERVICE_FEE = 15;
@@ -146,30 +151,15 @@ function remainingHoldSeconds(expiresAt: string): number {
 	);
 }
 
-function isConflictError(error: unknown): boolean {
+function isNotFoundError(error: unknown): boolean {
 	if (!error || typeof error !== "object") {
 		return false;
 	}
-	return "code" in error && error.code === "CONFLICT";
+	return "code" in error && error.code === "NOT_FOUND";
 }
 
 function isValidEmailAddress(value: string): boolean {
 	return EMAIL_ADDRESS.test(value);
-}
-
-function paymentFailureMessage(error: unknown): string {
-	if (
-		typeof error === "object" &&
-		error !== null &&
-		"data" in error &&
-		typeof error.data === "object" &&
-		error.data !== null &&
-		"reason" in error.data &&
-		typeof error.data.reason === "string"
-	) {
-		return error.data.reason;
-	}
-	return "We could not process this payment. Please try again before the hold expires.";
 }
 
 function refreshSeatMap(
@@ -263,7 +253,7 @@ function BookPage() {
 	const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(
 		null
 	);
-	const [bookingError, setBookingError] = useState<string | null>(null);
+	const [bookingError, setBookingError] = useState<AppError | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [paymentProvider, setPaymentProvider] = useState<"dodo" | "mock">(
 		"mock"
@@ -354,9 +344,10 @@ function BookPage() {
 				setSeatHold(activeHold);
 				setRemainingSeconds(remainingHoldSeconds(activeHold.expiresAt));
 				setBookingStep(savedSession.bookingStep);
-			} catch {
+			} catch (error) {
 				clearBookingSession(trip.id);
 				refreshSeatMap(trip.id, setSeatMap);
+				setBookingError(toAppError(error));
 			}
 		};
 
@@ -383,7 +374,7 @@ function BookPage() {
 			setBookingStep("details");
 			clearBookingSession(trip.id);
 			setBookingError(
-				"Your 10-minute seat hold expired. Please choose your seats again."
+				toAppError({ code: "NOT_FOUND", data: { reason: "hold_expired" } })
 			);
 			refreshSeatMap(trip.id, setSeatMap);
 		};
@@ -428,11 +419,7 @@ function BookPage() {
 			saveProgress(hold, "payment");
 			setBookingStep("payment");
 		} catch (error) {
-			setBookingError(
-				isConflictError(error)
-					? "One or more selected seats were just taken. Please choose your seats again."
-					: "We could not lock these seats. Please try again."
-			);
+			setBookingError(toAppError(error));
 			refreshSeatMap(trip.id, setSeatMap);
 		} finally {
 			setIsSubmitting(false);
@@ -487,11 +474,7 @@ function BookPage() {
 			setSeatHold(null);
 			clearBookingSession(trip.id);
 		} catch (error) {
-			setBookingError(
-				isConflictError(error)
-					? "This seat hold is no longer available. Please choose your seats again."
-					: paymentFailureMessage(error)
-			);
+			setBookingError(toAppError(error));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -601,7 +584,7 @@ function BookPage() {
 																		})
 																	: undefined
 															}
-															value={person?.gender ?? "male"}
+															value={person ? person.gender : "male"}
 														>
 															<option value="male">Male</option>
 															<option value="female">Female</option>
@@ -714,12 +697,9 @@ function BookPage() {
 								total={total}
 							/>
 							{bookingError ? (
-								<p
-									aria-live="assertive"
-									className="mt-3 text-error-600 text-sm"
-								>
-									{bookingError}
-								</p>
+								<div className="mt-3">
+									<ErrorPanel error={bookingError} />
+								</div>
 							) : null}
 
 							<div className="mt-4 space-y-2 text-ink-500 text-xs">
@@ -740,6 +720,24 @@ function BookPage() {
 						</div>
 					</aside>
 				</div>
+			</main>
+			<SiteFooter />
+		</>
+	);
+}
+
+function BookingRouteError({ error }: { error: unknown }) {
+	return (
+		<>
+			<SiteHeader />
+			<main className="mx-auto min-h-[60vh] max-w-3xl px-4 py-10" id="main">
+				<ErrorPanel error={toAppError(error)} />
+				<Link
+					className="mt-5 inline-block font-semibold text-brand-700 hover:underline"
+					to="/"
+				>
+					Return to search
+				</Link>
 			</main>
 			<SiteFooter />
 		</>

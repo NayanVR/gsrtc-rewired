@@ -31,6 +31,8 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		Alert: "ચેતવણી",
 		"All Rights Reserved.": "સર્વ હકો સુરક્ષિત.",
 		"Annual Audit Report": "વાર્ષિક ઓડિટ અહેવાલ",
+		"Another passenger confirmed that seat first.":
+			"બીજા મુસાફરે તે સીટ પહેલાં બુક કરી લીધી.",
 		"AWT (Award Winning Teachers)": "AWT (પુરસ્કાર વિજેતા શિક્ષકો)",
 		Awards: "પુરસ્કારો",
 		"Back to home": "મુખ્ય પૃષ્ઠ પર પાછા જાઓ",
@@ -44,6 +46,7 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Bus Pass Login": "બસ પાસ લૉગિન",
 		"Cancel Ticket": "ટિકિટ રદ કરો",
 		"Change language": "ભાષા બદલો",
+		"Choose from the refreshed seat map.": "તાજા સીટ નકશામાંથી પસંદ કરો.",
 		"Citizen's Rights (નાગરિક અધિકાર પત્ર)": "નાગરિક અધિકાર પત્ર",
 		"Close navigation menu": "નેવિગેશન મેનૂ બંધ કરો",
 		"Contact Us": "અમારો સંપર્ક કરો",
@@ -96,7 +99,10 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Passenger Login": "મુસાફર લૉગિન",
 		"Passenger sign in": "મુસાફર સાઇન ઇન",
 		Password: "પાસવર્ડ",
+		"Payment failed": "ચુકવણી નિષ્ફળ ગઈ",
 		Performance: "કાર્યક્ષમતા",
+		"Pick your seats again — they may still be free.":
+			"તમારી સીટો ફરી પસંદ કરો — તે હજી ખાલી હોઈ શકે છે.",
 		"Policies & Governance": "નીતિઓ અને શાસન",
 		"Press Release": "પ્રેસ રિલીઝ",
 		"Print / SMS Ticket": "ટિકિટ પ્રિન્ટ / SMS",
@@ -115,12 +121,20 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Search the site": "સાઇટમાં શોધો",
 		"Search…": "શોધો…",
 		Seats: "બેઠકો",
+		"Seats are held for 10 minutes so they do not stay locked for others.":
+			"સીટો 10 મિનિટ માટે રોકવામાં આવે છે જેથી તે અન્ય માટે અટકી ન રહે.",
 		"Send OTP": "OTP મોકલો",
 		"Sending OTP…": "OTP મોકલાઈ રહ્યો છે…",
 		"Service Regulation": "સેવા નિયમન",
+		"Sessions end after a period of inactivity.":
+			"થોડા સમયની નિષ્ક્રિયતા પછી સત્ર સમાપ્ત થાય છે.",
 		"Sharvan Tirth Darshan": "શ્રવણ તીર્થ દર્શન",
 		"Sign in": "સાઇન ઇન",
+		"Sign in again — your booking details are saved.":
+			"ફરી સાઇન ઇન કરો — તમારી બુકિંગ વિગતો સાચવેલી છે.",
 		"Sign in instead": "તેના બદલે સાઇન ઇન કરો",
+		"Sign in required": "સાઇન ઇન જરૂરી છે",
+		"Sign in to continue.": "ચાલુ રાખવા માટે સાઇન ઇન કરો.",
 		"Sign in with mobile OTP": "મોબાઇલ OTP વડે સાઇન ઇન કરો",
 		"Sign in with your email and password, or use a one-time password sent to your mobile.":
 			"ઇમેઇલ અને પાસવર્ડથી સાઇન ઇન કરો અથવા તમારા મોબાઇલ પર મોકલવામાં આવેલ એક-વખતના પાસવર્ડનો ઉપયોગ કરો.",
@@ -133,15 +147,25 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Single Lady": "એકલી મહિલા",
 		"Site search": "સાઇટ શોધ",
 		Sitemap: "સાઇટમેપ",
+		"Something broke on our side": "અમારી તરફ કંઈક ખોટું થયું છે",
 		Source: "પ્રસ્થાન સ્થાન",
 		"Special Services": "વિશેષ સેવાઓ",
 		"Statue of Unity": "સ્ટેચ્યુ ઓફ યુનિટી",
 		"Swap source and destination": "પ્રસ્થાન અને ગંતવ્ય બદલો",
 		Tenders: "ટેન્ડરો",
+		"That seat was just booked": "તે સીટ હમણાં જ બુક થઈ ગઈ",
+		"This is not your fault and nothing was charged.":
+			"આ તમારી ભૂલ નથી અને કોઈ રકમ લેવામાં આવી નથી.",
 		"This page is part of the GSRTC redesign concept. The full experience is on its way — check back soon.":
 			"આ પૃષ્ઠ GSRTC પુનઃડિઝાઇન ખ્યાલનો ભાગ છે. સંપૂર્ણ અનુભવ ટૂંક સમયમાં આવશે.",
 		"Toll Free": "ટોલ ફ્રી",
+		"Too many attempts": "ખૂબ વધુ પ્રયત્નો",
 		"Track your bus": "તમારી બસ ટ્રૅક કરો",
+		"Try a different card or UPI ID.": "અલગ કાર્ડ અથવા UPI ID અજમાવો.",
+		"Try again shortly. Quote reference {traceId} if you contact us.":
+			"થોડી વારમાં ફરી પ્રયાસ કરો. સંપર્ક કરો તો સંદર્ભ {traceId} જણાવો.",
+		"Try again while your seat hold is active.":
+			"તમારી સીટ રોકાણ સક્રિય હોય ત્યારે ફરી પ્રયાસ કરો.",
 		"Unity Booking": "સ્ટેચ્યુ ઓફ યુનિટી બુકિંગ",
 		"Use an email address and a secure password.":
 			"ઇમેઇલ સરનામું અને સુરક્ષિત પાસવર્ડ વાપરો.",
@@ -149,6 +173,7 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Verifying…": "ચકાસાઈ રહ્યું છે…",
 		"Version Details:": "સંસ્કરણ વિગતો:",
 		"View History": "ઇતિહાસ જુઓ",
+		"Wait a minute, then try once more.": "એક મિનિટ રાહ જુઓ, પછી ફરી પ્રયાસ કરો.",
 		"Waiting List Ticket Status": "પ્રતીક્ષા યાદી ટિકિટ સ્થિતિ",
 		"Wallet Account": "વોલેટ એકાઉન્ટ",
 		"Wallet Passbook": "વોલેટ પાસબુક",
@@ -158,6 +183,15 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Women Harassment Act 2013 (Circular 323)":
 			"મહિલા ઉત્પીડન કાયદો 2013 (પરિપત્ર 323)",
 		"You are signed in": "તમે સાઇન ઇન છો",
+		"You have been signed out": "તમારું સાઇન આઉટ થઈ ગયું છે",
+		"You have tried to lock seats several times in a row.":
+			"તમે સતત ઘણી વખત સીટો રોકવાનો પ્રયત્ન કર્યો છે.",
+		"Your bank declined the payment. No money left your account.":
+			"તમારી બેંકે ચુકવણી નકારી. તમારા ખાતામાંથી કોઈ રકમ કપાઈ નથી.",
+		"Your payment could not be completed. Nothing was charged.":
+			"તમારી ચુકવણી પૂર્ણ થઈ શકી નથી. કોઈ રકમ લેવામાં આવી નથી.",
+		"Your payment was declined": "તમારી ચુકવણી નકારવામાં આવી",
+		"Your seat hold ran out": "તમારી સીટની રોકાણ અવધિ પૂરી થઈ ગઈ",
 	},
 	hi: {
 		"10-digit mobile number": "10 अंकों का मोबाइल नंबर",
@@ -169,6 +203,8 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		Alert: "सूचना",
 		"All Rights Reserved.": "सर्वाधिकार सुरक्षित।",
 		"Annual Audit Report": "वार्षिक लेखा परीक्षा रिपोर्ट",
+		"Another passenger confirmed that seat first.":
+			"किसी दूसरे यात्री ने वह सीट पहले बुक कर ली।",
 		"AWT (Award Winning Teachers)": "AWT (पुरस्कार विजेता शिक्षक)",
 		Awards: "पुरस्कार",
 		"Back to home": "होम पर वापस जाएं",
@@ -182,6 +218,7 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Bus Pass Login": "बस पास लॉगिन",
 		"Cancel Ticket": "टिकट रद्द करें",
 		"Change language": "भाषा बदलें",
+		"Choose from the refreshed seat map.": "नए सीट मानचित्र से सीट चुनें।",
 		"Citizen's Rights (નાગરિક અધિકાર પત્ર)": "नागरिक अधिकार पत्र",
 		"Close navigation menu": "नेविगेशन मेनू बंद करें",
 		"Contact Us": "संपर्क करें",
@@ -234,7 +271,10 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Passenger Login": "यात्री लॉगिन",
 		"Passenger sign in": "यात्री साइन इन",
 		Password: "पासवर्ड",
+		"Payment failed": "भुगतान विफल हो गया",
 		Performance: "प्रदर्शन",
+		"Pick your seats again — they may still be free.":
+			"अपनी सीटें फिर चुनें — वे अभी भी खाली हो सकती हैं।",
 		"Policies & Governance": "नीतियां और प्रशासन",
 		"Press Release": "प्रेस विज्ञप्ति",
 		"Print / SMS Ticket": "टिकट प्रिंट / SMS",
@@ -253,12 +293,20 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Search the site": "साइट खोजें",
 		"Search…": "खोजें…",
 		Seats: "सीटें",
+		"Seats are held for 10 minutes so they do not stay locked for others.":
+			"सीटें 10 मिनट के लिए होल्ड रहती हैं ताकि वे दूसरों के लिए बंद न रहें।",
 		"Send OTP": "OTP भेजें",
 		"Sending OTP…": "OTP भेजा जा रहा है…",
 		"Service Regulation": "सेवा विनियमन",
+		"Sessions end after a period of inactivity.":
+			"कुछ समय निष्क्रिय रहने पर सत्र समाप्त हो जाते हैं।",
 		"Sharvan Tirth Darshan": "श्रवण तीर्थ दर्शन",
 		"Sign in": "साइन इन",
+		"Sign in again — your booking details are saved.":
+			"फिर साइन इन करें — आपकी बुकिंग जानकारी सुरक्षित है।",
 		"Sign in instead": "इसके बजाय साइन इन करें",
+		"Sign in required": "साइन इन आवश्यक है",
+		"Sign in to continue.": "जारी रखने के लिए साइन इन करें।",
 		"Sign in with mobile OTP": "मोबाइल OTP से साइन इन करें",
 		"Sign in with your email and password, or use a one-time password sent to your mobile.":
 			"अपने ईमेल और पासवर्ड से साइन इन करें, या मोबाइल पर भेजे गए एक-बार के पासवर्ड का उपयोग करें।",
@@ -271,15 +319,25 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Single Lady": "एकल महिला",
 		"Site search": "साइट खोज",
 		Sitemap: "साइटमैप",
+		"Something broke on our side": "हमारी ओर से कुछ गड़बड़ हो गई",
 		Source: "प्रस्थान स्थान",
 		"Special Services": "विशेष सेवाएं",
 		"Statue of Unity": "स्टैच्यू ऑफ यूनिटी",
 		"Swap source and destination": "प्रस्थान और गंतव्य बदलें",
 		Tenders: "निविदाएं",
+		"That seat was just booked": "वह सीट अभी बुक हो गई",
+		"This is not your fault and nothing was charged.":
+			"यह आपकी गलती नहीं है और कोई पैसा नहीं काटा गया।",
 		"This page is part of the GSRTC redesign concept. The full experience is on its way — check back soon.":
 			"यह पृष्ठ GSRTC रीडिज़ाइन अवधारणा का भाग है। पूरा अनुभव जल्द उपलब्ध होगा।",
 		"Toll Free": "टोल फ्री",
+		"Too many attempts": "बहुत अधिक प्रयास",
 		"Track your bus": "अपनी बस ट्रैक करें",
+		"Try a different card or UPI ID.": "कोई दूसरा कार्ड या UPI ID आज़माएं।",
+		"Try again shortly. Quote reference {traceId} if you contact us.":
+			"थोड़ी देर में फिर कोशिश करें। संपर्क करने पर संदर्भ {traceId} बताएं।",
+		"Try again while your seat hold is active.":
+			"सीट होल्ड सक्रिय रहते हुए दोबारा कोशिश करें।",
 		"Unity Booking": "स्टैच्यू ऑफ यूनिटी बुकिंग",
 		"Use an email address and a secure password.":
 			"ईमेल पता और सुरक्षित पासवर्ड उपयोग करें।",
@@ -287,6 +345,7 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Verifying…": "सत्यापित किया जा रहा है…",
 		"Version Details:": "संस्करण विवरण:",
 		"View History": "इतिहास देखें",
+		"Wait a minute, then try once more.": "एक मिनट रुकें, फिर दोबारा कोशिश करें।",
 		"Waiting List Ticket Status": "प्रतीक्षा सूची टिकट स्थिति",
 		"Wallet Account": "वॉलेट खाता",
 		"Wallet Passbook": "वॉलेट पासबुक",
@@ -296,6 +355,15 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Women Harassment Act 2013 (Circular 323)":
 			"महिला उत्पीड़न अधिनियम 2013 (परिपत्र 323)",
 		"You are signed in": "आप साइन इन हैं",
+		"You have been signed out": "आप साइन आउट हो गए हैं",
+		"You have tried to lock seats several times in a row.":
+			"आपने लगातार कई बार सीटें लॉक करने की कोशिश की है।",
+		"Your bank declined the payment. No money left your account.":
+			"आपके बैंक ने भुगतान अस्वीकार किया। आपके खाते से कोई पैसा नहीं गया।",
+		"Your payment could not be completed. Nothing was charged.":
+			"आपका भुगतान पूरा नहीं हो सका। कोई पैसा नहीं काटा गया।",
+		"Your payment was declined": "आपका भुगतान अस्वीकार कर दिया गया",
+		"Your seat hold ran out": "आपकी सीट होल्ड की अवधि समाप्त हो गई",
 	},
 };
 

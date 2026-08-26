@@ -2,20 +2,23 @@ import { implement } from "@orpc/server";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { appContract } from "#/api/contract";
 import { auth } from "#/lib/auth";
+import { addEventFields } from "#/lib/events";
 
 const os = implement(appContract);
 
 // The single server-side session check for all future gated handlers. The
 // callback preserves each frozen oRPC procedure's typed UNAUTHORIZED error.
 export async function requireSession(
-	unauthorized: () => Error
+	unauthorized: (options?: { data?: { reason?: "session_missing" } }) => Error
 ): Promise<NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>> {
 	const currentSession = await auth.api.getSession({
 		headers: getRequestHeaders(),
 	});
 	if (!currentSession) {
-		throw unauthorized();
+		addEventFields({ session_present: false });
+		throw unauthorized({ data: { reason: "session_missing" } });
 	}
+	addEventFields({ session_present: true, user_id: currentSession.user.id });
 	return currentSession;
 }
 

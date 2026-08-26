@@ -11,6 +11,7 @@ import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Select } from "#/components/ui/select";
+import { toAppError } from "#/lib/error-copy";
 
 const PASSBOOK_PAGE_SIZE = 10;
 const MONEY_FORMATTER = new Intl.NumberFormat("en-IN", {
@@ -27,10 +28,8 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("en-IN", {
 type PaymentMethod = "upi" | "card" | "netbanking";
 
 function formatError(error: unknown): string {
-	if (error instanceof Error && error.message) {
-		return error.message;
-	}
-	return "We could not load your wallet. Sign in and try again.";
+	const appError = toAppError(error);
+	return `${appError.detail} ${appError.action}`;
 }
 
 function money(amount: number): string {

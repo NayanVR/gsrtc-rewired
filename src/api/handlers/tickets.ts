@@ -79,14 +79,14 @@ const cancel = os.tickets.cancel.handler(async ({ input, errors }) =>
 			.for("update")
 			.limit(1);
 		if (!booking) {
-			throw errors.NOT_FOUND();
+			throw errors.NOT_FOUND({ data: { reason: "booking_unknown" } });
 		}
 		if (booking.status === "cancelled") {
-			throw errors.CONFLICT();
+			throw errors.CONFLICT({ data: { reason: "hold_already_consumed" } });
 		}
 		const departureAt = departureForTrip(booking.tripId);
 		if (!departureAt) {
-			throw errors.NOT_FOUND();
+			throw errors.NOT_FOUND({ data: { reason: "trip_unknown" } });
 		}
 		const charge = cancellationCharge(
 			fareForSeats(booking.tripId, booking.seatNos),
@@ -94,7 +94,7 @@ const cancel = os.tickets.cancel.handler(async ({ input, errors }) =>
 			new Date()
 		);
 		if (charge === null) {
-			throw errors.CONFLICT();
+			throw errors.CONFLICT({ data: { reason: "hold_already_consumed" } });
 		}
 		const refundAmount = fareForSeats(booking.tripId, booking.seatNos) - charge;
 		const expectedBy = new Date(
@@ -140,7 +140,7 @@ const print = os.tickets.print.handler(async ({ input, errors }) => {
 		)
 		.limit(1);
 	if (!booking) {
-		throw errors.NOT_FOUND();
+		throw errors.NOT_FOUND({ data: { reason: "booking_unknown" } });
 	}
 	return {
 		sent: sendTicket({
@@ -166,10 +166,10 @@ const reschedule = os.tickets.reschedule.handler(async ({ input, errors }) => {
 				.for("update")
 				.limit(1);
 			if (!booking) {
-				throw errors.NOT_FOUND();
+				throw errors.NOT_FOUND({ data: { reason: "booking_unknown" } });
 			}
 			if (booking.status !== "confirmed") {
-				throw errors.CONFLICT();
+				throw errors.CONFLICT({ data: { reason: "hold_already_consumed" } });
 			}
 			const newTripId = rescheduledTripId(
 				booking.tripId,
@@ -178,7 +178,7 @@ const reschedule = os.tickets.reschedule.handler(async ({ input, errors }) => {
 			);
 			const newLeg = newTripId ? parseTripId(newTripId) : null;
 			if (!(newTripId && newLeg)) {
-				throw errors.NOT_FOUND();
+				throw errors.NOT_FOUND({ data: { reason: "trip_unknown" } });
 			}
 			const hold = await createSeatHold(tx, {
 				seatNos: booking.seatNos,
@@ -198,7 +198,7 @@ const reschedule = os.tickets.reschedule.handler(async ({ input, errors }) => {
 				.where(eq(bookedSeats.holdId, hold.holdId))
 				.returning({ seatNo: bookedSeats.seatNo });
 			if (updatedSeats.length !== booking.seatNos.length) {
-				throw errors.CONFLICT();
+				throw errors.CONFLICT({ data: { reason: "seats_taken" } });
 			}
 			await tx
 				.update(seatHolds)
@@ -216,13 +216,13 @@ const reschedule = os.tickets.reschedule.handler(async ({ input, errors }) => {
 				.where(eq(bookings.pnr, booking.pnr))
 				.returning();
 			if (!rescheduledBooking) {
-				throw errors.NOT_FOUND();
+				throw errors.NOT_FOUND({ data: { reason: "booking_unknown" } });
 			}
 			return toBooking(rescheduledBooking);
 		});
 	} catch (error) {
 		if (error instanceof SeatConflictError || isUniqueViolation(error)) {
-			throw errors.CONFLICT();
+			throw errors.CONFLICT({ data: { reason: "seats_taken" } });
 		}
 		throw error;
 	}
@@ -236,7 +236,7 @@ const waitingListStatus = os.tickets.waitingListStatus.handler(
 			.where(eq(bookings.pnr, input.ticketNo))
 			.limit(1);
 		if (!booking) {
-			throw errors.NOT_FOUND();
+			throw errors.NOT_FOUND({ data: { reason: "booking_unknown" } });
 		}
 		if (booking.status === "cancelled") {
 			return { status: "cancelled" as const };

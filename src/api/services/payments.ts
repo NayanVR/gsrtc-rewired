@@ -1,5 +1,6 @@
 import { captureException } from "@sentry/tanstackstart-react";
 import { and, count, eq, gt, inArray, lt, sql } from "drizzle-orm";
+import type { ErrorReason } from "#/api/contract/base";
 import type { Passenger } from "#/api/schemas";
 import {
 	calculateBookingAmount,
@@ -19,6 +20,7 @@ import {
 	walletTransactions,
 } from "#/db/schema";
 import { assertTestCheckoutUrl, dodo } from "#/lib/dodo";
+import { addEventFields } from "#/lib/events";
 
 export const PAYMENT_WINDOW_MS = 15 * 60 * 1000;
 const BOOKING_INTENT_LIMIT = 5;
@@ -33,10 +35,18 @@ const TERMINAL_PAYMENT_STATUSES = [
 ] as const;
 
 interface PaymentErrors {
-	CONFLICT: () => unknown;
-	NOT_FOUND: () => unknown;
-	PAYMENT_FAILED: (options?: { data?: { reason?: string } }) => unknown;
-	RATE_LIMITED: () => unknown;
+	CONFLICT: (options?: {
+		data?: { reason?: ErrorReason; traceId?: string };
+	}) => unknown;
+	NOT_FOUND: (options?: {
+		data?: { reason?: ErrorReason; traceId?: string };
+	}) => unknown;
+	PAYMENT_FAILED: (options?: {
+		data?: { reason?: ErrorReason; traceId?: string };
+	}) => unknown;
+	RATE_LIMITED: (options?: {
+		data?: { reason?: ErrorReason; traceId?: string };
+	}) => unknown;
 }
 
 interface BookingPaymentInput {
@@ -169,6 +179,12 @@ export async function startBookingPayment(
 	input: BookingPaymentInput,
 	errors: PaymentErrors
 ) {
+	addEventFields({
+		hold_id: input.holdId,
+		payment_provider: "dodo",
+		seat_count: input.passengers.length,
+		trip_id: input.tripId,
+	});
 	const intent = await getDb().transaction(async (tx) => {
 		const [hold] = await tx
 			.select()
@@ -177,10 +193,10 @@ export async function startBookingPayment(
 			.for("update")
 			.limit(1);
 		if (!hold || hold.expiresAt <= new Date()) {
-			throw errors.NOT_FOUND();
+			throw errors.NOT_FOUND({ data: { reason: "hold_expired" } });
 		}
 		if (hold.tripId !== input.tripId || hold.consumedAt) {
-			throw errors.CONFLICT();
+			throw errors.CONFLICT({ data: { reason: "hold_already_consumed" } });
 		}
 		const heldSeatNos = await getHeldSeatNos(tx, hold.id);
 		if (
@@ -189,7 +205,7 @@ export async function startBookingPayment(
 				heldSeatNos
 			)
 		) {
-			throw errors.CONFLICT();
+			throw errors.CONFLICT({ data: { reason: "seat_passenger_mismatch" } });
 		}
 
 		const expiresAt = new Date(Date.now() + PAYMENT_WINDOW_MS);
@@ -224,7 +240,7 @@ export async function startBookingPayment(
 			.from(paymentIntents)
 			.where(eq(paymentIntents.holdId, hold.id));
 		if ((intentCount?.value ?? 0) >= BOOKING_INTENT_LIMIT) {
-			throw errors.RATE_LIMITED();
+			throw errors.RATE_LIMITED({ data: { reason: "too_many_hold_attempts" } });
 		}
 
 		const [createdIntent] = await tx
@@ -246,15 +262,20 @@ export async function startBookingPayment(
 			})
 			.returning();
 		if (!createdIntent) {
-			throw errors.PAYMENT_FAILED();
+			throw errors.PAYMENT_FAILED({ data: { reason: "booking_write_failed" } });
 		}
 		return createdIntent;
 	});
 
 	if (intent.checkoutUrl) {
+		addEventFields({
+			payment_intent_id: intent.id,
+			payment_status: intent.status,
+		});
 		return toCheckoutResult(intent);
 	}
 	try {
+		const providerStartedAt = performance.now();
 		const session = await createCheckoutSession({
 			amountPaise: intent.amountPaise,
 			customer: {
@@ -274,6 +295,11 @@ export async function startBookingPayment(
 			.update(paymentIntents)
 			.set(session)
 			.where(eq(paymentIntents.id, intent.id));
+		addEventFields({
+			dodo_session_id: session.dodoSessionId,
+			payment_intent_id: intent.id,
+			provider_ms: Math.round(performance.now() - providerStartedAt),
+		});
 		return { ...toCheckoutResult(intent), checkoutUrl: session.checkoutUrl };
 	} catch (error) {
 		captureCheckoutFailure(error, intent.id, "booking");
@@ -283,7 +309,7 @@ export async function startBookingPayment(
 			isNonTestCheckoutUrlError(error)
 		);
 		throw errors.PAYMENT_FAILED({
-			data: { reason: checkoutFailureMessage(error) },
+			data: { reason: "checkout_session_failed" },
 		});
 	}
 }
@@ -293,6 +319,12 @@ export async function startWalletTopUp(
 	currentUser: PaymentCustomer,
 	errors: PaymentErrors
 ) {
+	addEventFields({
+		amount_paise: Math.round(amount * 100),
+		payment_provider: "dodo",
+		payment_purpose: "wallet_topup",
+		user_id: currentUser.id,
+	});
 	const intent = await getDb().transaction(async (tx) => {
 		const rateLimitAt = new Date(Date.now() - WALLET_RATE_WINDOW_MS);
 		const [intentCount] = await tx
@@ -306,7 +338,9 @@ export async function startWalletTopUp(
 				)
 			);
 		if ((intentCount?.value ?? 0) >= WALLET_INTENT_LIMIT) {
-			throw errors.RATE_LIMITED();
+			throw errors.RATE_LIMITED({
+				data: { reason: "too_many_topup_attempts" },
+			});
 		}
 		const [createdIntent] = await tx
 			.insert(paymentIntents)
@@ -320,11 +354,12 @@ export async function startWalletTopUp(
 			})
 			.returning();
 		if (!createdIntent) {
-			throw errors.PAYMENT_FAILED();
+			throw errors.PAYMENT_FAILED({ data: { reason: "booking_write_failed" } });
 		}
 		return createdIntent;
 	});
 	try {
+		const providerStartedAt = performance.now();
 		const session = await createCheckoutSession({
 			amountPaise: intent.amountPaise,
 			customer: { email: currentUser.email, name: currentUser.name },
@@ -340,6 +375,11 @@ export async function startWalletTopUp(
 			.update(paymentIntents)
 			.set(session)
 			.where(eq(paymentIntents.id, intent.id));
+		addEventFields({
+			dodo_session_id: session.dodoSessionId,
+			payment_intent_id: intent.id,
+			provider_ms: Math.round(performance.now() - providerStartedAt),
+		});
 		return { ...toCheckoutResult(intent), checkoutUrl: session.checkoutUrl };
 	} catch (error) {
 		captureCheckoutFailure(error, intent.id, "wallet_topup");
@@ -349,7 +389,7 @@ export async function startWalletTopUp(
 			isNonTestCheckoutUrlError(error)
 		);
 		throw errors.PAYMENT_FAILED({
-			data: { reason: checkoutFailureMessage(error) },
+			data: { reason: "checkout_session_failed" },
 		});
 	}
 }
@@ -379,16 +419,20 @@ export async function getPaymentStatus(
 	paymentIntentId: string,
 	errors: PaymentErrors
 ) {
+	addEventFields({ payment_intent_id: paymentIntentId });
 	const [intent] = await getDb()
 		.select()
 		.from(paymentIntents)
 		.where(eq(paymentIntents.id, paymentIntentId))
 		.limit(1);
 	if (!intent) {
-		throw errors.NOT_FOUND();
+		throw errors.NOT_FOUND({ data: { reason: "payment_intent_unknown" } });
 	}
 	const result = {
-		failureReason: intent.failureMessage ?? undefined,
+		failureReason:
+			intent.status === "failed"
+				? ("checkout_session_failed" as const)
+				: undefined,
 		purpose: intent.purpose,
 		status: intent.status,
 	};

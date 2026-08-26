@@ -28,7 +28,7 @@ const register = os.agents.register.handler(async ({ input }) => {
 const login = os.agents.login.handler(({ errors }) => {
 	// Agent credentials have not been linked to Better Auth. Creating a second
 	// password verifier or cookie here would violate task 07's single-session rule.
-	throw errors.UNAUTHORIZED();
+	throw errors.UNAUTHORIZED({ data: { reason: "session_missing" } });
 });
 
 const allotment = os.agents.allotment.handler(async ({ input, errors }) => {
@@ -42,7 +42,7 @@ const allotment = os.agents.allotment.handler(async ({ input, errors }) => {
 		.where(eq(agents.agentCode, input.agentCode))
 		.limit(1);
 	if (!agent) {
-		throw errors.NOT_FOUND();
+		throw errors.NOT_FOUND({ data: { reason: "agent_unknown" } });
 	}
 	return { routes: agent.allottedRoutes, seats: agent.allottedSeats };
 });
@@ -55,7 +55,7 @@ const eTopStatus = os.agents.eTopStatus.handler(async ({ input, errors }) => {
 		.where(eq(agentETopTransactions.transactionId, input.transactionId))
 		.limit(1);
 	if (!transaction) {
-		throw errors.NOT_FOUND();
+		throw errors.NOT_FOUND({ data: { reason: "agent_unknown" } });
 	}
 	return { amount: Number(transaction.amount), status: transaction.status };
 });

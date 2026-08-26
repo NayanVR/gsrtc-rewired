@@ -16,24 +16,25 @@ that apply to every task; individual task files do not repeat them.
 
 ## Board
 
-| # | Task | Status | Depends on | Phase | Pain point |
-|---|------|--------|-----------|-------|-----------|
-| 01 | [Test harness](./01-test-harness.md) | done | — | 0 | — |
-| 02 | [Wire the database](./02-db-wiring.md) | done | 01 | 0 | 01, 02 |
-| 03 | [Seat inventory & holds](./03-seat-inventory.md) | done | 02 | 3 | 01 |
-| 04 | [Booking create & payment idempotency](./04-booking-payment.md) | done | 03 | 3 | 02 |
-| 05 | [Tickets](./05-tickets.md) | done | 04 | 3 | 03, 05 |
-| 06 | [Refunds](./06-refunds.md) | done | 05 | 2, 3 | 03 |
-| 07 | [better-auth: email/password & sessions](./07-better-auth.md) | done | 02 | 2 | — |
-| 08 | [Wallet](./08-wallet.md) | done | 07 | 2, 3 | 02 |
-| 09 | [Passes](./09-passes.md) | done | 02 | 3 | — |
-| 10 | [Agents](./10-agents.md) | done | 07 | 4 | — |
-| 11 | [Search time-window filtering](./11-search-time-window.md) | done | — | 1 | 01 |
-| 12 | [Tracking degradation & staleness](./12-tracking-degradation.md) | done | — | 1 | 04 |
-| 13 | [OpenAPI spec](./13-openapi.md) | done | — | 4 | 06 |
-| 14 | [Mobile OTP (phone-number plugin)](./14-mobile-otp.md) | done | 07 | 2 | — |
-| 15 | [Self-host on a VPS](./15-vps-self-host.md) | todo | 02 | 0 | — |
-| 16 | [Dodo Payments (test mode)](./16-dodo-payments.md) | todo | 04, 08, 15 | 3 | 02 |
+| #   | Task                                                             | Status | Depends on | Phase | Pain point |
+| --- | ---------------------------------------------------------------- | ------ | ---------- | ----- | ---------- |
+| 01  | [Test harness](./01-test-harness.md)                             | done   | —          | 0     | —          |
+| 02  | [Wire the database](./02-db-wiring.md)                           | done   | 01         | 0     | 01, 02     |
+| 03  | [Seat inventory & holds](./03-seat-inventory.md)                 | done   | 02         | 3     | 01         |
+| 04  | [Booking create & payment idempotency](./04-booking-payment.md)  | done   | 03         | 3     | 02         |
+| 05  | [Tickets](./05-tickets.md)                                       | done   | 04         | 3     | 03, 05     |
+| 06  | [Refunds](./06-refunds.md)                                       | done   | 05         | 2, 3  | 03         |
+| 07  | [better-auth: email/password & sessions](./07-better-auth.md)    | done   | 02         | 2     | —          |
+| 08  | [Wallet](./08-wallet.md)                                         | done   | 07         | 2, 3  | 02         |
+| 09  | [Passes](./09-passes.md)                                         | done   | 02         | 3     | —          |
+| 10  | [Agents](./10-agents.md)                                         | done   | 07         | 4     | —          |
+| 11  | [Search time-window filtering](./11-search-time-window.md)       | done   | —          | 1     | 01         |
+| 12  | [Tracking degradation & staleness](./12-tracking-degradation.md) | done   | —          | 1     | 04         |
+| 13  | [OpenAPI spec](./13-openapi.md)                                  | done   | —          | 4     | 06         |
+| 14  | [Mobile OTP (phone-number plugin)](./14-mobile-otp.md)           | done   | 07         | 2     | —          |
+| 15  | [Self-host on a VPS](./15-vps-self-host.md)                      | done   | 02         | 0     | —          |
+| 16  | [Dodo Payments (test mode)](./16-dodo-payments.md)               | todo   | 04, 08, 15 | 3     | 02         |
+| 17  | [Wide events & error handling](./17-wide-events.md)                               | done   | 16         | 0     | 05, 06     |
 
 Status values: `todo` / `in progress` / `done` / `blocked`.
 Phase numbers refer to [`../migration-plan.md`](../migration-plan.md) §6.
@@ -62,7 +63,7 @@ deliberate: booking without an account must keep working.
 
 ## What is deliberately not here
 
-- Real *money*. Task 16 integrates Dodo Payments but is locked to test mode;
+- Real _money_. Task 16 integrates Dodo Payments but is locked to test mode;
   `mockCharge()` stays as the default provider for local development and CI.
 - Real OPRS adapters. Every handler reads this project's own storage or
   synthetic data; see `00-conventions.md`.

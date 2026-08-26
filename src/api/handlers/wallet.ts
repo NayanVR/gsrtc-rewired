@@ -6,6 +6,7 @@ import { startWalletTopUp } from "#/api/services/payments";
 import { getDb } from "#/db/client";
 import { walletAccounts, walletTransactions } from "#/db/schema";
 import { getPaymentsProvider } from "#/lib/dodo";
+import { addEventFields } from "#/lib/events";
 import { mockCharge } from "#/lib/mock-payment";
 
 const os = implement(appContract);
@@ -51,6 +52,7 @@ async function getOrCreateWalletAccount(userId: string, conflict: () => Error) {
 
 const account = os.wallet.account.handler(async ({ errors }) => {
 	const currentSession = await requireSession(errors.UNAUTHORIZED);
+	addEventFields({ user_id: currentSession.user.id });
 	const walletAccount = await getOrCreateWalletAccount(
 		currentSession.user.id,
 		errors.CONFLICT
@@ -60,6 +62,7 @@ const account = os.wallet.account.handler(async ({ errors }) => {
 
 const passbook = os.wallet.passbook.handler(async ({ input, errors }) => {
 	const currentSession = await requireSession(errors.UNAUTHORIZED);
+	addEventFields({ user_id: currentSession.user.id });
 	const walletAccount = await getOrCreateWalletAccount(
 		currentSession.user.id,
 		errors.CONFLICT
@@ -81,8 +84,14 @@ const passbook = os.wallet.passbook.handler(async ({ input, errors }) => {
 
 const topUp = os.wallet.topUp.handler(async ({ input, errors }) => {
 	const currentSession = await requireSession(errors.UNAUTHORIZED);
+	addEventFields({
+		amount_paise: Math.round(input.amount * 100),
+		payment_method: input.method,
+		payment_purpose: "wallet_topup",
+		user_id: currentSession.user.id,
+	});
 	if (getPaymentsProvider() === "dodo") {
-		throw errors.PAYMENT_FAILED();
+		throw errors.PAYMENT_FAILED({ data: { reason: "mock_provider_disabled" } });
 	}
 	return getDb().transaction(async (tx) => {
 		await tx
@@ -96,7 +105,7 @@ const topUp = os.wallet.topUp.handler(async ({ input, errors }) => {
 			.for("update")
 			.limit(1);
 		if (!walletAccount) {
-			throw errors.CONFLICT();
+			throw errors.CONFLICT({ data: { reason: "wallet_account_missing" } });
 		}
 
 		const payment = mockCharge({
@@ -105,7 +114,7 @@ const topUp = os.wallet.topUp.handler(async ({ input, errors }) => {
 			method: input.method,
 		});
 		if (payment.status === "failed") {
-			throw errors.PAYMENT_FAILED();
+			throw errors.PAYMENT_FAILED({ data: { reason: "charge_declined" } });
 		}
 
 		await tx.insert(walletTransactions).values({
@@ -121,7 +130,7 @@ const topUp = os.wallet.topUp.handler(async ({ input, errors }) => {
 			.where(eq(walletAccounts.userId, currentSession.user.id))
 			.returning({ balance: walletAccounts.balance });
 		if (!updatedAccount) {
-			throw errors.CONFLICT();
+			throw errors.CONFLICT({ data: { reason: "wallet_account_missing" } });
 		}
 		return {
 			balance: Number(updatedAccount.balance),
@@ -132,8 +141,14 @@ const topUp = os.wallet.topUp.handler(async ({ input, errors }) => {
 
 const startTopUp = os.wallet.startTopUp.handler(async ({ input, errors }) => {
 	const currentSession = await requireSession(errors.UNAUTHORIZED);
+	addEventFields({
+		amount_paise: Math.round(input.amount * 100),
+		payment_provider: "dodo",
+		payment_purpose: "wallet_topup",
+		user_id: currentSession.user.id,
+	});
 	if (getPaymentsProvider() !== "dodo") {
-		throw errors.PAYMENT_FAILED();
+		throw errors.PAYMENT_FAILED({ data: { reason: "mock_provider_disabled" } });
 	}
 	return startWalletTopUp(input.amount, currentSession.user, errors);
 });

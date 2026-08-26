@@ -12,6 +12,7 @@ import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
 import { Button } from "#/components/ui/button";
 import { formatTime } from "#/data/trips";
+import { toAppError } from "#/lib/error-copy";
 import { formatTrackingAge, isTrackingStale } from "#/lib/tracking-status";
 
 export const Route = createFileRoute("/track")({ component: TrackPage });
@@ -42,8 +43,9 @@ function TrackPage() {
 		setError("");
 		try {
 			setJourney(await trackJourney({ data: query }));
-		} catch {
-			setError("Couldn't fetch this bus right now. Please try again.");
+		} catch (caughtError) {
+			const appError = toAppError(caughtError);
+			setError(`${appError.detail} ${appError.action}`);
 		} finally {
 			setLoading(false);
 		}

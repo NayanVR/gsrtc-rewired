@@ -1,5 +1,6 @@
 import { createRouterClient, ORPCError, onError } from "@orpc/server";
 import { router } from "#/api/router";
+import { getEventTraceId, withEvent } from "#/lib/events";
 
 // In-process typed client over the contract implementation. Server-only: it
 // pulls in the router and its mock/adapter data, so import it exclusively from
@@ -20,6 +21,28 @@ const redactAgentRegistrationErrors = onError<
 	throw error;
 });
 
+const emitWideEvent = async (options: {
+	next: () => Promise<unknown>;
+	path: readonly string[];
+}): Promise<unknown> =>
+	withEvent(`orpc.${options.path.join(".")}`, async () => {
+		try {
+			return await options.next();
+		} catch (error) {
+			if (!(error instanceof ORPCError)) {
+				throw error;
+			}
+			const data =
+				typeof error.data === "object" && error.data !== null ? error.data : {};
+			throw new ORPCError(error.code, {
+				cause: error,
+				data: { ...data, traceId: getEventTraceId() ?? crypto.randomUUID() },
+				message: error.message,
+				status: error.status,
+			});
+		}
+	});
+
 export const api = createRouterClient(router, {
-	interceptors: [redactAgentRegistrationErrors],
+	interceptors: [emitWideEvent, redactAgentRegistrationErrors],
 });

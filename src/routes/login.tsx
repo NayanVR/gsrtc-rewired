@@ -7,6 +7,7 @@ import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { authClient } from "#/lib/auth-client";
 import { isSyntheticPhoneEmail } from "#/lib/auth-identity";
+import { toAppError } from "#/lib/error-copy";
 import { useTranslation } from "#/lib/i18n";
 
 export const Route = createFileRoute("/login")({ component: LoginPage });
@@ -54,9 +55,7 @@ function LoginPage() {
 					? await authClient.signUp.email({ email, name, password })
 					: await authClient.signIn.email({ email, password });
 			if (result.error) {
-				setError(
-					result.error.message ?? "We could not sign you in. Try again."
-				);
+				setError(toAppError(result.error).detail);
 				return;
 			}
 			setNotice(
@@ -64,8 +63,8 @@ function LoginPage() {
 					? "Your account is ready. You are signed in."
 					: "You are signed in."
 			);
-		} catch {
-			setError("We could not complete that request. Try again.");
+		} catch (caughtError) {
+			setError(toAppError(caughtError).detail);
 		} finally {
 			setSubmitting(false);
 		}
@@ -83,9 +82,7 @@ function LoginPage() {
 		try {
 			const result = await authClient.phoneNumber.sendOtp({ phoneNumber });
 			if (result.error) {
-				setError(
-					result.error.message ?? "We could not send an OTP. Try again."
-				);
+				setError(toAppError(result.error).detail);
 				return;
 			}
 			setOtpSentFor(phoneNumber);
@@ -96,8 +93,8 @@ function LoginPage() {
 			} catch {
 				// A real SMS provider never returns its OTP to the browser.
 			}
-		} catch {
-			setError("We could not send an OTP. Try again.");
+		} catch (caughtError) {
+			setError(toAppError(caughtError).detail);
 		} finally {
 			setSubmitting(false);
 		}
@@ -120,13 +117,13 @@ function LoginPage() {
 				phoneNumber: otpSentFor,
 			});
 			if (result.error) {
-				setError(result.error.message ?? "That OTP could not be verified.");
+				setError(toAppError(result.error).detail);
 				return;
 			}
 			setDevelopmentOtp(null);
 			setNotice("Your mobile number is verified. You are signed in.");
-		} catch {
-			setError("That OTP could not be verified. Try again.");
+		} catch (caughtError) {
+			setError(toAppError(caughtError).detail);
 		} finally {
 			setSubmitting(false);
 		}
@@ -146,14 +143,12 @@ function LoginPage() {
 		try {
 			const result = await authClient.signOut();
 			if (result.error) {
-				setError(
-					result.error.message ?? "We could not sign you out. Try again."
-				);
+				setError(toAppError(result.error).detail);
 				return;
 			}
 			setNotice("You are signed out.");
-		} catch {
-			setError("We could not sign you out. Try again.");
+		} catch (caughtError) {
+			setError(toAppError(caughtError).detail);
 		} finally {
 			setSubmitting(false);
 		}

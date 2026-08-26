@@ -7,13 +7,21 @@ import "@fontsource/hind-vadodara/gujarati-600.css";
 import "@fontsource/hind-vadodara/700.css";
 import "@fontsource/hind-vadodara/gujarati-700.css";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import {
+	createRootRoute,
+	HeadContent,
+	Link,
+	Scripts,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { ErrorPanel } from "#/components/error-panel";
+import { toAppError } from "#/lib/error-copy";
 
 import { LanguageProvider } from "#/lib/i18n";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
+	errorComponent: RootError,
 	head: () => ({
 		meta: [
 			{ charSet: "utf-8" },
@@ -46,8 +54,42 @@ export const Route = createRootRoute({
 			{ rel: "stylesheet", href: appCss },
 		],
 	}),
+	notFoundComponent: RootNotFound,
 	shellComponent: RootDocument,
 });
+
+function RootError({ error }: { error: unknown }) {
+	return (
+		<main className="mx-auto min-h-[60vh] max-w-xl px-4 py-16" id="main">
+			<ErrorPanel error={toAppError(error)} />
+			<Link
+				className="mt-5 inline-block font-semibold text-brand-700 hover:underline"
+				to="/"
+			>
+				Back to home
+			</Link>
+		</main>
+	);
+}
+
+function RootNotFound() {
+	return (
+		<main className="mx-auto min-h-[60vh] max-w-xl px-4 py-16" id="main">
+			<h1 className="font-bold font-display text-2xl text-ink-900">
+				Page not found
+			</h1>
+			<p className="mt-2 text-ink-600">
+				The page you requested is not available.
+			</p>
+			<Link
+				className="mt-5 inline-block font-semibold text-brand-700 hover:underline"
+				to="/"
+			>
+				Back to home
+			</Link>
+		</main>
+	);
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (

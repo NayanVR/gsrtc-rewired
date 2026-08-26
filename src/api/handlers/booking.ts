@@ -17,6 +17,7 @@ import { buildSeats, buildTrip, parseTripId } from "#/api/trips";
 import { getDb } from "#/db/client";
 import { bookedSeats, bookings, seatHolds } from "#/db/schema";
 import { getPaymentsProvider } from "#/lib/dodo";
+import { addEventFields } from "#/lib/events";
 import { mockCharge } from "#/lib/mock-payment";
 
 const os = implement(appContract);
@@ -38,14 +39,16 @@ function toBooking(row: typeof bookings.$inferSelect) {
 }
 
 const trip = os.booking.trip.handler(({ input, errors }) => {
+	addEventFields({ trip_id: input.tripId });
 	const leg = parseTripId(input.tripId);
 	if (!leg) {
-		throw errors.NOT_FOUND();
+		throw errors.NOT_FOUND({ data: { reason: "trip_unknown" } });
 	}
 	return buildTrip(leg);
 });
 
 const seatMap = os.booking.seatMap.handler(async ({ input }) => {
+	addEventFields({ trip_id: input.tripId });
 	const now = new Date();
 	const activeSeats = await getDb()
 		.select({ seatNo: bookedSeats.seatNo, state: bookedSeats.state })
@@ -73,6 +76,7 @@ const seatMap = os.booking.seatMap.handler(async ({ input }) => {
 });
 
 const hold = os.booking.hold.handler(async ({ input, errors }) => {
+	addEventFields({ seat_count: input.seatNos.length, trip_id: input.tripId });
 	try {
 		const createdHold = await getDb().transaction((tx) =>
 			createSeatHold(tx, input)
@@ -83,13 +87,14 @@ const hold = os.booking.hold.handler(async ({ input, errors }) => {
 		};
 	} catch (error) {
 		if (error instanceof SeatConflictError || isUniqueViolation(error)) {
-			throw errors.CONFLICT();
+			throw errors.CONFLICT({ data: { reason: "seats_taken" } });
 		}
 		throw error;
 	}
 });
 
 const holdStatus = os.booking.holdStatus.handler(async ({ input, errors }) => {
+	addEventFields({ hold_id: input.holdId, trip_id: input.tripId });
 	const [holdRow] = await getDb()
 		.select()
 		.from(seatHolds)
@@ -98,7 +103,7 @@ const holdStatus = os.booking.holdStatus.handler(async ({ input, errors }) => {
 		)
 		.limit(1);
 	if (!holdRow || holdRow.consumedAt || holdRow.expiresAt <= new Date()) {
-		throw errors.NOT_FOUND();
+		throw errors.NOT_FOUND({ data: { reason: "hold_expired" } });
 	}
 	return {
 		expiresAt: holdRow.expiresAt.toISOString(),
@@ -125,8 +130,13 @@ async function findBookingForConsumedHold(tx: DbTransaction, holdId: string) {
 }
 
 const create = os.booking.create.handler(({ input, errors }) => {
+	addEventFields({
+		hold_id: input.holdId,
+		seat_count: input.passengers.length,
+		trip_id: input.tripId,
+	});
 	if (getPaymentsProvider() === "dodo") {
-		throw errors.PAYMENT_FAILED();
+		throw errors.PAYMENT_FAILED({ data: { reason: "mock_provider_disabled" } });
 	}
 	return getDb().transaction(async (tx) => {
 		const [holdRow] = await tx
@@ -136,15 +146,15 @@ const create = os.booking.create.handler(({ input, errors }) => {
 			.for("update")
 			.limit(1);
 		if (!holdRow || holdRow.expiresAt <= new Date()) {
-			throw errors.NOT_FOUND();
+			throw errors.NOT_FOUND({ data: { reason: "hold_expired" } });
 		}
 		if (holdRow.tripId !== input.tripId) {
-			throw errors.CONFLICT();
+			throw errors.CONFLICT({ data: { reason: "trip_mismatch" } });
 		}
 		if (holdRow.consumedAt) {
 			const existingBooking = await findBookingForConsumedHold(tx, holdRow.id);
 			if (!existingBooking) {
-				throw errors.NOT_FOUND();
+				throw errors.NOT_FOUND({ data: { reason: "booking_unknown" } });
 			}
 			return existingBooking;
 		}
@@ -155,7 +165,7 @@ const create = os.booking.create.handler(({ input, errors }) => {
 				heldSeatNos
 			)
 		) {
-			throw errors.CONFLICT();
+			throw errors.CONFLICT({ data: { reason: "seat_passenger_mismatch" } });
 		}
 		const charge = mockCharge({
 			amount: calculateBookingAmount(holdRow.tripId, heldSeatNos),
@@ -163,7 +173,7 @@ const create = os.booking.create.handler(({ input, errors }) => {
 			method: input.paymentMethod ?? "upi",
 		});
 		if (charge.status !== "success") {
-			throw errors.PAYMENT_FAILED();
+			throw errors.PAYMENT_FAILED({ data: { reason: "charge_declined" } });
 		}
 		return confirmHold(
 			tx,
@@ -180,17 +190,25 @@ const create = os.booking.create.handler(({ input, errors }) => {
 });
 
 const startPayment = os.booking.startPayment.handler(({ input, errors }) => {
+	addEventFields({
+		hold_id: input.holdId,
+		payment_provider: getPaymentsProvider(),
+		seat_count: input.passengers.length,
+		trip_id: input.tripId,
+	});
 	if (getPaymentsProvider() !== "dodo") {
-		throw errors.PAYMENT_FAILED();
+		throw errors.PAYMENT_FAILED({ data: { reason: "mock_provider_disabled" } });
 	}
 	return startBookingPayment(input, errors);
 });
 
-const paymentStatus = os.booking.paymentStatus.handler(({ input, errors }) =>
-	getPaymentStatus(input.paymentIntentId, errors)
-);
+const paymentStatus = os.booking.paymentStatus.handler(({ input, errors }) => {
+	addEventFields({ payment_intent_id: input.paymentIntentId });
+	return getPaymentStatus(input.paymentIntentId, errors);
+});
 
 const get = os.booking.get.handler(async ({ input, errors }) => {
+	addEventFields({ pnr: input.pnr });
 	const [booking] = await getDb()
 		.select()
 		.from(bookings)
@@ -199,7 +217,7 @@ const get = os.booking.get.handler(async ({ input, errors }) => {
 		)
 		.limit(1);
 	if (!booking) {
-		throw errors.NOT_FOUND();
+		throw errors.NOT_FOUND({ data: { reason: "booking_unknown" } });
 	}
 	return toBooking(booking);
 });

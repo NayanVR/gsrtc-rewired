@@ -48,6 +48,11 @@ services:
       PORT: "3000"
     expose:
       - "3000"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: unless-stopped
 
 volumes:

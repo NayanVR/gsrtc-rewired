@@ -14,6 +14,7 @@ import { PAGE_TITLES } from "#/data/site-nav";
 import { CITIES } from "#/data/trips";
 import { getDb } from "#/db/client";
 import { pageForms } from "#/db/schema";
+import { addEventFields } from "#/lib/events";
 
 // Server-side implementation of the typed contract. Backed by mock data for the
 // concept build — each resolver is where a real OPRS adapter call will slot in.
@@ -23,6 +24,7 @@ const os = implement(appContract);
 
 // ── search ────────────────────────────────────────────────────────────────
 const cities = os.search.cities.handler(({ input }) => {
+	addEventFields({ result_count: CITIES.length });
 	const q = input.q?.trim().toLowerCase();
 	if (!q) {
 		return [...CITIES];
@@ -31,12 +33,14 @@ const cities = os.search.cities.handler(({ input }) => {
 });
 
 const trips = os.search.trips.handler(({ input }) => {
+	addEventFields({ from: input.from, journey_date: input.date, to: input.to });
 	const all = BUS_TYPES.map((_, index) =>
 		buildTrip({ date: input.date, from: input.from, index, to: input.to })
 	);
 	const filtered = input.busType
 		? all.filter((trip) => trip.busType === input.busType)
 		: all;
+	addEventFields({ result_count: filtered.length });
 	return { trips: filtered };
 });
 
@@ -73,6 +77,7 @@ function hashString(value: string): number {
 }
 
 const progress = os.tracking.progress.handler(({ input }) => {
+	addEventFields({ vehicle_no: input.vehicleNo });
 	const now = Date.now();
 	const delayMin = (hashString(input.vehicleNo) % 11) - 3; // −3..+7
 	const start = now - JOURNEY_STARTED_MIN_AGO * MS_PER_MIN;

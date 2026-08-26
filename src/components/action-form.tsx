@@ -6,6 +6,7 @@ import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Select } from "#/components/ui/select";
 import { Textarea } from "#/components/ui/textarea";
+import { toAppError } from "#/lib/error-copy";
 
 // Renders a designed (concept) form for a transactional GSRTC page. When the
 // flow isn't owned by this build, `external` (the page's live OPRS URL) turns
@@ -74,10 +75,9 @@ export function ActionForm({
 				},
 			});
 			setFeedback(`Complaint submitted. Reference: ${complaint.complaintId}`);
-		} catch {
-			setFeedback(
-				"We could not process this request. Check the details and try again."
-			);
+		} catch (error) {
+			const appError = toAppError(error);
+			setFeedback(`${appError.detail} ${appError.action}`);
 		}
 	};
 

@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import type { ErrorReason } from "#/api/contract/base";
 import type { Passenger } from "#/api/schemas";
 import type { DbTransaction } from "#/api/services/seat-holds";
 import { buildSeats, buildTrip, parseTripId } from "#/api/trips";
@@ -8,9 +9,15 @@ import { generatePnr } from "#/lib/ids";
 const SERVICE_FEE_PER_SEAT = 15;
 
 interface BookingConfirmationErrors {
-	CONFLICT: () => unknown;
-	NOT_FOUND: () => unknown;
-	PAYMENT_FAILED: () => unknown;
+	CONFLICT: (options?: {
+		data?: { reason?: ErrorReason; traceId?: string };
+	}) => unknown;
+	NOT_FOUND: (options?: {
+		data?: { reason?: ErrorReason; traceId?: string };
+	}) => unknown;
+	PAYMENT_FAILED: (options?: {
+		data?: { reason?: ErrorReason; traceId?: string };
+	}) => unknown;
 }
 
 interface ConfirmHoldInput {
@@ -79,19 +86,19 @@ export async function confirmHold(
 	errors: BookingConfirmationErrors
 ) {
 	if (!input.paymentRef) {
-		throw errors.PAYMENT_FAILED();
+		throw errors.PAYMENT_FAILED({ data: { reason: "booking_write_failed" } });
 	}
 	const heldSeatNos = await getHeldSeatNos(tx, holdRow.id);
 	const passengerSeatNos = input.passengers.map(
 		(passenger) => passenger.seatNo
 	);
 	if (!hasMatchingSeatNos(passengerSeatNos, heldSeatNos)) {
-		throw errors.CONFLICT();
+		throw errors.CONFLICT({ data: { reason: "seat_passenger_mismatch" } });
 	}
 
 	const leg = parseTripId(holdRow.tripId);
 	if (!leg) {
-		throw errors.NOT_FOUND();
+		throw errors.NOT_FOUND({ data: { reason: "trip_unknown" } });
 	}
 	const route = buildTrip(leg);
 	const amount = calculateBookingAmount(holdRow.tripId, heldSeatNos);
@@ -113,7 +120,7 @@ export async function confirmHold(
 		})
 		.returning();
 	if (!createdBooking) {
-		throw errors.PAYMENT_FAILED();
+		throw errors.PAYMENT_FAILED({ data: { reason: "booking_write_failed" } });
 	}
 	const updatedSeats = await tx
 		.update(bookedSeats)
@@ -123,7 +130,7 @@ export async function confirmHold(
 		)
 		.returning({ seatNo: bookedSeats.seatNo });
 	if (updatedSeats.length !== heldSeatNos.length) {
-		throw errors.CONFLICT();
+		throw errors.CONFLICT({ data: { reason: "seats_taken" } });
 	}
 	await tx
 		.update(seatHolds)

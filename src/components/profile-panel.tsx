@@ -9,6 +9,7 @@ import {
 import type { Booking } from "#/api/schemas";
 import { Button } from "#/components/ui/button";
 import { authClient } from "#/lib/auth-client";
+import { toAppError } from "#/lib/error-copy";
 
 const MONEY_FORMATTER = new Intl.NumberFormat("en-IN", {
 	currency: "INR",
@@ -17,7 +18,10 @@ const MONEY_FORMATTER = new Intl.NumberFormat("en-IN", {
 });
 
 function formatError(cause: unknown, fallback: string): string {
-	return cause instanceof Error && cause.message ? cause.message : fallback;
+	const appError = toAppError(cause);
+	return appError.code === "INTERNAL"
+		? fallback
+		: `${appError.detail} ${appError.action}`;
 }
 
 function ticketStatusClass(status: Booking["status"]): string {
@@ -255,9 +259,7 @@ export function ProfilePanel({
 		try {
 			const result = await authClient.signOut();
 			if (result.error) {
-				setError(
-					result.error.message ?? "We could not sign you out. Try again."
-				);
+				setError(toAppError(result.error).detail);
 				return;
 			}
 			await navigate({ to: "/" });
