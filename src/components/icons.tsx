@@ -112,6 +112,18 @@ export function CheckIcon(props: IconProps) {
 	);
 }
 
+export function SpinnerIcon(props: IconProps) {
+	return (
+		<svg
+			{...base(props)}
+			className={`animate-spin motion-reduce:animate-none ${props.className ?? ""}`}
+		>
+			<circle cx="12" cy="12" opacity="0.25" r="8" />
+			<path d="M20 12a8 8 0 0 0-8-8" />
+		</svg>
+	);
+}
+
 export function WifiIcon(props: IconProps) {
 	return (
 		<svg {...base(props)}>

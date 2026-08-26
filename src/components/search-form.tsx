@@ -4,11 +4,11 @@ import { listCities } from "#/api/fns";
 import {
 	CalendarIcon,
 	ChevronDownIcon,
-	PinIcon,
 	SwapIcon,
 	UsersIcon,
 } from "#/components/icons";
 import { Button } from "#/components/ui/button";
+import { CityCombobox } from "#/components/ui/city-combobox";
 import {
 	SEARCH_CONTROL_CLASS,
 	SearchField,
@@ -52,7 +52,6 @@ export function SearchForm({
 	const toId = useId();
 	const dateId = useId();
 	const paxId = useId();
-	const listId = useId();
 
 	const [tab, setTab] = useState<string>(BOOKING_TABS[0]);
 	const [from, setFrom] = useState(initial?.from ?? "Vadodara");
@@ -61,6 +60,8 @@ export function SearchForm({
 	const [passengers, setPassengers] = useState(initial?.passengers ?? 1);
 	const [singleLady, setSingleLady] = useState(false);
 	const [cities, setCities] = useState<string[]>([]);
+	const [locationError, setLocationError] = useState(false);
+	const [dateError, setDateError] = useState(false);
 
 	useEffect(() => {
 		listCities({ data: undefined }).then(setCities);
@@ -73,6 +74,23 @@ export function SearchForm({
 
 	const submit = (event: FormEvent) => {
 		event.preventDefault();
+		const sourceMissing = from.trim() === "";
+		const destinationMissing = to.trim() === "";
+		const dateMissing = date === "";
+		if (sourceMissing || destinationMissing || dateMissing) {
+			setLocationError(sourceMissing || destinationMissing);
+			setDateError(dateMissing);
+			let firstInvalidId = dateId;
+			if (sourceMissing) {
+				firstInvalidId = fromId;
+			} else if (destinationMissing) {
+				firstInvalidId = toId;
+			}
+			document.getElementById(firstInvalidId)?.focus();
+			return;
+		}
+		setLocationError(false);
+		setDateError(false);
 		navigate({
 			search: {
 				date,
@@ -91,7 +109,7 @@ export function SearchForm({
 			className={
 				isBar
 					? "rounded-2xl border border-ink-100 bg-surface p-2 shadow-card"
-					: "overflow-hidden rounded-3xl border border-ink-100 bg-surface shadow-pop"
+					: "relative overflow-visible rounded-3xl border border-ink-100 bg-surface shadow-pop"
 			}
 		>
 			{showTabs ? (
@@ -119,36 +137,41 @@ export function SearchForm({
 				</div>
 			) : null}
 
-			<form className={isBar ? "" : "bg-canvas p-4 sm:p-5"} onSubmit={submit}>
+			<form
+				className={isBar ? "" : "rounded-b-3xl bg-canvas p-4 sm:p-5"}
+				onSubmit={submit}
+			>
 				<div className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
 					<div className="relative grid gap-3 sm:grid-cols-2 md:col-span-2">
-						<SearchField icon={<PinIcon />} id={fromId} label={t("Source")}>
-							<input
-								autoComplete="off"
-								className={`${SEARCH_CONTROL_CLASS} appearance-none`}
-								id={fromId}
-								list={listId}
-								onChange={(event) => setFrom(event.target.value)}
-								placeholder={t("Origin city")}
-								value={from}
-							/>
-						</SearchField>
+						<CityCombobox
+							cities={cities}
+							error={locationError && from.trim() === ""}
+							id={fromId}
+							label={t("Source")}
+							onChange={(value) => {
+								setFrom(value);
+								setLocationError(false);
+							}}
+							placeholder={t("Origin city")}
+							value={from}
+						/>
 
-						<SearchField icon={<PinIcon />} id={toId} label={t("Destination")}>
-							<input
-								autoComplete="off"
-								className={`${SEARCH_CONTROL_CLASS} appearance-none`}
-								id={toId}
-								list={listId}
-								onChange={(event) => setTo(event.target.value)}
-								placeholder={t("Destination city")}
-								value={to}
-							/>
-						</SearchField>
+						<CityCombobox
+							cities={cities}
+							error={locationError && to.trim() === ""}
+							id={toId}
+							label={t("Destination")}
+							onChange={(value) => {
+								setTo(value);
+								setLocationError(false);
+							}}
+							placeholder={t("Destination city")}
+							value={to}
+						/>
 
 						<button
 							aria-label={t("Swap source and destination")}
-							className="absolute top-1/2 left-1/2 hidden h-9 w-9 translate-x-[-50%] -translate-y-1/2 place-items-center rounded-full border border-ink-200 bg-surface text-saffron-600 shadow-sm transition-transform duration-300 hover:rotate-180 hover:border-saffron-300 active:scale-90 motion-reduce:hover:rotate-0 sm:grid"
+							className="absolute top-1/2 left-1/2 z-40 hidden h-9 w-9 translate-x-[-50%] -translate-y-1/2 place-items-center rounded-full border border-ink-200 bg-surface text-saffron-600 shadow-sm transition-transform duration-300 hover:rotate-180 hover:border-saffron-300 active:scale-90 motion-reduce:hover:rotate-0 sm:grid"
 							onClick={swap}
 							type="button"
 						>
@@ -159,13 +182,18 @@ export function SearchForm({
 					<SearchField
 						icon={<CalendarIcon />}
 						id={dateId}
+						invalid={dateError}
 						label={t("Date of journey")}
 					>
 						<input
+							aria-invalid={dateError || undefined}
 							className={`${SEARCH_CONTROL_CLASS} appearance-none [&::-webkit-calendar-picker-indicator]:hidden`}
 							id={dateId}
 							min={todayIso()}
-							onChange={(event) => setDate(event.target.value)}
+							onChange={(event) => {
+								setDate(event.target.value);
+								setDateError(false);
+							}}
 							onClick={(event) => event.currentTarget.showPicker?.()}
 							type="date"
 							value={date}
@@ -205,6 +233,16 @@ export function SearchForm({
 						</Button>
 					</div>
 				</div>
+				{locationError ? (
+					<p className="mt-3 text-destructive text-sm" role="alert">
+						{t("Choose both a source and destination before searching.")}
+					</p>
+				) : null}
+				{dateError ? (
+					<p className="mt-3 text-destructive text-sm" role="alert">
+						{t("Choose a date of journey before searching.")}
+					</p>
+				) : null}
 
 				<label className="mt-3 flex w-fit cursor-pointer items-center gap-2 text-ink-600 text-sm">
 					<input
@@ -215,12 +253,6 @@ export function SearchForm({
 					/>
 					{t("Single Lady")}
 				</label>
-
-				<datalist id={listId}>
-					{cities.map((city) => (
-						<option key={city} value={city} />
-					))}
-				</datalist>
 			</form>
 		</div>
 	);

@@ -242,10 +242,10 @@ function LoginPage() {
 								</div>
 								{mode === "signUp" ? (
 									<Field label={t("Full name")}>
-										{(id) => (
+										{(props) => (
 											<Input
+												{...props}
 												autoComplete="name"
-												id={id}
 												minLength={2}
 												name="name"
 												required
@@ -255,10 +255,10 @@ function LoginPage() {
 								) : null}
 
 								<Field label={t("Email address")}>
-									{(id) => (
+									{(props) => (
 										<Input
+											{...props}
 											autoComplete="email"
-											id={id}
 											name="email"
 											required
 											type="email"
@@ -267,12 +267,12 @@ function LoginPage() {
 								</Field>
 
 								<Field label={t("Password")}>
-									{(id) => (
+									{(props) => (
 										<Input
+											{...props}
 											autoComplete={
 												mode === "signUp" ? "new-password" : "current-password"
 											}
-											id={id}
 											minLength={8}
 											name="password"
 											required
@@ -326,10 +326,10 @@ function LoginPage() {
 											</div>
 										) : null}
 										<Field label={t("One-time password")}>
-											{(id) => (
+											{(props) => (
 												<Input
+													{...props}
 													autoComplete="one-time-code"
-													id={id}
 													inputMode="numeric"
 													maxLength={6}
 													name="otp"
@@ -349,10 +349,10 @@ function LoginPage() {
 								) : (
 									<form className="space-y-4" onSubmit={sendOtp}>
 										<Field label={t("Mobile number")}>
-											{(id) => (
+											{(props) => (
 												<Input
+													{...props}
 													autoComplete="tel"
-													id={id}
 													inputMode="numeric"
 													maxLength={10}
 													name="mobile"

@@ -261,3 +261,17 @@ export function toAppError(error: unknown, context?: string): AppError {
 }
 
 export const ERROR_COPY = COPY;
+
+export const ERROR_REASON_FIELDS = {
+	booking_unknown: "reference",
+	mobile_mismatch: "mobile",
+	otp_throttled: "otp",
+	pnr_unknown: "reference",
+	vehicle_unknown: "vehicle",
+} as const satisfies Partial<Record<ErrorReason, string>>;
+
+export function errorFieldForReason(
+	reason: ErrorReason | undefined
+): string | undefined {
+	return reason ? ERROR_REASON_FIELDS[reason] : undefined;
+}

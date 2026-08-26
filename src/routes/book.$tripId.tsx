@@ -24,9 +24,13 @@ import {
 } from "#/components/icons";
 import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
+import { Button } from "#/components/ui/button";
+import { Field } from "#/components/ui/field";
+import { Input } from "#/components/ui/input";
 import { formatDuration, formatFare, formatTime } from "#/data/trips";
-import { isValidMobileNumber } from "#/lib/auth-identity";
+import { validateBookingDetails } from "#/lib/booking-validation";
 import { type AppError, toAppError } from "#/lib/error-copy";
+import { useTranslation } from "#/lib/i18n";
 import type { PaymentMethod } from "#/lib/mock-payment";
 
 interface BookSearch {
@@ -63,7 +67,6 @@ export const Route = createFileRoute("/book/$tripId")({
 const SERVICE_FEE = 15;
 const SEATS_PER_ROW = 4;
 const AISLE_AFTER = 2;
-const EMAIL_ADDRESS = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const TRIP_INFO_LINKS = [
 	"Discounts",
@@ -118,6 +121,7 @@ function toBookingPassengers(
 		if (
 			!person ||
 			person.name.trim().length < 2 ||
+			person.age.trim() === "" ||
 			!Number.isInteger(age) ||
 			age < 0 ||
 			age > 120
@@ -156,10 +160,6 @@ function isNotFoundError(error: unknown): boolean {
 		return false;
 	}
 	return "code" in error && error.code === "NOT_FOUND";
-}
-
-function isValidEmailAddress(value: string): boolean {
-	return EMAIL_ADDRESS.test(value);
 }
 
 function refreshSeatMap(
@@ -238,6 +238,7 @@ function clearBookingSession(tripId: string): void {
 
 function BookPage() {
 	const { trip, seats } = Route.useLoaderData();
+	const { t } = useTranslation();
 	const { date, passengers } = Route.useSearch();
 
 	const [bookingStep, setBookingStep] = useState<BookingStep>("details");
@@ -257,6 +258,10 @@ function BookPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [paymentProvider, setPaymentProvider] = useState<"dodo" | "mock">(
 		"mock"
+	);
+	const [detailsSubmitted, setDetailsSubmitted] = useState(false);
+	const [touchedDetails, setTouchedDetails] = useState<Record<string, boolean>>(
+		{}
 	);
 
 	useEffect(() => {
@@ -390,14 +395,22 @@ function BookPage() {
 	const fees = selected.length * SERVICE_FEE;
 	const total = seatFares + fees;
 	const bookingPassengers = toBookingPassengers(selected, people);
-	const canProceed =
-		selected.length === passengers &&
-		isValidEmailAddress(email.trim()) &&
-		isValidMobileNumber(mobile.trim()) &&
-		bookingPassengers !== null;
+	const detailsErrors = useMemo(
+		() =>
+			validateBookingDetails({ email, mobile, passengers, people, selected }),
+		[email, mobile, passengers, people, selected]
+	);
+	const canProceed = Object.keys(detailsErrors).length === 0;
+	const showError = (name: string) => detailsSubmitted || touchedDetails[name];
+	const markTouched = (name: string) =>
+		setTouchedDetails((current) => ({ ...current, [name]: true }));
 
 	const continueToPaymentMethod = () => {
-		if (!bookingPassengers) {
+		setDetailsSubmitted(true);
+		if (!(canProceed && bookingPassengers)) {
+			requestAnimationFrame(() => {
+				document.querySelector<HTMLElement>("[aria-invalid='true']")?.focus();
+			});
 			return;
 		}
 		setBookingError(null);
@@ -518,22 +531,48 @@ function BookPage() {
 										Passenger details
 									</h2>
 									<div className="mt-4 grid gap-3 sm:grid-cols-2">
-										<TextField
+										<Field
+											error={
+												showError("email")
+													? t(detailsErrors.email ?? "")
+													: undefined
+											}
 											label="Email ID"
-											onChange={setEmail}
-											placeholder="you@example.com"
 											required
-											type="email"
-											value={email}
-										/>
-										<TextField
+										>
+											{(props) => (
+												<Input
+													{...props}
+													onBlur={() => markTouched("email")}
+													onChange={(event) => setEmail(event.target.value)}
+													placeholder="you@example.com"
+													required
+													type="email"
+													value={email}
+												/>
+											)}
+										</Field>
+										<Field
+											error={
+												showError("mobile")
+													? t(detailsErrors.mobile ?? "")
+													: undefined
+											}
 											label="Mobile number"
-											onChange={setMobile}
-											placeholder="10-digit mobile"
 											required
-											type="tel"
-											value={mobile}
-										/>
+										>
+											{(props) => (
+												<Input
+													{...props}
+													onBlur={() => markTouched("mobile")}
+													onChange={(event) => setMobile(event.target.value)}
+													placeholder="10-digit mobile"
+													required
+													type="tel"
+													value={mobile}
+												/>
+											)}
+										</Field>
 									</div>
 
 									<p className="mt-5 mb-2 font-semibold text-ink-700 text-sm">
@@ -545,8 +584,16 @@ function BookPage() {
 										</p>
 									) : (
 										<div className="space-y-3">
+											{/* The row coordinates three controls and one shared field error. */}
+											{/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: field wiring is kept adjacent for accessibility. */}
 											{selected.map((seatNo) => {
 												const person = people[seatNo];
+												const passengerError =
+													detailsErrors.passengers?.[seatNo];
+												const passengerErrorId = `passenger-${seatNo}-error`;
+												const showPassengerError = showError(
+													`passenger-${seatNo}`
+												);
 												return (
 													<div
 														className="grid gap-2 rounded-xl border border-ink-100 bg-canvas p-3 sm:grid-cols-[auto_1fr_5rem_7rem]"
@@ -556,8 +603,19 @@ function BookPage() {
 															Seat {seatNo}
 														</span>
 														<input
+															aria-describedby={
+																showPassengerError && passengerError
+																	? passengerErrorId
+																	: undefined
+															}
+															aria-invalid={
+																showPassengerError && passengerError
+																	? true
+																	: undefined
+															}
 															aria-label={`Name for seat ${seatNo}`}
 															className="rounded-lg border border-ink-200 bg-surface px-3 py-2 text-ink-900 text-sm outline-none focus-visible:border-saffron-400"
+															onBlur={() => markTouched(`passenger-${seatNo}`)}
 															onChange={(e) =>
 																setPerson(seatNo, { name: e.target.value })
 															}
@@ -565,8 +623,19 @@ function BookPage() {
 															value={person?.name ?? ""}
 														/>
 														<input
+															aria-describedby={
+																showPassengerError && passengerError
+																	? passengerErrorId
+																	: undefined
+															}
+															aria-invalid={
+																showPassengerError && passengerError
+																	? true
+																	: undefined
+															}
 															aria-label={`Age for seat ${seatNo}`}
 															className="rounded-lg border border-ink-200 bg-surface px-3 py-2 text-ink-900 text-sm outline-none focus-visible:border-saffron-400"
+															onBlur={() => markTouched(`passenger-${seatNo}`)}
 															onChange={(e) =>
 																setPerson(seatNo, { age: e.target.value })
 															}
@@ -575,8 +644,19 @@ function BookPage() {
 															value={person?.age ?? ""}
 														/>
 														<select
+															aria-describedby={
+																showPassengerError && passengerError
+																	? passengerErrorId
+																	: undefined
+															}
+															aria-invalid={
+																showPassengerError && passengerError
+																	? true
+																	: undefined
+															}
 															aria-label={`Gender for seat ${seatNo}`}
 															className="rounded-lg border border-ink-200 bg-surface px-3 py-2 text-ink-900 text-sm outline-none focus-visible:border-saffron-400"
+															onBlur={() => markTouched(`passenger-${seatNo}`)}
 															onChange={(e) =>
 																isPassengerGender(e.target.value)
 																	? setPerson(seatNo, {
@@ -590,6 +670,15 @@ function BookPage() {
 															<option value="female">Female</option>
 															<option value="other">Other</option>
 														</select>
+														{showPassengerError && passengerError ? (
+															<p
+																className="text-destructive text-sm sm:col-span-4"
+																id={passengerErrorId}
+																role="alert"
+															>
+																{t(passengerError)}
+															</p>
+														) : null}
 													</div>
 												);
 											})}
@@ -685,7 +774,6 @@ function BookPage() {
 
 							<BookingPrimaryAction
 								bookingStep={bookingStep}
-								canProceed={canProceed}
 								confirmedBooking={confirmedBooking}
 								isSubmitting={isSubmitting}
 								onContinueToPayment={continueToPayment}
@@ -784,7 +872,6 @@ function getStepClassName(isActive: boolean, isComplete: boolean): string {
 
 function BookingPrimaryAction({
 	bookingStep,
-	canProceed,
 	confirmedBooking,
 	isSubmitting,
 	onContinueToPayment,
@@ -796,7 +883,6 @@ function BookingPrimaryAction({
 	total,
 }: {
 	bookingStep: BookingStep;
-	canProceed: boolean;
 	confirmedBooking: Booking | null;
 	isSubmitting: boolean;
 	onContinueToPayment: () => void;
@@ -807,9 +893,6 @@ function BookingPrimaryAction({
 	seatHold: SeatHold | null;
 	total: number;
 }) {
-	const buttonClassName =
-		"gradient-surface mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold text-white shadow-sm transition enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50";
-
 	if (confirmedBooking) {
 		return (
 			<div
@@ -824,56 +907,57 @@ function BookingPrimaryAction({
 
 	if (bookingStep === "details") {
 		return (
-			<button
-				className={buttonClassName}
-				disabled={!canProceed}
+			<Button
+				className="mt-5 w-full"
 				onClick={onContinueToPaymentMethod}
 				type="button"
 			>
 				Continue to payment method
-				{canProceed ? <ArrowRightIcon height={18} width={18} /> : null}
-			</button>
+				<ArrowRightIcon height={18} width={18} />
+			</Button>
 		);
 	}
 
 	if (bookingStep === "payment-method" && !seatHold) {
 		return (
-			<button
-				className={buttonClassName}
+			<Button
+				className="mt-5 w-full"
 				disabled={isSubmitting}
+				loading={isSubmitting}
 				onClick={onLockSeats}
 				type="button"
 			>
-				{isSubmitting ? "Locking seats…" : "Continue to payment"}
+				Continue to payment
 				{isSubmitting ? null : <ArrowRightIcon height={18} width={18} />}
-			</button>
+			</Button>
 		);
 	}
 
 	if (bookingStep === "payment-method") {
 		return (
-			<button
-				className={buttonClassName}
+			<Button
+				className="mt-5 w-full"
 				disabled={remainingSeconds === 0}
 				onClick={onContinueToPayment}
 				type="button"
 			>
 				Continue to payment
 				<ArrowRightIcon height={18} width={18} />
-			</button>
+			</Button>
 		);
 	}
 
 	return (
-		<button
-			className={buttonClassName}
+		<Button
+			className="mt-5 w-full"
 			disabled={!seatHold || remainingSeconds === 0 || isSubmitting}
 			onClick={onSubmitPayment}
 			type="button"
 		>
-			{isSubmitting ? "Processing payment…" : `Pay ${formatFare(total)}`}
+			loading={isSubmitting}
+			{`Pay ${formatFare(total)}`}
 			{isSubmitting ? null : <ArrowRightIcon height={18} width={18} />}
-		</button>
+		</Button>
 	);
 }
 
@@ -1230,38 +1314,6 @@ function SteeringIcon() {
 			<circle cx="12" cy="12" r="2.5" />
 			<path d="M12 14.5V21M9.8 11 4 8.5M14.2 11 20 8.5" />
 		</svg>
-	);
-}
-
-function TextField({
-	label,
-	value,
-	onChange,
-	placeholder,
-	type,
-	required,
-}: {
-	label: string;
-	value: string;
-	onChange: (value: string) => void;
-	placeholder?: string;
-	type?: string;
-	required?: boolean;
-}) {
-	return (
-		<label className="block">
-			<span className="mb-1.5 block font-semibold text-ink-700 text-sm">
-				{label}
-				{required ? <span className="text-saffron-600"> *</span> : null}
-			</span>
-			<input
-				className="w-full rounded-xl border border-ink-200 bg-canvas px-3.5 py-2.5 text-ink-900 outline-none transition focus-visible:border-saffron-400 focus-visible:bg-surface"
-				onChange={(event) => onChange(event.target.value)}
-				placeholder={placeholder}
-				type={type ?? "text"}
-				value={value}
-			/>
-		</label>
 	);
 }
 

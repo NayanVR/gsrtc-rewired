@@ -11,6 +11,7 @@ interface SearchFieldProps {
 	className?: string;
 	icon: React.ReactNode;
 	id: string;
+	invalid?: boolean;
 	label: string;
 }
 
@@ -20,11 +21,13 @@ export function SearchField({
 	icon,
 	label,
 	id,
+	invalid = false,
 	children,
 	className,
 }: SearchFieldProps) {
 	return (
 		<div
+			aria-invalid={invalid || undefined}
 			className={cn(
 				"search-field flex items-center gap-3 rounded-xl border border-ink-200 bg-surface px-3.5 py-2.5 transition-colors focus-within:border-saffron-400",
 				className

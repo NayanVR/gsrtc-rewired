@@ -1,28 +1,72 @@
-import { useId } from "react";
+import { type ReactNode, useId } from "react";
+import { Label } from "#/components/ui/label";
 import { cn } from "#/lib/cn";
 
-interface FieldProps {
-	// Receives the generated id so the control can be associated with the label.
-	children: (id: string) => React.ReactNode;
-	className?: string;
-	description?: string;
-	label: string;
+interface FieldControlProps {
+	"aria-describedby"?: string;
+	"aria-invalid"?: true;
+	"aria-required"?: true;
+	id: string;
 }
 
-// Labelled form field wrapper: label above, control below, optional hint.
-export function Field({ label, description, className, children }: FieldProps) {
+interface FieldProps {
+	children: (props: FieldControlProps) => ReactNode;
+	className?: string;
+	description?: string;
+	error?: string;
+	label: string;
+	required?: boolean;
+}
+
+export function Field({
+	label,
+	description,
+	error,
+	required,
+	className,
+	children,
+}: FieldProps) {
 	const id = useId();
+	const descriptionId = `${id}-desc`;
+	const errorId = `${id}-error`;
+	const message = error ?? description;
+	let messageId: string | undefined;
+	if (error) {
+		messageId = errorId;
+	} else if (description) {
+		messageId = descriptionId;
+	}
 	return (
 		<div className={cn("block", className)}>
-			<label
+			<Label
 				className="mb-1.5 block font-medium text-ink-600 text-sm"
 				htmlFor={id}
 			>
 				{label}
-			</label>
-			{children(id)}
-			{description ? (
-				<p className="mt-1 text-ink-400 text-xs">{description}</p>
+				{required ? (
+					<span className="text-saffron-600">
+						{" "}
+						*<span className="sr-only"> (required)</span>
+					</span>
+				) : null}
+			</Label>
+			{children({
+				"aria-describedby": messageId,
+				"aria-invalid": error ? true : undefined,
+				"aria-required": required ? true : undefined,
+				id,
+			})}
+			{message ? (
+				<p
+					className={cn(
+						"mt-1 text-xs",
+						error ? "text-destructive text-sm" : "text-ink-400"
+					)}
+					id={messageId}
+					role={error ? "alert" : undefined}
+				>
+					{message}
+				</p>
 			) : null}
 		</div>
 	);

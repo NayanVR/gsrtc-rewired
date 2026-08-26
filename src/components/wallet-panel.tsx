@@ -185,9 +185,9 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 						</p>
 					</div>
 					<Field label="Amount">
-						{(id) => (
+						{(props) => (
 							<Input
-								id={id}
+								{...props}
 								min={10}
 								name="amount"
 								onChange={(event) => setAmount(event.target.value)}
@@ -200,9 +200,9 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 					</Field>
 					{paymentProvider === "mock" ? (
 						<Field label="Payment method">
-							{(id) => (
+							{(props) => (
 								<Select
-									id={id}
+									{...props}
 									name="method"
 									onChange={(event) =>
 										setMethod(event.target.value as PaymentMethod)

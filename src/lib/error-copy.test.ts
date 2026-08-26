@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { ERROR_REASONS } from "#/api/contract/base";
-import { ERROR_COPY, toAppError } from "#/lib/error-copy";
+import {
+	ERROR_COPY,
+	ERROR_REASON_FIELDS,
+	errorFieldForReason,
+	toAppError,
+} from "#/lib/error-copy";
 
 describe("error copy", () => {
 	it("covers every reason with an actionable response", () => {
@@ -27,5 +32,15 @@ describe("error copy", () => {
 		expect(
 			toAppError({ code: "NOT_FOUND", data: { reason: "hold_expired" } }).title
 		).toBe(ERROR_COPY.hold_expired.title);
+	});
+
+	it("maps only field-specific reasons to fields", () => {
+		for (const [reason, field] of Object.entries(ERROR_REASON_FIELDS)) {
+			expect(field).not.toBe("");
+			expect(
+				errorFieldForReason(reason as keyof typeof ERROR_REASON_FIELDS)
+			).toBe(field);
+		}
+		expect(errorFieldForReason("hold_expired")).toBeUndefined();
 	});
 });

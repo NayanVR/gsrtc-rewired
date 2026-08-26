@@ -25,6 +25,7 @@
   --color-ink-700: #403a30;
   --color-ink-800: #2a251d;
   --color-ink-900: #1a1712;
+  --color-ink-950: #0f0d0a;
 
   /* GSRTC royal blue (anchor of the gradient's cool end) */
   --color-brand-50: #eaf2ff;
@@ -51,9 +52,38 @@
 
   /* Functional */
   --color-success-50: #edf7ec;
+  --color-success-300: #a9d6a8;
+  --color-success-400: #6bb26c;
   --color-success-500: #3f9142;
   --color-success-700: #2f6f34;
+  --color-danger-50: #fdf0ea;
   --color-danger-500: #d84c12;
+  --color-danger-600: #bf4310;
+  --color-danger-700: #99360d;
+
+  /* Semantic aliases keep registry-compatible primitives in the GSRTC palette. */
+  --color-background: var(--color-canvas);
+  --color-foreground: var(--color-ink-800);
+  --color-card: var(--color-surface);
+  --color-card-foreground: var(--color-ink-900);
+  --color-popover: var(--color-surface);
+  --color-popover-foreground: var(--color-ink-900);
+  --color-primary: var(--color-saffron-500);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--color-surface);
+  --color-secondary-foreground: var(--color-ink-700);
+  --color-muted: var(--color-canvas-2);
+  --color-muted-foreground: var(--color-ink-500);
+  --color-accent: var(--color-saffron-50);
+  --color-accent-foreground: var(--color-saffron-700);
+  --color-destructive: var(--color-danger-500);
+  --color-destructive-foreground: #ffffff;
+  --color-success: var(--color-success-500);
+  --color-success-foreground: var(--color-success-700);
+  --color-border: var(--color-ink-100);
+  --color-input: var(--color-ink-200);
+  --color-ring: var(--color-saffron-300);
+  --radius: 0.75rem;
 
   --font-sans: "Inter Variable", "Hind Vadodara", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: "Plus Jakarta Sans Variable", "Hind Vadodara", "Inter Variable", ui-sans-serif, sans-serif;
@@ -294,6 +324,19 @@ label {
 .jali-ink {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%232a251d' stroke-width='1'%3E%3Cpath d='M24 0 48 24 24 48 0 24Z'/%3E%3Ccircle cx='24' cy='24' r='11'/%3E%3Cpath d='M0 0 12 12M48 0 36 12M48 48 36 36M0 48 12 36'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 48px 48px;
+}
+
+/* A warm, fading jali imprint for quiet surface cards. The mask keeps the
+   pattern in the corners, where it supports the content instead of competing
+   with it. */
+.jali-card {
+  opacity: 0.34;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23d84c12' stroke-width='0.8'%3E%3Cpath d='M24 0 48 24 24 48 0 24Z'/%3E%3Ccircle cx='24' cy='24' r='11'/%3E%3Cpath d='M0 0 12 12M48 0 36 12M48 48 36 36M0 48 12 36'/%3E%3C/g%3E%3C/svg%3E");
+  background-position: right -10px bottom -10px;
+  background-repeat: repeat;
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 75% 90% at 100% 100%, black, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 90% at 100% 100%, black, transparent 70%);
 }
 
 /* Accessible focus ring */

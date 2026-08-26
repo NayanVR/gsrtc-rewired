@@ -20,7 +20,7 @@ const STORAGE_KEY = "gsrtc-lang";
 
 // Bundled translations keep language switching reliable: it has no network
 // dependency and React renders the selected language itself.
-const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
+export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 	gu: {
 		"10-digit mobile number": "10 અંકનો મોબાઇલ નંબર",
 		"A redesign concept": "પુનઃડિઝાઇન ખ્યાલ",
@@ -46,6 +46,10 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Bus Pass Login": "બસ પાસ લૉગિન",
 		"Cancel Ticket": "ટિકિટ રદ કરો",
 		"Change language": "ભાષા બદલો",
+		"Choose a date of journey before searching.":
+			"શોધતા પહેલાં મુસાફરીની તારીખ પસંદ કરો.",
+		"Choose both a source and destination before searching.":
+			"શોધતા પહેલાં પ્રસ્થાન અને ગંતવ્ય બંને પસંદ કરો.",
 		"Choose from the refreshed seat map.": "તાજા સીટ નકશામાંથી પસંદ કરો.",
 		"Citizen's Rights (નાગરિક અધિકાર પત્ર)": "નાગરિક અધિકાર પત્ર",
 		"Close navigation menu": "નેવિગેશન મેનૂ બંધ કરો",
@@ -68,6 +72,10 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Electric Bus": "ઇલેક્ટ્રિક બસ",
 		"Email & password": "ઇમેઇલ અને પાસવર્ડ",
 		"Email address": "ઇમેઇલ સરનામું",
+		"Enter a 10-digit mobile number.": "10 અંકનો માન્ય મોબાઇલ નંબર દાખલ કરો.",
+		"Enter a valid email address.": "માન્ય ઇમેઇલ સરનામું દાખલ કરો.",
+		"Enter a valid name and age for this traveller.":
+			"આ મુસાફર માટે માન્ય નામ અને ઉંમર દાખલ કરો.",
 		FAQs: "વારંવાર પૂછાતા પ્રશ્નો",
 		"Full name": "પૂરું નામ",
 		"Grievance Redressal Officers (Divyang)": "ફરિયાદ નિવારણ અધિકારીઓ (દિવ્યાંગ)",
@@ -123,6 +131,7 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		Seats: "બેઠકો",
 		"Seats are held for 10 minutes so they do not stay locked for others.":
 			"સીટો 10 મિનિટ માટે રોકવામાં આવે છે જેથી તે અન્ય માટે અટકી ન રહે.",
+		"Select the requested number of seats.": "વિનંતી કરેલી સંખ્યાની બેઠકો પસંદ કરો.",
 		"Send OTP": "OTP મોકલો",
 		"Sending OTP…": "OTP મોકલાઈ રહ્યો છે…",
 		"Service Regulation": "સેવા નિયમન",
@@ -218,6 +227,10 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Bus Pass Login": "बस पास लॉगिन",
 		"Cancel Ticket": "टिकट रद्द करें",
 		"Change language": "भाषा बदलें",
+		"Choose a date of journey before searching.":
+			"खोजने से पहले यात्रा की तारीख चुनें।",
+		"Choose both a source and destination before searching.":
+			"खोजने से पहले स्रोत और गंतव्य दोनों चुनें।",
 		"Choose from the refreshed seat map.": "नए सीट मानचित्र से सीट चुनें।",
 		"Citizen's Rights (નાગરિક અધિકાર પત્ર)": "नागरिक अधिकार पत्र",
 		"Close navigation menu": "नेविगेशन मेनू बंद करें",
@@ -240,6 +253,10 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Electric Bus": "इलेक्ट्रिक बस",
 		"Email & password": "ईमेल और पासवर्ड",
 		"Email address": "ईमेल पता",
+		"Enter a 10-digit mobile number.": "10 अंकों का मान्य मोबाइल नंबर दर्ज करें।",
+		"Enter a valid email address.": "मान्य ईमेल पता दर्ज करें।",
+		"Enter a valid name and age for this traveller.":
+			"इस यात्री के लिए मान्य नाम और आयु दर्ज करें।",
 		FAQs: "अक्सर पूछे जाने वाले प्रश्न",
 		"Full name": "पूरा नाम",
 		"Grievance Redressal Officers (Divyang)": "शिकायत निवारण अधिकारी (दिव्यांग)",
@@ -295,6 +312,7 @@ const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		Seats: "सीटें",
 		"Seats are held for 10 minutes so they do not stay locked for others.":
 			"सीटें 10 मिनट के लिए होल्ड रहती हैं ताकि वे दूसरों के लिए बंद न रहें।",
+		"Select the requested number of seats.": "अनुरोधित संख्या में सीटें चुनें।",
 		"Send OTP": "OTP भेजें",
 		"Sending OTP…": "OTP भेजा जा रहा है…",
 		"Service Regulation": "सेवा विनियमन",

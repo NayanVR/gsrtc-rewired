@@ -1,12 +1,14 @@
 import { type FormEvent, useRef, useState } from "react";
 import { applyPass, getRefundStatus, raiseRefundComplaint } from "#/api/fns";
 import type { PageForm, PageFormField } from "#/api/schemas";
+import { ErrorPanel } from "#/components/error-panel";
+import { Alert } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Select } from "#/components/ui/select";
 import { Textarea } from "#/components/ui/textarea";
-import { toAppError } from "#/lib/error-copy";
+import { type AppError, toAppError } from "#/lib/error-copy";
 
 // Renders a designed (concept) form for a transactional GSRTC page. When the
 // flow isn't owned by this build, `external` (the page's live OPRS URL) turns
@@ -20,7 +22,9 @@ export function ActionForm({
 	external?: string;
 	formId?: string;
 }) {
-	const [feedback, setFeedback] = useState<string | null>(null);
+	const [error, setError] = useState<AppError | null>(null);
+	const [notice, setNotice] = useState<string | null>(null);
+	const [passTypeError, setPassTypeError] = useState<string | null>(null);
 	const isRefundForm =
 		formId === "refund-complaint" || formId === "refund-transaction-enquiry";
 	const isPassForm = formId === "new-commuter-bus-pass";
@@ -31,13 +35,15 @@ export function ActionForm({
 		if (!isInternalForm) {
 			return;
 		}
-		setFeedback(null);
+		setError(null);
+		setNotice(null);
+		setPassTypeError(null);
 		const values = new FormData(event.currentTarget);
 		try {
 			if (isPassForm) {
 				const type = formValue(values, "type");
 				if (!isPassType(type)) {
-					setFeedback("Choose a pass type before applying.");
+					setPassTypeError("Choose a pass type before applying.");
 					return;
 				}
 				const pass = await applyPass({
@@ -49,7 +55,7 @@ export function ActionForm({
 						type,
 					},
 				});
-				setFeedback(
+				setNotice(
 					`Pass application submitted. Reference: ${pass.applicationNo}`
 				);
 				return;
@@ -61,7 +67,7 @@ export function ActionForm({
 						ref: formValue(values, "txn"),
 					},
 				});
-				setFeedback(
+				setNotice(
 					`Refund ${refund.ref} is ${refund.status}. Amount: ₹${refund.amount.toFixed(2)}${refund.expectedBy ? ` · expected by ${refund.expectedBy}` : ""}`
 				);
 				return;
@@ -74,10 +80,9 @@ export function ActionForm({
 					ticketNo: formValue(values, "ticket"),
 				},
 			});
-			setFeedback(`Complaint submitted. Reference: ${complaint.complaintId}`);
-		} catch (error) {
-			const appError = toAppError(error);
-			setFeedback(`${appError.detail} ${appError.action}`);
+			setNotice(`Complaint submitted. Reference: ${complaint.complaintId}`);
+		} catch (caughtError) {
+			setError(toAppError(caughtError));
 		}
 	};
 
@@ -93,10 +98,13 @@ export function ActionForm({
 							className={
 								field.full || field.type === "textarea" ? "sm:col-span-2" : ""
 							}
+							error={
+								field.name === "type" ? (passTypeError ?? undefined) : undefined
+							}
 							key={field.name}
 							label={field.label}
 						>
-							{(id) => <Control field={field} id={id} />}
+							{(props) => <Control field={field} id={props.id} />}
 						</Field>
 					))}
 				</div>
@@ -112,10 +120,11 @@ export function ActionForm({
 				{form.note ? (
 					<p className="mt-4 text-ink-500 text-sm">{form.note}</p>
 				) : null}
-				{feedback ? (
-					<p aria-live="polite" className="mt-4 text-ink-700 text-sm">
-						{feedback}
-					</p>
+				{error ? <ErrorPanel error={error} /> : null}
+				{notice ? (
+					<Alert aria-live="polite" className="mt-4" tone="success">
+						{notice}
+					</Alert>
 				) : null}
 			</form>
 		</div>

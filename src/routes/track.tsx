@@ -10,6 +10,7 @@ import {
 } from "#/components/icons";
 import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { formatTime } from "#/data/trips";
 import { toAppError } from "#/lib/error-copy";
@@ -156,9 +157,9 @@ function JourneyBoard({
 			<div className="flex flex-wrap items-start justify-between gap-3 p-5 sm:p-6">
 				<div>
 					<div className="flex items-center gap-2">
-						<span className="rounded-full bg-brand-50 px-2.5 py-0.5 font-mono font-semibold text-brand-700 text-xs">
+						<Badge className="font-mono" tone="brand">
 							{journey.vehicleNo}
-						</span>
+						</Badge>
 						<span
 							className={`rounded-full px-2.5 py-0.5 font-semibold text-xs ${
 								onTime

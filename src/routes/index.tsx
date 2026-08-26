@@ -21,6 +21,7 @@ import { Milestone } from "#/components/milestone";
 import { SearchForm } from "#/components/search-form";
 import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
+import { Card, CardTitle } from "#/components/ui/card";
 import { formatFare } from "#/data/trips";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -259,10 +260,8 @@ function QuickAccess() {
 		<section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
 			<div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
 				{/* Popular routes */}
-				<div className="rounded-3xl border border-ink-100 bg-surface p-6 shadow-card">
-					<h2 className="font-bold font-display text-ink-900 text-xl">
-						Popular routes
-					</h2>
+				<Card className="rounded-3xl p-6" jali>
+					<CardTitle className="text-xl">Popular routes</CardTitle>
 					<div className="mt-4 grid gap-3 sm:grid-cols-2">
 						{POPULAR_ROUTES.map((route) => (
 							<Link
@@ -291,7 +290,7 @@ function QuickAccess() {
 							</Link>
 						))}
 					</div>
-				</div>
+				</Card>
 
 				{/* Feedback + policies */}
 				<div className="overflow-hidden rounded-3xl border border-ink-100 bg-surface shadow-card">
@@ -339,10 +338,7 @@ function GrowingNumbers() {
 				</h2>
 				<div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 					{GROWING_NUMBERS.map((item) => (
-						<div
-							className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-card"
-							key={item.label}
-						>
+						<Card className="p-5" jali key={item.label}>
 							<span className="gradient-text inline-flex">
 								<item.icon height={26} width={26} />
 							</span>
@@ -350,7 +346,7 @@ function GrowingNumbers() {
 								{item.value}
 							</p>
 							<p className="mt-0.5 text-ink-500 text-sm">{item.label}</p>
-						</div>
+						</Card>
 					))}
 				</div>
 			</div>
@@ -397,10 +393,14 @@ function LiveTracking() {
 			<div className="mt-4 grid gap-4 sm:grid-cols-2">
 				{cards.map((card) => (
 					<a
-						className="group flex items-center justify-between rounded-2xl border border-ink-100 bg-surface p-5 shadow-card transition hover:border-saffron-300"
+						className="group relative flex items-center justify-between overflow-hidden rounded-2xl border border-ink-100 bg-surface p-5 shadow-card transition hover:border-saffron-300"
 						href="/"
 						key={card.sub}
 					>
+						<span
+							aria-hidden
+							className="jali-card pointer-events-none absolute inset-0"
+						/>
 						<span className="flex items-center gap-3">
 							<span className="grid h-11 w-11 place-items-center rounded-xl bg-canvas text-ink-700">
 								<card.icon height={22} width={22} />
@@ -438,8 +438,9 @@ function Destinations() {
 			</p>
 			<div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
 				{DESTINATIONS.map((place) => (
-					<article
-						className="group overflow-hidden rounded-2xl border border-ink-100 bg-surface shadow-card transition hover:-translate-y-0.5 hover:shadow-pop"
+					<Card
+						className="group transition hover:-translate-y-0.5 hover:shadow-pop"
+						jali
 						key={place.name}
 					>
 						<div className="relative h-36">
@@ -456,7 +457,7 @@ function Destinations() {
 								{place.blurb}
 							</p>
 						</div>
-					</article>
+					</Card>
 				))}
 			</div>
 		</section>
