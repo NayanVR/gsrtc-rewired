@@ -1,0 +1,2 @@
+export const CONTROL_CLASS =
+	"w-full rounded-xl border border-input bg-card px-3.5 py-2.5 text-foreground outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/40 aria-invalid:border-destructive aria-invalid:ring-destructive/30 aria-invalid:focus-visible:border-destructive disabled:cursor-not-allowed disabled:opacity-60";

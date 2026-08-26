@@ -1,0 +1,416 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "gsrtc",
+  "homepage": "https://github.com/NayanVR/gsrtc",
+  "items": [
+    {
+      "name": "gsrtc-theme",
+      "type": "registry:theme",
+      "title": "GSRTC Theme",
+      "description": "The additive GSRTC colour, typography, shadow and surface tokens used by the GSRTC UI components.",
+      "cssVars": {
+        "theme": {
+          "font-sans": "Inter Variable, Hind Vadodara, ui-sans-serif, system-ui, sans-serif",
+          "font-display": "Plus Jakarta Sans Variable, Hind Vadodara, Inter Variable, ui-sans-serif, sans-serif",
+          "shadow-card": "0 1px 2px rgb(42 37 29 / 0.04), 0 10px 30px -18px rgb(42 37 29 / 0.25)",
+          "gradient-sarvam": "linear-gradient(118deg, #155fc9 0%, #5157c6 36%, #9b62ac 56%, #e37c40 82%, #f4a63f 100%)",
+          "radius": "0.75rem"
+        },
+        "light": {
+          "canvas": "#f6f2ea",
+          "canvas-2": "#efe9dd",
+          "surface": "#fffdf9",
+          "ink-100": "#e9e3d8",
+          "ink-200": "#ddd5c7",
+          "ink-400": "#9c9079",
+          "ink-500": "#746a58",
+          "ink-600": "#574f41",
+          "ink-700": "#403a30",
+          "ink-800": "#2a251d",
+          "ink-900": "#1a1712",
+          "brand-50": "#eaf2ff",
+          "brand-700": "#124fa6",
+          "saffron-50": "#fff5ec",
+          "saffron-300": "#ffa869",
+          "saffron-500": "#f26518",
+          "saffron-600": "#d84c12",
+          "saffron-700": "#b33a12",
+          "success-50": "#edf7ec",
+          "success-500": "#3f9142",
+          "success-700": "#2f6f34",
+          "danger-50": "#fdf0ea",
+          "danger-500": "#d84c12",
+          "danger-700": "#99360d",
+          "background": "var(--canvas)",
+          "foreground": "var(--ink-800)",
+          "card": "var(--surface)",
+          "card-foreground": "var(--ink-900)",
+          "primary": "var(--saffron-500)",
+          "primary-foreground": "#ffffff",
+          "secondary": "var(--surface)",
+          "secondary-foreground": "var(--ink-700)",
+          "muted": "var(--canvas-2)",
+          "muted-foreground": "var(--ink-500)",
+          "accent": "var(--saffron-50)",
+          "accent-foreground": "var(--saffron-700)",
+          "destructive": "var(--danger-500)",
+          "destructive-foreground": "#ffffff",
+          "success": "var(--success-500)",
+          "success-foreground": "var(--success-700)",
+          "border": "var(--ink-100)",
+          "input": "var(--ink-200)",
+          "ring": "var(--saffron-300)"
+        }
+      },
+      "css": {
+        ".gradient-surface": {
+          "background": "var(--gradient-sarvam)"
+        },
+        ".jali-card": {
+          "opacity": "0.34",
+          "background-image": "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23d84c12' stroke-width='0.8'%3E%3Cpath d='M24 0 48 24 24 48 0 24Z'/%3E%3Ccircle cx='24' cy='24' r='11'/%3E%3Cpath d='M0 0 12 12M48 0 36 12M48 48 36 36M0 48 12 36'/%3E%3C/g%3E%3C/svg%3E\")",
+          "background-position": "right -10px bottom -10px",
+          "background-repeat": "repeat",
+          "background-size": "48px 48px",
+          "mask-image": "radial-gradient(ellipse 75% 90% at 100% 100%, black, transparent 70%)",
+          "-webkit-mask-image": "radial-gradient(ellipse 75% 90% at 100% 100%, black, transparent 70%)"
+        }
+      }
+    },
+    {
+      "name": "gsrtc-utils",
+      "type": "registry:lib",
+      "title": "GSRTC Class Utilities",
+      "description": "The clsx and tailwind-merge class-name helper used by GSRTC UI components.",
+      "dependencies": ["clsx", "tailwind-merge"],
+      "files": [
+        {
+          "path": "registry/gsrtc/cn.ts",
+          "type": "registry:lib",
+          "target": "@lib/cn.ts"
+        }
+      ]
+    },
+    {
+      "name": "gsrtc-button",
+      "type": "registry:ui",
+      "title": "GSRTC Button",
+      "description": "GSRTC button variants with asChild composition and a built-in loading state.",
+      "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+      "registryDependencies": [
+        "NayanVR/gsrtc/gsrtc-theme",
+        "NayanVR/gsrtc/gsrtc-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/gsrtc/button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/button.tsx"
+        },
+        {
+          "path": "registry/gsrtc/spinner-icon.tsx",
+          "type": "registry:ui",
+          "target": "@ui/spinner-icon.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gsrtc-input",
+      "type": "registry:ui",
+      "title": "GSRTC Input",
+      "description": "A native input with accessible focus, invalid and disabled states.",
+      "registryDependencies": [
+        "NayanVR/gsrtc/gsrtc-theme",
+        "NayanVR/gsrtc/gsrtc-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/gsrtc/control.ts",
+          "type": "registry:ui",
+          "target": "@ui/control.ts"
+        },
+        {
+          "path": "registry/gsrtc/input.tsx",
+          "type": "registry:ui",
+          "target": "@ui/input.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gsrtc-textarea",
+      "type": "registry:ui",
+      "title": "GSRTC Textarea",
+      "description": "A native textarea sharing the GSRTC control states.",
+      "registryDependencies": [
+        "NayanVR/gsrtc/gsrtc-theme",
+        "NayanVR/gsrtc/gsrtc-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/gsrtc/control.ts",
+          "type": "registry:ui",
+          "target": "@ui/control.ts"
+        },
+        {
+          "path": "registry/gsrtc/textarea.tsx",
+          "type": "registry:ui",
+          "target": "@ui/textarea.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gsrtc-select",
+      "type": "registry:ui",
+      "title": "GSRTC Select",
+      "description": "A styled native select that preserves the platform picker.",
+      "registryDependencies": [
+        "NayanVR/gsrtc/gsrtc-theme",
+        "NayanVR/gsrtc/gsrtc-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/gsrtc/control.ts",
+          "type": "registry:ui",
+          "target": "@ui/control.ts"
+        },
+        {
+          "path": "registry/gsrtc/select.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gsrtc-label",
+      "type": "registry:ui",
+      "title": "GSRTC Label",
+      "description": "The GSRTC form label primitive.",
+      "registryDependencies": [
+        "NayanVR/gsrtc/gsrtc-theme",
+        "NayanVR/gsrtc/gsrtc-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/gsrtc/label.tsx",
+          "type": "registry:ui",
+          "target": "@ui/label.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gsrtc-field",
+      "type": "registry:ui",
+      "title": "GSRTC Field",
+      "description": "An accessible label, description and validation-message wrapper for native controls.",
+      "registryDependencies": [
+        "NayanVR/gsrtc/gsrtc-label",
+        "NayanVR/gsrtc/gsrtc-theme",
+        "NayanVR/gsrtc/gsrtc-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/gsrtc/field.tsx",
+          "type": "registry:ui",
+          "target": "@ui/field.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gsrtc-alert",
+      "type": "registry:ui",
+      "title": "GSRTC Alert",
+      "description": "Information, success and destructive alert surfaces.",
+      "dependencies": ["class-variance-authority"],
+      "registryDependencies": [
+        "NayanVR/gsrtc/gsrtc-theme",
+        "NayanVR/gsrtc/gsrtc-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/gsrtc/alert.tsx",
+          "type": "registry:ui",
+          "target": "@ui/alert.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gsrtc-badge",
+      "type": "registry:ui",
+      "title": "GSRTC Badge",
+      "description": "Compact semantic status badges in GSRTC tones.",
+      "dependencies": ["class-variance-authority"],
+      "registryDependencies": [
+        "NayanVR/gsrtc/gsrtc-theme",
+        "NayanVR/gsrtc/gsrtc-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/gsrtc/badge.tsx",
+          "type": "registry:ui",
+          "target": "@ui/badge.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gsrtc-card",
+      "type": "registry:ui",
+      "title": "GSRTC Card",
+      "description": "GSRTC card surfaces with optional jali artwork.",
+      "dependencies": ["class-variance-authority"],
+      "registryDependencies": [
+        "NayanVR/gsrtc/gsrtc-theme",
+        "NayanVR/gsrtc/gsrtc-utils"
+      ],
+      "files": [
+        {
+          "path": "registry/gsrtc/card.tsx",
+          "type": "registry:ui",
+          "target": "@ui/card.tsx"
+        }
+      ]
+    },
+    {
+      "name": "gsrtc-ui",
+      "type": "registry:style",
+      "title": "GSRTC UI",
+      "description": "The complete GSRTC UI primitive bundle, shared utilities and additive design tokens.",
+      "dependencies": [
+        "@radix-ui/react-slot",
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "files": [
+        {
+          "path": "registry/gsrtc/cn.ts",
+          "type": "registry:lib",
+          "target": "@lib/cn.ts"
+        },
+        {
+          "path": "registry/gsrtc/control.ts",
+          "type": "registry:ui",
+          "target": "@ui/control.ts"
+        },
+        {
+          "path": "registry/gsrtc/spinner-icon.tsx",
+          "type": "registry:ui",
+          "target": "@ui/spinner-icon.tsx"
+        },
+        {
+          "path": "registry/gsrtc/button.tsx",
+          "type": "registry:ui",
+          "target": "@ui/button.tsx"
+        },
+        {
+          "path": "registry/gsrtc/input.tsx",
+          "type": "registry:ui",
+          "target": "@ui/input.tsx"
+        },
+        {
+          "path": "registry/gsrtc/textarea.tsx",
+          "type": "registry:ui",
+          "target": "@ui/textarea.tsx"
+        },
+        {
+          "path": "registry/gsrtc/select.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select.tsx"
+        },
+        {
+          "path": "registry/gsrtc/label.tsx",
+          "type": "registry:ui",
+          "target": "@ui/label.tsx"
+        },
+        {
+          "path": "registry/gsrtc/field.tsx",
+          "type": "registry:ui",
+          "target": "@ui/field.tsx"
+        },
+        {
+          "path": "registry/gsrtc/alert.tsx",
+          "type": "registry:ui",
+          "target": "@ui/alert.tsx"
+        },
+        {
+          "path": "registry/gsrtc/badge.tsx",
+          "type": "registry:ui",
+          "target": "@ui/badge.tsx"
+        },
+        {
+          "path": "registry/gsrtc/card.tsx",
+          "type": "registry:ui",
+          "target": "@ui/card.tsx"
+        }
+      ],
+      "cssVars": {
+        "theme": {
+          "font-sans": "Inter Variable, Hind Vadodara, ui-sans-serif, system-ui, sans-serif",
+          "font-display": "Plus Jakarta Sans Variable, Hind Vadodara, Inter Variable, ui-sans-serif, sans-serif",
+          "shadow-card": "0 1px 2px rgb(42 37 29 / 0.04), 0 10px 30px -18px rgb(42 37 29 / 0.25)",
+          "gradient-sarvam": "linear-gradient(118deg, #155fc9 0%, #5157c6 36%, #9b62ac 56%, #e37c40 82%, #f4a63f 100%)",
+          "radius": "0.75rem"
+        },
+        "light": {
+          "canvas": "#f6f2ea",
+          "canvas-2": "#efe9dd",
+          "surface": "#fffdf9",
+          "ink-100": "#e9e3d8",
+          "ink-200": "#ddd5c7",
+          "ink-400": "#9c9079",
+          "ink-500": "#746a58",
+          "ink-600": "#574f41",
+          "ink-700": "#403a30",
+          "ink-800": "#2a251d",
+          "ink-900": "#1a1712",
+          "brand-50": "#eaf2ff",
+          "brand-700": "#124fa6",
+          "saffron-50": "#fff5ec",
+          "saffron-300": "#ffa869",
+          "saffron-500": "#f26518",
+          "saffron-600": "#d84c12",
+          "saffron-700": "#b33a12",
+          "success-50": "#edf7ec",
+          "success-500": "#3f9142",
+          "success-700": "#2f6f34",
+          "danger-50": "#fdf0ea",
+          "danger-500": "#d84c12",
+          "danger-700": "#99360d",
+          "background": "var(--canvas)",
+          "foreground": "var(--ink-800)",
+          "card": "var(--surface)",
+          "card-foreground": "var(--ink-900)",
+          "primary": "var(--saffron-500)",
+          "primary-foreground": "#ffffff",
+          "secondary": "var(--surface)",
+          "secondary-foreground": "var(--ink-700)",
+          "muted": "var(--canvas-2)",
+          "muted-foreground": "var(--ink-500)",
+          "accent": "var(--saffron-50)",
+          "accent-foreground": "var(--saffron-700)",
+          "destructive": "var(--danger-500)",
+          "destructive-foreground": "#ffffff",
+          "success": "var(--success-500)",
+          "success-foreground": "var(--success-700)",
+          "border": "var(--ink-100)",
+          "input": "var(--ink-200)",
+          "ring": "var(--saffron-300)"
+        }
+      },
+      "css": {
+        ".gradient-surface": {
+          "background": "var(--gradient-sarvam)"
+        },
+        ".jali-card": {
+          "opacity": "0.34",
+          "background-image": "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23d84c12' stroke-width='0.8'%3E%3Cpath d='M24 0 48 24 24 48 0 24Z'/%3E%3Ccircle cx='24' cy='24' r='11'/%3E%3Cpath d='M0 0 12 12M48 0 36 12M48 48 36 36M0 48 12 36'/%3E%3C/g%3E%3C/svg%3E\")",
+          "background-position": "right -10px bottom -10px",
+          "background-repeat": "repeat",
+          "background-size": "48px 48px",
+          "mask-image": "radial-gradient(ellipse 75% 90% at 100% 100%, black, transparent 70%)",
+          "-webkit-mask-image": "radial-gradient(ellipse 75% 90% at 100% 100%, black, transparent 70%)"
+        }
+      },
+      "docs": "Review existing files with --dry-run or --diff before installation. The bundle adds GSRTC theme tokens to the CSS file configured in components.json."
+    }
+  ]
+}
