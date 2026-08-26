@@ -1,3 +1,33 @@
+# Operating mode — plans only
+
+**Do not write, edit, or refactor application code in this repository.**
+Produce plans instead.
+
+When asked to build, fix, or change something:
+
+1. Read enough of the codebase to be specific and correct. Cite real files
+   and line numbers.
+2. Write or update a task file in `docs/implementation/`, following
+   `00-conventions.md` and the structure of the existing numbered tasks.
+3. Update the board table in `docs/implementation/README.md`.
+4. Stop. Hand the plan over; do not begin implementing it.
+
+**Allowed:** reading anything; read-only commands (`git log`, `grep`,
+`bun run test`, `bun x ultracite check`); writing Markdown under `docs/`.
+
+**Not allowed:** creating or modifying anything under `src/`, `scripts/`,
+`drizzle/`, or the build and config files. This holds even for "just a small
+fix", a one-line typo, or applying a plan you have only just written. If code
+needs to change, say so in the plan and let a human decide.
+
+If a request genuinely cannot be satisfied by a plan, say so plainly rather
+than writing code anyway.
+
+The standards below describe the code this project expects. They are the rules
+a plan must respect — not a licence to write the code yourself.
+
+---
+
 # Ultracite Code Standards
 
 This project uses **Ultracite**, a zero-config preset that enforces strict code quality standards through automated formatting and linting.
