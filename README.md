@@ -13,7 +13,7 @@ tickets.
 
 - Responsive home, trip search, seat selection and booking journeys
 - Ticket tracking, profile, wallet, passes, refunds and agent-facing API domains
-- English and Gujarati interface support
+- English, Hindi and Gujarati interface support
 - Accessible form fields, validation messages and recoverable error states
 - Phone-based sign-in flow with a development-only OTP delivery seam
 - Postgres-backed seat holds, bookings, tickets, wallet, passes and refunds
@@ -68,15 +68,15 @@ See [.env.example](./.env.example) for every setting and
 
 ## Useful commands
 
-| Command | Purpose |
-| --- | --- |
-| `bun run dev` | Start the development server on port 3000 |
-| `bun run test` | Run the Vitest suite once |
-| `bun run check` | Run Ultracite/Biome checks |
-| `bun run fix` | Apply Ultracite's safe formatting and lint fixes |
-| `bun run build` | Create the production Nitro build in `.output` |
-| `bun run db:generate` | Generate a Drizzle migration after a schema change |
-| `bun run db:migrate` | Apply pending database migrations |
+| Command                    | Purpose                                              |
+| -------------------------- | ---------------------------------------------------- |
+| `bun run dev`              | Start the development server on port 3000            |
+| `bun run test`             | Run the Vitest suite once                            |
+| `bun run check`            | Run Ultracite/Biome checks                           |
+| `bun run fix`              | Apply Ultracite's safe formatting and lint fixes     |
+| `bun run build`            | Create the production Nitro build in `.output`       |
+| `bun run db:generate`      | Generate a Drizzle migration after a schema change   |
+| `bun run db:migrate`       | Apply pending database migrations                    |
 | `bun run openapi:generate` | Regenerate `docs/openapi.json` from the API contract |
 
 Before committing code, run:
@@ -115,29 +115,6 @@ tracking, identity, SMS and payment interfaces.
 This repository follows shadcn's source-code model: components are copied into
 the application and remain owned by the project. `components.json` points the
 CLI at `src/components/ui`, `src/styles.css` and the `#/` import aliases.
-
-To inspect a change before adding an official shadcn component:
-
-```bash
-bunx shadcn@latest add dialog --dry-run
-```
-
-To add it:
-
-```bash
-bunx shadcn@latest add dialog
-```
-
-Multiple official components can be added in one command:
-
-```bash
-bunx shadcn@latest add button input textarea select alert label card badge
-```
-
-Most of those files already exist here and contain GSRTC-specific variants,
-native-control decisions and accessibility behaviour. Do not overwrite them
-blindly. Use `--dry-run` or `--diff` first, then merge useful upstream changes
-by hand.
 
 The customized components are defined as a source registry in `registry.json`.
 The `gsrtc-ui` item installs 12 component and utility files, four package
