@@ -4,11 +4,17 @@ import type { PageForm, PageFormField } from "#/api/schemas";
 import { ErrorPanel } from "#/components/error-panel";
 import { Alert } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
-import { Field } from "#/components/ui/field";
+import { Field, type FieldControlProps } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Select } from "#/components/ui/select";
 import { Textarea } from "#/components/ui/textarea";
-import { type AppError, toAppError } from "#/lib/error-copy";
+import {
+	type AppError,
+	appErrorFieldMessage,
+	errorFieldForReason,
+	toAppError,
+} from "#/lib/error-copy";
+import { useTranslation } from "#/lib/i18n";
 
 // Renders a designed (concept) form for a transactional GSRTC page. When the
 // flow isn't owned by this build, `external` (the page's live OPRS URL) turns
@@ -22,9 +28,10 @@ export function ActionForm({
 	external?: string;
 	formId?: string;
 }) {
+	const { t } = useTranslation();
 	const [error, setError] = useState<AppError | null>(null);
 	const [notice, setNotice] = useState<string | null>(null);
-	const [passTypeError, setPassTypeError] = useState<string | null>(null);
+	const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 	const isRefundForm =
 		formId === "refund-complaint" || formId === "refund-transaction-enquiry";
 	const isPassForm = formId === "new-commuter-bus-pass";
@@ -37,13 +44,13 @@ export function ActionForm({
 		}
 		setError(null);
 		setNotice(null);
-		setPassTypeError(null);
+		setFieldErrors({});
 		const values = new FormData(event.currentTarget);
 		try {
 			if (isPassForm) {
 				const type = formValue(values, "type");
 				if (!isPassType(type)) {
-					setPassTypeError("Choose a pass type before applying.");
+					setFieldErrors({ type: t("Choose a pass type before applying.") });
 					return;
 				}
 				const pass = await applyPass({
@@ -82,7 +89,24 @@ export function ActionForm({
 			});
 			setNotice(`Complaint submitted. Reference: ${complaint.complaintId}`);
 		} catch (caughtError) {
-			setError(toAppError(caughtError));
+			const appError = toAppError(caughtError);
+			const errorField = errorFieldForReason(appError.reason);
+			const matchingField = form.fields.find((field) => {
+				if (errorField === "mobile") {
+					return field.name === "mobile";
+				}
+				return (
+					errorField === "reference" &&
+					["pnr", "ref", "ticket", "txn"].includes(field.name)
+				);
+			});
+			if (matchingField) {
+				setFieldErrors({
+					[matchingField.name]: appErrorFieldMessage(appError, t),
+				});
+				return;
+			}
+			setError(appError);
 		}
 	};
 
@@ -98,13 +122,11 @@ export function ActionForm({
 							className={
 								field.full || field.type === "textarea" ? "sm:col-span-2" : ""
 							}
-							error={
-								field.name === "type" ? (passTypeError ?? undefined) : undefined
-							}
+							error={fieldErrors[field.name]}
 							key={field.name}
 							label={field.label}
 						>
-							{(props) => <Control field={field} id={props.id} />}
+							{(props) => <Control field={field} props={props} />}
 						</Field>
 					))}
 				</div>
@@ -188,28 +210,28 @@ function LeaveToPortal({ label, url }: { label: string; url: string }) {
 					>
 						Cancel
 					</button>
-					<button
-						className="gradient-surface inline-flex rounded-xl px-5 py-2.5 font-semibold text-sm text-white shadow-sm transition hover:brightness-105"
-						onClick={leave}
-						type="button"
-					>
-						Continue
-					</button>
+					<Button onClick={leave}>Continue</Button>
 				</div>
 			</dialog>
 		</>
 	);
 }
 
-function Control({ field, id }: { field: PageFormField; id: string }) {
+function Control({
+	field,
+	props,
+}: {
+	field: PageFormField;
+	props: FieldControlProps;
+}) {
 	if (field.type === "textarea") {
 		return (
-			<Textarea id={id} name={field.name} placeholder={field.placeholder} />
+			<Textarea {...props} name={field.name} placeholder={field.placeholder} />
 		);
 	}
 	if (field.type === "select") {
 		return (
-			<Select defaultValue="" id={id} name={field.name}>
+			<Select {...props} defaultValue="" name={field.name}>
 				<option disabled value="">
 					Select…
 				</option>
@@ -223,7 +245,7 @@ function Control({ field, id }: { field: PageFormField; id: string }) {
 	}
 	return (
 		<Input
-			id={id}
+			{...props}
 			name={field.name}
 			placeholder={field.placeholder}
 			type={field.type ?? "text"}

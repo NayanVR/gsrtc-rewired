@@ -10,6 +10,7 @@ const MAX_SUGGESTIONS = 6;
 interface CityComboboxProps {
 	cities: string[];
 	error?: boolean;
+	errorId?: string;
 	id: string;
 	label: string;
 	onChange: (value: string) => void;
@@ -20,6 +21,7 @@ interface CityComboboxProps {
 export function CityCombobox({
 	cities,
 	error = false,
+	errorId,
 	id,
 	label,
 	onChange,
@@ -85,6 +87,7 @@ export function CityCombobox({
 				}
 				aria-autocomplete="list"
 				aria-controls={hasSuggestions ? listId : undefined}
+				aria-describedby={error ? errorId : undefined}
 				aria-expanded={hasSuggestions}
 				aria-invalid={error || undefined}
 				autoComplete="off"

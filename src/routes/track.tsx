@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { type FormEvent, useId, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { trackJourney } from "#/api/fns";
 import type { JourneyProgress, JourneyStop } from "#/api/schemas";
+import { ErrorPanel } from "#/components/error-panel";
 import {
 	ArrowRightIcon,
 	BusIcon,
@@ -13,8 +14,16 @@ import { SiteHeader } from "#/components/site-header";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
+import { Field } from "#/components/ui/field";
+import { Input } from "#/components/ui/input";
 import { formatTime } from "#/data/trips";
-import { toAppError } from "#/lib/error-copy";
+import {
+	type AppError,
+	appErrorFieldMessage,
+	errorFieldForReason,
+	toAppError,
+} from "#/lib/error-copy";
+import { useTranslation } from "#/lib/i18n";
 import { formatTrackingAge, isTrackingStale } from "#/lib/tracking-status";
 
 export const Route = createFileRoute("/track")({ component: TrackPage });
@@ -30,24 +39,29 @@ function delayLabel(delayMin: number): string {
 }
 
 function TrackPage() {
-	const inputId = useId();
+	const { t } = useTranslation();
 	const [vehicleNo, setVehicleNo] = useState("");
 	const [journey, setJourney] = useState<JourneyProgress | null>(null);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
+	const [error, setError] = useState<AppError | null>(null);
+	const [inputError, setInputError] = useState<string | null>(null);
 
 	const load = async (value: string) => {
 		const query = value.trim();
 		if (!query) {
+			setInputError(t("Enter your PNR."));
+			requestAnimationFrame(() => {
+				document.querySelector<HTMLElement>("[aria-invalid='true']")?.focus();
+			});
 			return;
 		}
 		setLoading(true);
-		setError("");
+		setError(null);
+		setInputError(null);
 		try {
 			setJourney(await trackJourney({ data: query }));
 		} catch (caughtError) {
-			const appError = toAppError(caughtError);
-			setError(`${appError.detail} ${appError.action}`);
+			setError(toAppError(caughtError));
 		} finally {
 			setLoading(false);
 		}
@@ -57,6 +71,13 @@ function TrackPage() {
 		event.preventDefault();
 		load(vehicleNo);
 	};
+	const errorField = errorFieldForReason(error?.reason);
+	const fieldError =
+		inputError ??
+		(error && errorField === "vehicle"
+			? appErrorFieldMessage(error, t)
+			: undefined);
+	const pageError = error && errorField !== "vehicle" ? error : null;
 
 	return (
 		<>
@@ -87,43 +108,48 @@ function TrackPage() {
 							className="mt-6 flex flex-col gap-3 rounded-2xl bg-white/10 p-2 ring-1 ring-white/15 backdrop-blur-sm sm:flex-row"
 							onSubmit={submit}
 						>
-							<label className="sr-only" htmlFor={inputId}>
-								PNR
-							</label>
-							<input
-								autoComplete="off"
-								className="flex-1 rounded-xl border border-transparent bg-white/95 px-4 py-3 text-ink-900 outline-none placeholder:text-ink-400 focus-visible:ring-2 focus-visible:ring-white/60"
-								id={inputId}
-								onChange={(event) => setVehicleNo(event.target.value)}
-								placeholder="Enter your PNR"
-								value={vehicleNo}
-							/>
+							<Field
+								className="flex-1 [&_[role=alert]]:text-white"
+								error={fieldError}
+								label="PNR"
+								labelClassName="sr-only"
+								required
+							>
+								{(props) => (
+									<Input
+										{...props}
+										autoComplete="off"
+										className="border-transparent bg-white/95 px-4 py-3"
+										onChange={(event) => {
+											setVehicleNo(event.target.value);
+											setError(null);
+											setInputError(null);
+										}}
+										placeholder="Enter your PNR"
+										value={vehicleNo}
+									/>
+								)}
+							</Field>
 							<Button
 								className="shrink-0 shadow-none"
 								disabled={loading}
+								loading={loading}
 								size="lg"
 								type="submit"
 							>
-								{loading ? "Tracking…" : "Track"}
+								Track
 							</Button>
 						</form>
 					</div>
 				</div>
 
 				<div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-					{error ? (
-						<p
-							className="rounded-xl border border-danger-500/30 bg-danger-500/10 px-4 py-3 text-danger-500 text-sm"
-							role="alert"
-						>
-							{error}
-						</p>
-					) : null}
+					{pageError ? <ErrorPanel error={pageError} /> : null}
 
 					{journey ? (
 						<JourneyBoard journey={journey} onRefresh={() => load(vehicleNo)} />
 					) : (
-						!error && <EmptyState />
+						!pageError && <EmptyState />
 					)}
 				</div>
 			</main>

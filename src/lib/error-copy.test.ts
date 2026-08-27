@@ -35,12 +35,17 @@ describe("error copy", () => {
 	});
 
 	it("maps only field-specific reasons to fields", () => {
+		const mappedReasons = new Set(Object.keys(ERROR_REASON_FIELDS));
 		for (const [reason, field] of Object.entries(ERROR_REASON_FIELDS)) {
 			expect(field).not.toBe("");
 			expect(
 				errorFieldForReason(reason as keyof typeof ERROR_REASON_FIELDS)
 			).toBe(field);
 		}
-		expect(errorFieldForReason("hold_expired")).toBeUndefined();
+		for (const reason of ERROR_REASONS) {
+			if (!mappedReasons.has(reason)) {
+				expect(errorFieldForReason(reason)).toBeUndefined();
+			}
+		}
 	});
 });

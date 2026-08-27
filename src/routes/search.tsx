@@ -12,6 +12,7 @@ import {
 import { SearchForm } from "#/components/search-form";
 import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
+import { Button } from "#/components/ui/button";
 import {
 	AMENITY_META,
 	BUS_TYPE_META,
@@ -446,15 +447,16 @@ function TripCard({
 							{trip.seatsAvailable} seats left
 						</p>
 					</div>
-					<Link
-						className="gradient-surface inline-flex items-center gap-1.5 rounded-xl px-5 py-2.5 font-semibold text-white shadow-sm transition hover:brightness-105"
-						params={{ tripId: trip.id }}
-						search={{ date, passengers }}
-						to="/book/$tripId"
-					>
-						Select seat/s
-						<ArrowRightIcon height={16} width={16} />
-					</Link>
+					<Button asChild>
+						<Link
+							params={{ tripId: trip.id }}
+							search={{ date, passengers }}
+							to="/book/$tripId"
+						>
+							Select seat/s
+							<ArrowRightIcon height={16} width={16} />
+						</Link>
+					</Button>
 				</div>
 			</div>
 

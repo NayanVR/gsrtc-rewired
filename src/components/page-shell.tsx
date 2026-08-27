@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
+import { Button } from "#/components/ui/button";
 import { useTranslation } from "#/lib/i18n";
 
 interface PageShellProps {
@@ -48,12 +49,9 @@ export function PageShell({ title, blurb, children }: PageShellProps) {
 										"This page is part of the GSRTC redesign concept. The full experience is on its way. Check back soon."
 									)}
 								</p>
-								<Link
-									className="gradient-surface mt-5 inline-flex rounded-xl px-5 py-2.5 font-semibold text-white shadow-sm transition hover:brightness-105"
-									to="/"
-								>
-									{t("Back to home")}
-								</Link>
+								<Button asChild className="mt-5">
+									<Link to="/">{t("Back to home")}</Link>
+								</Button>
 							</div>
 						)}
 					</div>

@@ -7,11 +7,13 @@ import {
 	topUpWallet,
 } from "#/api/fns";
 import type { Transaction, WalletAccount } from "#/api/schemas";
+import { ErrorPanel } from "#/components/error-panel";
+import { Alert } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Select } from "#/components/ui/select";
-import { toAppError } from "#/lib/error-copy";
+import { type AppError, toAppError } from "#/lib/error-copy";
 
 const PASSBOOK_PAGE_SIZE = 10;
 const MONEY_FORMATTER = new Intl.NumberFormat("en-IN", {
@@ -26,11 +28,6 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("en-IN", {
 });
 
 type PaymentMethod = "upi" | "card" | "netbanking";
-
-function formatError(error: unknown): string {
-	const appError = toAppError(error);
-	return `${appError.detail} ${appError.action}`;
-}
 
 function money(amount: number): string {
 	return MONEY_FORMATTER.format(amount);
@@ -84,8 +81,9 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 	const [page, setPage] = useState(1);
 	const [loading, setLoading] = useState(true);
 	const [submitting, setSubmitting] = useState(false);
-	const [error, setError] = useState("");
+	const [error, setError] = useState<AppError | null>(null);
 	const [notice, setNotice] = useState("");
+	const [amountError, setAmountError] = useState<string | null>(null);
 	const [amount, setAmount] = useState("500");
 	const [method, setMethod] = useState<PaymentMethod>("upi");
 	const [paymentProvider, setPaymentProvider] = useState<"dodo" | "mock">(
@@ -100,7 +98,7 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 
 	const load = useCallback(async () => {
 		setLoading(true);
-		setError("");
+		setError(null);
 		try {
 			const currentAccount = await getWalletAccount();
 			setAccount(currentAccount);
@@ -111,7 +109,7 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 				setTransactions(passbook.transactions);
 			}
 		} catch (cause) {
-			setError(formatError(cause));
+			setError(toAppError(cause));
 		} finally {
 			setLoading(false);
 		}
@@ -125,12 +123,13 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 		event.preventDefault();
 		const topUpAmount = Number(amount);
 		if (!(Number.isFinite(topUpAmount) && topUpAmount >= 10)) {
-			setError("Enter an amount of at least ₹10.");
+			setAmountError("Enter an amount of at least ₹10.");
 			return;
 		}
 		setSubmitting(true);
-		setError("");
+		setError(null);
 		setNotice("");
+		setAmountError(null);
 		try {
 			if (paymentProvider === "dodo") {
 				const payment = await startWalletTopUp({
@@ -147,7 +146,7 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 			);
 			setNotice(`Added ${money(topUpAmount)} to your wallet.`);
 		} catch (cause) {
-			setError(formatError(cause));
+			setError(toAppError(cause));
 		} finally {
 			setSubmitting(false);
 		}
@@ -159,9 +158,15 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 
 	if (!account) {
 		return (
-			<p className="rounded-xl border border-danger-500/30 bg-danger-500/10 px-4 py-3 text-danger-500 text-sm">
-				{error || "Your wallet is unavailable right now."}
-			</p>
+			<div className="max-w-2xl">
+				{error ? (
+					<ErrorPanel error={error} />
+				) : (
+					<Alert role="alert" tone="destructive">
+						Your wallet is unavailable right now.
+					</Alert>
+				)}
+			</div>
 		);
 	}
 
@@ -184,13 +189,16 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 								: "Payments are securely simulated in this concept build."}
 						</p>
 					</div>
-					<Field label="Amount">
+					<Field error={amountError ?? undefined} label="Amount" required>
 						{(props) => (
 							<Input
 								{...props}
 								min={10}
 								name="amount"
-								onChange={(event) => setAmount(event.target.value)}
+								onChange={(event) => {
+									setAmount(event.target.value);
+									setAmountError(null);
+								}}
 								required
 								step="0.01"
 								type="number"
@@ -199,7 +207,7 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 						)}
 					</Field>
 					{paymentProvider === "mock" ? (
-						<Field label="Payment method">
+						<Field label="Payment method" required>
 							{(props) => (
 								<Select
 									{...props}
@@ -219,10 +227,11 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 					<Button
 						className="w-full"
 						disabled={submitting}
+						loading={submitting}
 						size="lg"
 						type="submit"
 					>
-						{submitting ? "Adding money…" : "Add money"}
+						Add money
 					</Button>
 				</form>
 			) : (
@@ -258,15 +267,11 @@ export function WalletPanel({ variant }: { variant: "account" | "passbook" }) {
 				</div>
 			) : null}
 
-			{error ? (
-				<p className="text-danger-500 text-sm" role="alert">
-					{error}
-				</p>
-			) : null}
+			{error ? <ErrorPanel error={error} /> : null}
 			{notice ? (
-				<p aria-live="polite" className="text-sm text-success-700">
+				<Alert aria-live="polite" tone="success">
 					{notice}
-				</p>
+				</Alert>
 			) : null}
 		</div>
 	);

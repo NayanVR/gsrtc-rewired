@@ -11,9 +11,10 @@ export default defineConfig(({ mode }) => {
 			// common trip fixtures. Running files concurrently makes those cleanups
 			// race, so the suite deliberately serializes files.
 			fileParallelism: false,
-			// Network latency can exceed Vitest's 5-second default while each test
-			// still performs a bounded set of database queries.
-			testTimeout: 15_000,
+			// Integration tests use the configured Postgres service. Cold starts and
+			// network latency can make a bounded database flow take over 30 seconds.
+			hookTimeout: 120_000,
+			testTimeout: 120_000,
 		},
 	};
 });

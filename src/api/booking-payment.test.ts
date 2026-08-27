@@ -9,8 +9,6 @@ import * as payment from "#/lib/mock-payment";
 const TEST_TRIP_ID = "Ahmedabad~Surat~2026-08-23~0";
 const TEST_MOBILE = "9876543210";
 
-vi.setConfig({ testTimeout: 20_000 });
-
 function passenger(seatNo: string) {
 	return { age: 29, gender: "female" as const, name: "Asha Patel", seatNo };
 }

@@ -52,6 +52,8 @@ export function SearchForm({
 	const toId = useId();
 	const dateId = useId();
 	const paxId = useId();
+	const locationErrorId = useId();
+	const dateErrorId = useId();
 
 	const [tab, setTab] = useState<string>(BOOKING_TABS[0]);
 	const [from, setFrom] = useState(initial?.from ?? "Vadodara");
@@ -146,6 +148,7 @@ export function SearchForm({
 						<CityCombobox
 							cities={cities}
 							error={locationError && from.trim() === ""}
+							errorId={locationErrorId}
 							id={fromId}
 							label={t("Source")}
 							onChange={(value) => {
@@ -159,6 +162,7 @@ export function SearchForm({
 						<CityCombobox
 							cities={cities}
 							error={locationError && to.trim() === ""}
+							errorId={locationErrorId}
 							id={toId}
 							label={t("Destination")}
 							onChange={(value) => {
@@ -186,6 +190,7 @@ export function SearchForm({
 						label={t("Date of journey")}
 					>
 						<input
+							aria-describedby={dateError ? dateErrorId : undefined}
 							aria-invalid={dateError || undefined}
 							className={`${SEARCH_CONTROL_CLASS} appearance-none [&::-webkit-calendar-picker-indicator]:hidden`}
 							id={dateId}
@@ -234,12 +239,20 @@ export function SearchForm({
 					</div>
 				</div>
 				{locationError ? (
-					<p className="mt-3 text-destructive text-sm" role="alert">
+					<p
+						className="mt-3 text-destructive text-sm"
+						id={locationErrorId}
+						role="alert"
+					>
 						{t("Choose both a source and destination before searching.")}
 					</p>
 				) : null}
 				{dateError ? (
-					<p className="mt-3 text-destructive text-sm" role="alert">
+					<p
+						className="mt-3 text-destructive text-sm"
+						id={dateErrorId}
+						role="alert"
+					>
 						{t("Choose a date of journey before searching.")}
 					</p>
 				) : null}

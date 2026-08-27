@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { api } from "#/api/server";
 import { cancellationCharge } from "#/data/cancellation-policy";
 import { getDb } from "#/db/client";
 import { bookedSeats, bookings, refunds, seatHolds } from "#/db/schema";
+import { generatePnr } from "#/lib/ids";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const TEST_MOBILE = `8${String(Date.now()).slice(-9)}`;
@@ -14,23 +15,33 @@ const TEST_DATE = new Date(Date.now() + 2 * MS_PER_DAY)
 const TEST_TRIP_ID = `TicketTestOrigin~TicketTestDestination~${TEST_DATE}~0`;
 const testTripIds = new Set([TEST_TRIP_ID]);
 
-vi.setConfig({ testTimeout: 30_000 });
-
 function passenger(seatNo: string) {
 	return { age: 29, gender: "female" as const, name: "Asha Patel", seatNo };
 }
 
 async function createTestBooking() {
-	const hold = await api.booking.hold({
-		seatNos: ["1"],
+	const pnr = generatePnr();
+	await getDb()
+		.insert(bookings)
+		.values({
+			amountPaid: "500.00",
+			contactMobile: TEST_MOBILE,
+			from: "TicketTestOrigin",
+			journeyDate: TEST_DATE,
+			passengers: [passenger("1")],
+			pnr,
+			seatNos: ["1"],
+			to: "TicketTestDestination",
+			tripId: TEST_TRIP_ID,
+		});
+	await getDb().insert(bookedSeats).values({
+		id: crypto.randomUUID(),
+		pnr,
+		seatNo: "1",
+		state: "booked",
 		tripId: TEST_TRIP_ID,
 	});
-	return api.booking.create({
-		contact: { mobile: TEST_MOBILE },
-		holdId: hold.holdId,
-		passengers: [passenger("1")],
-		tripId: TEST_TRIP_ID,
-	});
+	return { pnr };
 }
 
 async function clearTestData(): Promise<void> {

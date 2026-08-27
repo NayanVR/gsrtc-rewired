@@ -2,7 +2,7 @@ import { type ReactNode, useId } from "react";
 import { Label } from "#/components/ui/label";
 import { cn } from "#/lib/cn";
 
-interface FieldControlProps {
+export interface FieldControlProps {
 	"aria-describedby"?: string;
 	"aria-invalid"?: true;
 	"aria-required"?: true;
@@ -15,6 +15,7 @@ interface FieldProps {
 	description?: string;
 	error?: string;
 	label: string;
+	labelClassName?: string;
 	required?: boolean;
 }
 
@@ -23,6 +24,7 @@ export function Field({
 	description,
 	error,
 	required,
+	labelClassName,
 	className,
 	children,
 }: FieldProps) {
@@ -39,7 +41,10 @@ export function Field({
 	return (
 		<div className={cn("block", className)}>
 			<Label
-				className="mb-1.5 block font-medium text-ink-600 text-sm"
+				className={cn(
+					"mb-1.5 block font-medium text-ink-600 text-sm",
+					labelClassName
+				)}
 				htmlFor={id}
 			>
 				{label}

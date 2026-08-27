@@ -7,22 +7,17 @@ import {
 	rescheduleTicket,
 } from "#/api/fns";
 import type { Booking } from "#/api/schemas";
+import { ErrorPanel } from "#/components/error-panel";
+import { Alert } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
 import { authClient } from "#/lib/auth-client";
-import { toAppError } from "#/lib/error-copy";
+import { type AppError, toAppError } from "#/lib/error-copy";
 
 const MONEY_FORMATTER = new Intl.NumberFormat("en-IN", {
 	currency: "INR",
 	minimumFractionDigits: 2,
 	style: "currency",
 });
-
-function formatError(cause: unknown, fallback: string): string {
-	const appError = toAppError(cause);
-	return appError.code === "INTERNAL"
-		? fallback
-		: `${appError.detail} ${appError.action}`;
-}
 
 function ticketStatusClass(status: Booking["status"]): string {
 	if (status === "confirmed") {
@@ -246,25 +241,25 @@ export function ProfilePanel({
 }) {
 	const navigate = useNavigate();
 	const [bookings, setBookings] = useState<Booking[]>([]);
-	const [error, setError] = useState("");
+	const [error, setError] = useState<AppError | null>(null);
 	const [notice, setNotice] = useState("");
 	const [loading, setLoading] = useState(Boolean(mobile));
 	const [pendingAction, setPendingAction] = useState<string | null>(null);
 	const [signingOut, setSigningOut] = useState(false);
 
 	const signOut = async () => {
-		setError("");
+		setError(null);
 		setNotice("");
 		setSigningOut(true);
 		try {
 			const result = await authClient.signOut();
 			if (result.error) {
-				setError(toAppError(result.error).detail);
+				setError(toAppError(result.error));
 				return;
 			}
 			await navigate({ to: "/" });
 		} catch (cause) {
-			setError(formatError(cause, "We could not sign you out. Try again."));
+			setError(toAppError(cause));
 		} finally {
 			setSigningOut(false);
 		}
@@ -275,12 +270,12 @@ export function ProfilePanel({
 			return;
 		}
 		setLoading(true);
-		setError("");
+		setError(null);
 		try {
 			const result = await getTicketHistory({ data: { mobile } });
 			setBookings(result.bookings);
 		} catch (cause) {
-			setError(formatError(cause, "We could not load your tickets."));
+			setError(toAppError(cause));
 		} finally {
 			setLoading(false);
 		}
@@ -295,19 +290,19 @@ export function ProfilePanel({
 			return;
 		}
 		setPendingAction(`send:${ticketNo}`);
-		setError("");
+		setError(null);
 		setNotice("");
 		try {
 			const result = await printTicket({
 				data: { channel: "sms", mobile, ticketNo },
 			});
-			setNotice(
-				result.sent
-					? `Ticket ${ticketNo} was sent to ${mobile}.`
-					: "We could not send the ticket. Try again."
-			);
+			if (result.sent) {
+				setNotice(`Ticket ${ticketNo} was sent to ${mobile}.`);
+			} else {
+				setError(toAppError({ code: "INTERNAL" }));
+			}
 		} catch (cause) {
-			setError(formatError(cause, "We could not send the ticket."));
+			setError(toAppError(cause));
 		} finally {
 			setPendingAction(null);
 		}
@@ -318,7 +313,7 @@ export function ProfilePanel({
 			return;
 		}
 		setPendingAction(`cancel:${ticketNo}`);
-		setError("");
+		setError(null);
 		setNotice("");
 		try {
 			const result = await cancelTicket({ data: { mobile, ticketNo } });
@@ -327,9 +322,7 @@ export function ProfilePanel({
 			);
 			await loadBookings();
 		} catch (cause) {
-			setError(
-				formatError(cause, "This ticket could not be cancelled right now.")
-			);
+			setError(toAppError(cause));
 		} finally {
 			setPendingAction(null);
 		}
@@ -340,7 +333,7 @@ export function ProfilePanel({
 			return;
 		}
 		setPendingAction(`reschedule:${ticketNo}`);
-		setError("");
+		setError(null);
 		setNotice("");
 		try {
 			const booking = await rescheduleTicket({
@@ -349,9 +342,7 @@ export function ProfilePanel({
 			setNotice(`Ticket ${ticketNo} rescheduled to ${booking.journeyDate}.`);
 			await loadBookings();
 		} catch (cause) {
-			setError(
-				formatError(cause, "This ticket could not be rescheduled right now.")
-			);
+			setError(toAppError(cause));
 		} finally {
 			setPendingAction(null);
 		}
@@ -416,15 +407,11 @@ export function ProfilePanel({
 				</div>
 			</div>
 
-			{error ? (
-				<p className="text-danger-500 text-sm" role="alert">
-					{error}
-				</p>
-			) : null}
+			{error ? <ErrorPanel error={error} /> : null}
 			{notice ? (
-				<p aria-live="polite" className="text-sm text-success-700">
+				<Alert aria-live="polite" tone="success">
 					{notice}
-				</p>
+				</Alert>
 			) : null}
 
 			<TicketList

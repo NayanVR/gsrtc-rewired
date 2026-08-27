@@ -1,13 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
 import { getDevelopmentOtp } from "#/api/fns";
+import { ErrorPanel } from "#/components/error-panel";
 import { PageShell } from "#/components/page-shell";
+import { Alert } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { authClient } from "#/lib/auth-client";
 import { isSyntheticPhoneEmail } from "#/lib/auth-identity";
-import { toAppError } from "#/lib/error-copy";
+import {
+	type AppError,
+	appErrorFieldMessage,
+	errorFieldForReason,
+	toAppError,
+} from "#/lib/error-copy";
 import { useTranslation } from "#/lib/i18n";
 
 export const Route = createFileRoute("/login")({ component: LoginPage });
@@ -15,14 +22,7 @@ export const Route = createFileRoute("/login")({ component: LoginPage });
 type Mode = "signIn" | "signUp";
 type SignInMethod = "email" | "mobile";
 
-function submitLabel(
-	mode: Mode,
-	submitting: boolean,
-	t: (message: string) => string
-): string {
-	if (submitting) {
-		return mode === "signUp" ? t("Creating account…") : t("Signing in…");
-	}
+function submitLabel(mode: Mode, t: (message: string) => string): string {
 	return mode === "signUp" ? t("Create account") : t("Sign in");
 }
 
@@ -33,7 +33,7 @@ function LoginPage() {
 		authClient.useSession();
 	const [mode, setMode] = useState<Mode>("signIn");
 	const [signInMethod, setSignInMethod] = useState<SignInMethod>("email");
-	const [error, setError] = useState("");
+	const [error, setError] = useState<AppError | null>(null);
 	const [notice, setNotice] = useState("");
 	const [submitting, setSubmitting] = useState(false);
 	const [otpSentFor, setOtpSentFor] = useState<string | null>(null);
@@ -46,7 +46,7 @@ function LoginPage() {
 		const password = String(formData.get("password") ?? "");
 		const name = String(formData.get("name") ?? "");
 
-		setError("");
+		setError(null);
 		setNotice("");
 		setSubmitting(true);
 		try {
@@ -55,7 +55,7 @@ function LoginPage() {
 					? await authClient.signUp.email({ email, name, password })
 					: await authClient.signIn.email({ email, password });
 			if (result.error) {
-				setError(toAppError(result.error).detail);
+				setError(toAppError(result.error));
 				return;
 			}
 			setNotice(
@@ -64,7 +64,7 @@ function LoginPage() {
 					: "You are signed in."
 			);
 		} catch (caughtError) {
-			setError(toAppError(caughtError).detail);
+			setError(toAppError(caughtError));
 		} finally {
 			setSubmitting(false);
 		}
@@ -75,14 +75,14 @@ function LoginPage() {
 		const formData = new FormData(event.currentTarget);
 		const phoneNumber = String(formData.get("mobile") ?? "").trim();
 
-		setError("");
+		setError(null);
 		setNotice("");
 		setDevelopmentOtp(null);
 		setSubmitting(true);
 		try {
 			const result = await authClient.phoneNumber.sendOtp({ phoneNumber });
 			if (result.error) {
-				setError(toAppError(result.error).detail);
+				setError(toAppError(result.error));
 				return;
 			}
 			setOtpSentFor(phoneNumber);
@@ -94,7 +94,7 @@ function LoginPage() {
 				// A real SMS provider never returns its OTP to the browser.
 			}
 		} catch (caughtError) {
-			setError(toAppError(caughtError).detail);
+			setError(toAppError(caughtError));
 		} finally {
 			setSubmitting(false);
 		}
@@ -108,7 +108,7 @@ function LoginPage() {
 		const formData = new FormData(event.currentTarget);
 		const code = String(formData.get("otp") ?? "");
 
-		setError("");
+		setError(null);
 		setNotice("");
 		setSubmitting(true);
 		try {
@@ -117,13 +117,13 @@ function LoginPage() {
 				phoneNumber: otpSentFor,
 			});
 			if (result.error) {
-				setError(toAppError(result.error).detail);
+				setError(toAppError(result.error));
 				return;
 			}
 			setDevelopmentOtp(null);
 			setNotice("Your mobile number is verified. You are signed in.");
 		} catch (caughtError) {
-			setError(toAppError(caughtError).detail);
+			setError(toAppError(caughtError));
 		} finally {
 			setSubmitting(false);
 		}
@@ -131,28 +131,32 @@ function LoginPage() {
 
 	const useDifferentMobile = () => {
 		setDevelopmentOtp(null);
-		setError("");
+		setError(null);
 		setNotice("");
 		setOtpSentFor(null);
 	};
 
 	const signOut = async () => {
-		setError("");
+		setError(null);
 		setNotice("");
 		setSubmitting(true);
 		try {
 			const result = await authClient.signOut();
 			if (result.error) {
-				setError(toAppError(result.error).detail);
+				setError(toAppError(result.error));
 				return;
 			}
 			setNotice("You are signed out.");
 		} catch (caughtError) {
-			setError(toAppError(caughtError).detail);
+			setError(toAppError(caughtError));
 		} finally {
 			setSubmitting(false);
 		}
 	};
+	const errorField = errorFieldForReason(error?.reason);
+	const otpError =
+		error && errorField === "otp" ? appErrorFieldMessage(error, t) : undefined;
+	const pageError = error && errorField !== "otp" ? error : null;
 
 	return (
 		<PageShell
@@ -172,8 +176,8 @@ function LoginPage() {
 									: `${currentSession.user.name} · ${currentSession.user.email}`}
 							</p>
 						</div>
-						<Button disabled={submitting} onClick={signOut} variant="secondary">
-							{submitting ? t("Signing out…") : t("Sign out")}
+						<Button loading={submitting} onClick={signOut} variant="secondary">
+							{t("Sign out")}
 						</Button>
 					</div>
 				) : (
@@ -241,7 +245,7 @@ function LoginPage() {
 									</button>
 								</div>
 								{mode === "signUp" ? (
-									<Field label={t("Full name")}>
+									<Field label={t("Full name")} required>
 										{(props) => (
 											<Input
 												{...props}
@@ -254,7 +258,7 @@ function LoginPage() {
 									</Field>
 								) : null}
 
-								<Field label={t("Email address")}>
+								<Field label={t("Email address")} required>
 									{(props) => (
 										<Input
 											{...props}
@@ -266,7 +270,7 @@ function LoginPage() {
 									)}
 								</Field>
 
-								<Field label={t("Password")}>
+								<Field label={t("Password")} required>
 									{(props) => (
 										<Input
 											{...props}
@@ -284,9 +288,10 @@ function LoginPage() {
 								<Button
 									className="w-full"
 									disabled={submitting || sessionPending}
+									loading={submitting}
 									type="submit"
 								>
-									{submitLabel(mode, submitting, t)}
+									{submitLabel(mode, t)}
 								</Button>
 							</form>
 						) : (
@@ -325,7 +330,11 @@ function LoginPage() {
 												{t("Test OTP:")} <strong>{developmentOtp}</strong>
 											</div>
 										) : null}
-										<Field label={t("One-time password")}>
+										<Field
+											error={otpError}
+											label={t("One-time password")}
+											required
+										>
 											{(props) => (
 												<Input
 													{...props}
@@ -341,14 +350,15 @@ function LoginPage() {
 										<Button
 											className="mt-4 w-full"
 											disabled={submitting}
+											loading={submitting}
 											type="submit"
 										>
-											{submitting ? t("Verifying…") : t("Verify and sign in")}
+											{t("Verify and sign in")}
 										</Button>
 									</form>
 								) : (
 									<form className="space-y-4" onSubmit={sendOtp}>
-										<Field label={t("Mobile number")}>
+										<Field error={otpError} label={t("Mobile number")} required>
 											{(props) => (
 												<Input
 													{...props}
@@ -365,9 +375,10 @@ function LoginPage() {
 										<Button
 											className="w-full"
 											disabled={submitting || sessionPending}
+											loading={submitting}
 											type="submit"
 										>
-											{submitting ? t("Sending OTP…") : t("Send OTP")}
+											{t("Send OTP")}
 										</Button>
 									</form>
 								)}
@@ -376,15 +387,15 @@ function LoginPage() {
 					</>
 				)}
 
-				{error ? (
-					<p className="mt-4 text-danger-500 text-sm" role="alert">
-						{error}
-					</p>
+				{pageError ? (
+					<div className="mt-4">
+						<ErrorPanel error={pageError} />
+					</div>
 				) : null}
 				{notice ? (
-					<p aria-live="polite" className="mt-4 text-sm text-success-700">
+					<Alert aria-live="polite" className="mt-4" tone="success">
 						{notice}
-					</p>
+					</Alert>
 				) : null}
 			</div>
 		</PageShell>

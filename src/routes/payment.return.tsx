@@ -12,6 +12,7 @@ import {
 } from "#/components/icons";
 import { SiteFooter } from "#/components/site-footer";
 import { SiteHeader } from "#/components/site-header";
+import { Button } from "#/components/ui/button";
 import { formatFare } from "#/data/trips";
 import { toAppError } from "#/lib/error-copy";
 
@@ -258,12 +259,11 @@ function BookingConfirmation({
 				</div>
 
 				<div className="mt-7 flex flex-col gap-3 sm:flex-row">
-					<Link
-						className="gradient-surface inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold text-white shadow-sm transition hover:brightness-105"
-						to="/"
-					>
-						Book another journey <ArrowRightIcon height={18} width={18} />
-					</Link>
+					<Button asChild className="flex-1" size="lg">
+						<Link to="/">
+							Book another journey <ArrowRightIcon height={18} width={18} />
+						</Link>
+					</Button>
 					<Link
 						className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-ink-200 px-5 py-3 font-semibold text-ink-700 transition hover:bg-canvas"
 						params={{ slug: "print-sms-ticket" }}

@@ -48,11 +48,12 @@ export function Button({
 	...props
 }: ButtonProps) {
 	const Component = asChild ? Slot : "button";
+	const isDisabled = disabled || loading;
 	return (
 		<Component
 			aria-busy={loading || undefined}
 			className={cn(buttonVariants({ size, variant }), className)}
-			disabled={disabled || loading}
+			disabled={asChild ? undefined : isDisabled}
 			type={asChild ? undefined : type}
 			{...props}
 		>

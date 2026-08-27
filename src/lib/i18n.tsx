@@ -46,8 +46,11 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Bus Pass Login": "બસ પાસ લૉગિન",
 		"Cancel Ticket": "ટિકિટ રદ કરો",
 		"Change language": "ભાષા બદલો",
+		"Check the PNR and try again.": "PNR તપાસો અને ફરી પ્રયાસ કરો.",
 		"Choose a date of journey before searching.":
 			"શોધતા પહેલાં મુસાફરીની તારીખ પસંદ કરો.",
+		"Choose a pass type before applying.":
+			"અરજી કરતા પહેલાં પાસનો પ્રકાર પસંદ કરો.",
 		"Choose both a source and destination before searching.":
 			"શોધતા પહેલાં પ્રસ્થાન અને ગંતવ્ય બંને પસંદ કરો.",
 		"Choose from the refreshed seat map.": "તાજા સીટ નકશામાંથી પસંદ કરો.",
@@ -76,6 +79,7 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Enter a valid email address.": "માન્ય ઇમેઇલ સરનામું દાખલ કરો.",
 		"Enter a valid name and age for this traveller.":
 			"આ મુસાફર માટે માન્ય નામ અને ઉંમર દાખલ કરો.",
+		"Enter your PNR.": "તમારું PNR દાખલ કરો.",
 		FAQs: "વારંવાર પૂછાતા પ્રશ્નો",
 		"Full name": "પૂરું નામ",
 		"Grievance Redressal Officers (Divyang)": "ફરિયાદ નિવારણ અધિકારીઓ (દિવ્યાંગ)",
@@ -89,6 +93,7 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 			"ગુજરાત રાજ્ય માર્ગ વાહન વ્યવહાર નિગમ. 1960થી સ્મિત સાથે મુસાફરીને આગળ ધપાવતું.",
 		Home: "મુખ્ય પૃષ્ઠ",
 		"India Code": "ઇન્ડિયા કોડ",
+		"Journey not found": "મુસાફરી મળી નથી",
 		Leadership: "નેતૃત્વ",
 		"Mobile account": "મોબાઇલ એકાઉન્ટ",
 		"Mobile number": "મોબાઇલ નંબર",
@@ -186,6 +191,8 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Waiting List Ticket Status": "પ્રતીક્ષા યાદી ટિકિટ સ્થિતિ",
 		"Wallet Account": "વોલેટ એકાઉન્ટ",
 		"Wallet Passbook": "વોલેટ પાસબુક",
+		"We could not find a journey for that PNR.":
+			"તે PNR માટે અમને મુસાફરી મળી નથી.",
 		"Welcome back": "ફરી સ્વાગત છે",
 		"We’ll send a one-time password to verify your mobile number.":
 			"તમારો મોબાઇલ નંબર ચકાસવા માટે અમે એક-વખતનો પાસવર્ડ મોકલીશું.",
@@ -227,8 +234,10 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Bus Pass Login": "बस पास लॉगिन",
 		"Cancel Ticket": "टिकट रद्द करें",
 		"Change language": "भाषा बदलें",
+		"Check the PNR and try again.": "PNR जांचें और फिर प्रयास करें।",
 		"Choose a date of journey before searching.":
 			"खोजने से पहले यात्रा की तारीख चुनें।",
+		"Choose a pass type before applying.": "आवेदन करने से पहले पास का प्रकार चुनें।",
 		"Choose both a source and destination before searching.":
 			"खोजने से पहले स्रोत और गंतव्य दोनों चुनें।",
 		"Choose from the refreshed seat map.": "नए सीट मानचित्र से सीट चुनें।",
@@ -257,6 +266,7 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Enter a valid email address.": "मान्य ईमेल पता दर्ज करें।",
 		"Enter a valid name and age for this traveller.":
 			"इस यात्री के लिए मान्य नाम और आयु दर्ज करें।",
+		"Enter your PNR.": "अपना PNR दर्ज करें।",
 		FAQs: "अक्सर पूछे जाने वाले प्रश्न",
 		"Full name": "पूरा नाम",
 		"Grievance Redressal Officers (Divyang)": "शिकायत निवारण अधिकारी (दिव्यांग)",
@@ -270,6 +280,7 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 			"गुजरात राज्य सड़क परिवहन निगम। 1960 से मुस्कान के साथ यात्राओं को आगे बढ़ाते हुए।",
 		Home: "होम",
 		"India Code": "इंडिया कोड",
+		"Journey not found": "यात्रा नहीं मिली",
 		Leadership: "नेतृत्व",
 		"Mobile account": "मोबाइल खाता",
 		"Mobile number": "मोबाइल नंबर",
@@ -367,6 +378,8 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Waiting List Ticket Status": "प्रतीक्षा सूची टिकट स्थिति",
 		"Wallet Account": "वॉलेट खाता",
 		"Wallet Passbook": "वॉलेट पासबुक",
+		"We could not find a journey for that PNR.":
+			"उस PNR के लिए कोई यात्रा नहीं मिली।",
 		"Welcome back": "वापसी पर स्वागत है",
 		"We’ll send a one-time password to verify your mobile number.":
 			"आपका मोबाइल नंबर सत्यापित करने के लिए हम एक-बार का पासवर्ड भेजेंगे।",

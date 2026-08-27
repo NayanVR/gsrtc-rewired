@@ -117,7 +117,7 @@ describe("Better Auth identity contract", () => {
 		expect(isSyntheticPhoneEmail(verified.response.user?.email ?? "")).toBe(
 			true
 		);
-	}, 30_000);
+	});
 
 	it("rejects an expired mobile OTP", async () => {
 		const phoneNumber = OTP_TEST_MOBILE;
@@ -148,7 +148,7 @@ describe("Better Auth identity contract", () => {
 		await expect(
 			auth.api.verifyPhoneNumber({ body: { code, phoneNumber } })
 		).rejects.toMatchObject({ body: { code: "TOO_MANY_ATTEMPTS" } });
-	}, 15_000);
+	});
 
 	it("rejects linking a mobile number that belongs to another account", async () => {
 		const existingPhone = OTP_TEST_MOBILE;
@@ -197,7 +197,7 @@ describe("Better Auth identity contract", () => {
 			.from(user)
 			.where(eq(user.id, secondUser.response.user.id));
 		expect(linkedUser[0]?.phoneNumber).toBe(phoneToLink);
-	}, 30_000);
+	});
 
 	it("does not retain or expose a mock OTP in production", () => {
 		const phoneNumber = PRODUCTION_TEST_MOBILE;

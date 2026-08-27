@@ -206,10 +206,10 @@ const COPY: Record<
 		title: "Sign in required",
 	},
 	vehicle_unknown: {
-		action: "Check the bus or service number and try again.",
-		detail: "We could not find that bus right now.",
+		action: "Check the PNR and try again.",
+		detail: "We could not find a journey for that PNR.",
 		recoverable: true,
-		title: "Bus not found",
+		title: "Journey not found",
 	},
 	wallet_account_missing: {
 		action: "Try again shortly. Quote the reference if you contact us.",
@@ -274,4 +274,16 @@ export function errorFieldForReason(
 	reason: ErrorReason | undefined
 ): string | undefined {
 	return reason ? ERROR_REASON_FIELDS[reason] : undefined;
+}
+
+export function appErrorFieldMessage(
+	error: AppError,
+	translate: (
+		message: string,
+		values?: Record<string, string | number>
+	) => string
+): string {
+	return `${translate(error.detail)} ${translate(error.action, {
+		traceId: error.traceId ?? "Not available",
+	})}`;
 }

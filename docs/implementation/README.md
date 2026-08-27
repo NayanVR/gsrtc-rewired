@@ -35,6 +35,7 @@ that apply to every task; individual task files do not repeat them.
 | 15  | [Self-host on a VPS](./15-vps-self-host.md)                      | done   | 02         | 0     | —          |
 | 16  | [Dodo Payments (test mode)](./16-dodo-payments.md)               | todo   | 04, 08, 15 | 3     | 02         |
 | 17  | [Wide events & error handling](./17-wide-events.md)                               | done   | 16         | 0     | 05, 06     |
+| 18  | [UI components & error states](./18-ui-components.md)            | done   | 17         | 0     | 05         |
 
 Status values: `todo` / `in progress` / `done` / `blocked`.
 Phase numbers refer to [`../migration-plan.md`](../migration-plan.md) §6.
@@ -49,6 +50,9 @@ The transaction chain 03 → 04 → 05 → 06 is strictly ordered.
 Task 16 replaces the simulated charge on both paying surfaces (booking and
 wallet) and must come after that chain is green. It needs a public HTTPS URL
 for webhooks, which task 15's Dokploy deployment already provides.
+
+Task 18 is front-end only and depends on task 17 for `AppError` and the
+reason vocabulary it renders. It can be done at any point after 17.
 
 Task 07 (better-auth) is the single session layer **and the single identity
 store**. It deletes the `users` and `otp_codes` tables; better-auth's user

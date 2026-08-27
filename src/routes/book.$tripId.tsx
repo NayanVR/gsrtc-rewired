@@ -401,6 +401,7 @@ function BookPage() {
 		[email, mobile, passengers, people, selected]
 	);
 	const canProceed = Object.keys(detailsErrors).length === 0;
+	const seatError = detailsSubmitted ? detailsErrors.seats : undefined;
 	const showError = (name: string) => detailsSubmitted || touchedDetails[name];
 	const markTouched = (name: string) =>
 		setTouchedDetails((current) => ({ ...current, [name]: true }));
@@ -519,11 +520,22 @@ function BookPage() {
 
 									<div className="mt-5 overflow-x-auto">
 										<SeatDeck
+											error={Boolean(seatError)}
+											errorId="booking-seats-error"
 											onToggle={toggleSeat}
 											seats={seatMap}
 											selected={selected}
 										/>
 									</div>
+									{seatError ? (
+										<p
+											className="mt-2 text-destructive text-sm"
+											id="booking-seats-error"
+											role="alert"
+										>
+											{t(seatError)}
+										</p>
+									) : null}
 								</section>
 
 								<section className="rounded-2xl border border-ink-100 bg-surface p-5 sm:p-6">
@@ -1202,10 +1214,14 @@ function SeatDeck({
 	seats,
 	selected,
 	onToggle,
+	error,
+	errorId,
 }: {
 	seats: Seat[];
 	selected: string[];
 	onToggle: (seat: Seat) => void;
+	error: boolean;
+	errorId: string;
 }) {
 	const decks = useMemo(() => {
 		const byDeck = new Map<Seat["deck"], Seat[]>();
@@ -1218,7 +1234,12 @@ function SeatDeck({
 	}, [seats]);
 
 	return (
-		<div className="inline-block rounded-2xl border border-ink-100 bg-canvas p-4">
+		<div
+			aria-describedby={error ? errorId : undefined}
+			aria-invalid={error || undefined}
+			className="inline-block rounded-2xl border border-ink-100 bg-canvas p-4 aria-invalid:border-destructive"
+			tabIndex={error ? -1 : undefined}
+		>
 			<div className="mb-3 flex items-center justify-end gap-1.5 text-ink-400 text-xs">
 				<SteeringIcon />
 				Driver
