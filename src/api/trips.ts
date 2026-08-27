@@ -1,97 +1,228 @@
-const BUS_TYPES = [
-	"Volvo AC Sleeper",
-	"AC Seater",
-	"Sleeper",
-	"Express",
-	"Gurjar Nagari",
-	"Electric",
-] as const;
+import { and, asc, eq, gt, or } from "drizzle-orm";
+import type { Seat, Trip } from "#/api/schemas";
+import { getDb } from "#/db/client";
+import {
+	bookedSeats,
+	buses,
+	busSeats,
+	cities as cityRecords,
+	transportRoutes,
+	tripSchedules,
+} from "#/db/schema";
 
 const HOURS_PER_DAY = 24;
-const MIN_PER_HOUR = 60;
-const FIRST_DEPART_HOUR = 6;
-const HOURS_BETWEEN = 3;
-const BASE_DURATION = 150;
-const BASE_FARE = 147;
-const FARE_STEP = 45;
-const BASE_SEATS = 40;
-const SEATS_STEP = 5;
-const SEAT_COUNT = 40;
+const MINUTES_PER_HOUR = 60;
+const MINUTES_PER_DAY = HOURS_PER_DAY * MINUTES_PER_HOUR;
 
 export interface TripLeg {
 	date: string;
 	from: string;
-	index: number;
+	serviceIndex: number;
+	to: string;
+}
+
+interface TripRecord {
+	amenities: string[];
+	busId: string;
+	busType: Trip["busType"];
+	departureMinutes: number;
+	durationMin: number;
+	fareFrom: string;
+	from: string;
+	serviceIndex: number;
 	to: string;
 }
 
 export function parseTripId(tripId: string): TripLeg | null {
-	const [from, to, date, indexStr] = tripId.split("~");
-	const index = Number(indexStr);
+	const [from, to, date, serviceIndexValue, ...extra] = tripId.split("~");
+	const serviceIndex = Number(serviceIndexValue);
 	if (
 		!(from && to && date) ||
-		Number.isNaN(index) ||
-		index >= BUS_TYPES.length
+		extra.length > 0 ||
+		!Number.isInteger(serviceIndex) ||
+		serviceIndex < 0
 	) {
 		return null;
 	}
-	return { date, from, index, to };
+	return { date, from, serviceIndex, to };
+}
+
+export function tripIdForLeg(leg: TripLeg): string {
+	return `${leg.from}~${leg.to}~${leg.date}~${leg.serviceIndex}`;
 }
 
 function isoAt(date: string, totalMinutes: number): string {
-	const hour = Math.floor(totalMinutes / MIN_PER_HOUR) % HOURS_PER_DAY;
-	const min = totalMinutes % MIN_PER_HOUR;
-	return `${date}T${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}:00+05:30`;
+	const dateAtMidnight = new Date(`${date}T00:00:00.000Z`);
+	dateAtMidnight.setUTCDate(
+		dateAtMidnight.getUTCDate() + Math.floor(totalMinutes / MINUTES_PER_DAY)
+	);
+	const minutesWithinDay = totalMinutes % MINUTES_PER_DAY;
+	const hour = Math.floor(minutesWithinDay / MINUTES_PER_HOUR);
+	const minute = minutesWithinDay % MINUTES_PER_HOUR;
+	return `${dateAtMidnight.toISOString().slice(0, 10)}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00+05:30`;
 }
 
-export function buildTrip({ from, to, date, index }: TripLeg) {
-	const departMinutes =
-		(FIRST_DEPART_HOUR + index * HOURS_BETWEEN) * MIN_PER_HOUR + 15;
-	const durationMin = BASE_DURATION + index * 20;
+async function findTripRecord(leg: TripLeg): Promise<TripRecord | null> {
+	const [record] = await getDb()
+		.select({
+			amenities: buses.amenities,
+			busId: buses.id,
+			busType: buses.busType,
+			departureMinutes: tripSchedules.departureMinutes,
+			durationMin: tripSchedules.durationMin,
+			fareFrom: tripSchedules.fareFrom,
+			from: transportRoutes.fromCity,
+			serviceIndex: tripSchedules.serviceIndex,
+			to: transportRoutes.toCity,
+		})
+		.from(tripSchedules)
+		.innerJoin(buses, eq(tripSchedules.busId, buses.id))
+		.innerJoin(transportRoutes, eq(tripSchedules.routeId, transportRoutes.id))
+		.where(
+			and(
+				eq(transportRoutes.fromCity, leg.from),
+				eq(transportRoutes.toCity, leg.to),
+				eq(tripSchedules.serviceIndex, leg.serviceIndex),
+				eq(transportRoutes.active, true),
+				eq(tripSchedules.active, true),
+				eq(buses.active, true)
+			)
+		)
+		.limit(1);
+	return record ?? null;
+}
+
+async function availableSeatCount(
+	record: TripRecord,
+	publicTripId: string
+): Promise<number> {
+	const [baselineSeats, activeSeats] = await Promise.all([
+		getDb()
+			.select({ seatNo: busSeats.seatNo, status: busSeats.defaultStatus })
+			.from(busSeats)
+			.where(eq(busSeats.busId, record.busId)),
+		getDb()
+			.select({ seatNo: bookedSeats.seatNo })
+			.from(bookedSeats)
+			.where(
+				and(
+					eq(bookedSeats.tripId, publicTripId),
+					or(
+						eq(bookedSeats.state, "booked"),
+						and(
+							eq(bookedSeats.state, "held"),
+							gt(bookedSeats.expiresAt, new Date())
+						)
+					)
+				)
+			),
+	]);
+	const activeSeatNos = new Set(activeSeats.map((seat) => seat.seatNo));
+	return baselineSeats.filter(
+		(seat) => seat.status !== "booked" && !activeSeatNos.has(seat.seatNo)
+	).length;
+}
+
+async function toTrip(record: TripRecord, date: string): Promise<Trip> {
+	const id = tripIdForLeg({
+		date,
+		from: record.from,
+		serviceIndex: record.serviceIndex,
+		to: record.to,
+	});
 	return {
-		amenities: ["charging", "water", "cctv"],
-		arrival: isoAt(date, departMinutes + durationMin),
-		busType: BUS_TYPES[index],
-		departure: isoAt(date, departMinutes),
-		durationMin,
-		fareFrom: BASE_FARE + index * FARE_STEP,
-		from,
-		id: `${from}~${to}~${date}~${index}`,
-		seatsAvailable: BASE_SEATS - index * SEATS_STEP,
-		to,
+		amenities: record.amenities,
+		arrival: isoAt(date, record.departureMinutes + record.durationMin),
+		busType: record.busType,
+		departure: isoAt(date, record.departureMinutes),
+		durationMin: record.durationMin,
+		fareFrom: Number(record.fareFrom),
+		from: record.from,
+		id,
+		seatsAvailable: await availableSeatCount(record, id),
+		to: record.to,
 	};
 }
 
-export function buildSeats(tripId: string) {
-	const leg = parseTripId(tripId);
-	const index = leg ? leg.index : 0;
-	const busType = BUS_TYPES[index];
-	const isSleeper = busType.includes("Sleeper");
-	const fare = BASE_FARE + index * FARE_STEP;
-	const seats: {
-		deck: "lower" | "upper";
-		fare: number;
-		kind: "seater" | "sleeper";
-		no: string;
-		status: "available" | "booked" | "ladies" | "held";
-	}[] = [];
-	for (let n = 1; n <= SEAT_COUNT; n += 1) {
-		const hash = (n * 7 + index * 3) % 10;
-		let status: (typeof seats)[number]["status"] = "available";
-		if (hash < 3) {
-			status = "booked";
-		} else if (hash === 3 && n <= 8) {
-			status = "ladies";
-		}
-		seats.push({
-			deck: isSleeper && n > SEAT_COUNT / 2 ? "upper" : "lower",
-			fare,
-			kind: isSleeper ? "sleeper" : "seater",
-			no: String(n),
-			status,
-		});
+export async function listCities(query?: string): Promise<string[]> {
+	const rows = await getDb()
+		.select()
+		.from(cityRecords)
+		.orderBy(asc(cityRecords.name));
+	const normalizedQuery = query?.trim().toLowerCase();
+	if (!normalizedQuery) {
+		return rows.map((city) => city.name);
 	}
-	return seats;
+	return rows
+		.map((city) => city.name)
+		.filter((city) => city.toLowerCase().includes(normalizedQuery));
 }
 
-export { BUS_TYPES };
+export async function searchTripSchedules(input: {
+	date: string;
+	from: string;
+	passengers: number;
+	to: string;
+}): Promise<Trip[]> {
+	const records = await getDb()
+		.select({
+			amenities: buses.amenities,
+			busId: buses.id,
+			busType: buses.busType,
+			departureMinutes: tripSchedules.departureMinutes,
+			durationMin: tripSchedules.durationMin,
+			fareFrom: tripSchedules.fareFrom,
+			from: transportRoutes.fromCity,
+			serviceIndex: tripSchedules.serviceIndex,
+			to: transportRoutes.toCity,
+		})
+		.from(tripSchedules)
+		.innerJoin(buses, eq(tripSchedules.busId, buses.id))
+		.innerJoin(transportRoutes, eq(tripSchedules.routeId, transportRoutes.id))
+		.where(
+			and(
+				eq(transportRoutes.fromCity, input.from),
+				eq(transportRoutes.toCity, input.to),
+				eq(transportRoutes.active, true),
+				eq(tripSchedules.active, true),
+				eq(buses.active, true)
+			)
+		)
+		.orderBy(asc(tripSchedules.departureMinutes));
+	const results = await Promise.all(
+		records.map((record) => toTrip(record, input.date))
+	);
+	return results.filter((trip) => trip.seatsAvailable >= input.passengers);
+}
+
+export async function findTrip(tripId: string): Promise<Trip | null> {
+	const leg = parseTripId(tripId);
+	if (!leg) {
+		return null;
+	}
+	const record = await findTripRecord(leg);
+	return record ? toTrip(record, leg.date) : null;
+}
+
+export async function findTripSeats(tripId: string): Promise<Seat[] | null> {
+	const leg = parseTripId(tripId);
+	if (!leg) {
+		return null;
+	}
+	const record = await findTripRecord(leg);
+	if (!record) {
+		return null;
+	}
+	const rows = await getDb()
+		.select({
+			deck: busSeats.deck,
+			kind: busSeats.kind,
+			no: busSeats.seatNo,
+			status: busSeats.defaultStatus,
+		})
+		.from(busSeats)
+		.where(eq(busSeats.busId, record.busId));
+	return rows
+		.map((seat) => ({ ...seat, fare: Number(record.fareFrom) }))
+		.sort((left, right) => Number(left.no) - Number(right.no));
+}

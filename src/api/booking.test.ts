@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { api } from "#/api/server";
@@ -6,11 +6,13 @@ import { getDb } from "#/db/client";
 import { bookedSeats, seatHolds } from "#/db/schema";
 
 const TEST_TRIP_ID = "Ahmedabad~Surat~2026-08-22~0";
+const RELEASE_TEST_TRIP_ID = "Ahmedabad~Vadodara~2026-08-22~0";
 
 async function clearTestReservations(): Promise<void> {
 	const db = getDb();
-	await db.delete(bookedSeats).where(eq(bookedSeats.tripId, TEST_TRIP_ID));
-	await db.delete(seatHolds).where(eq(seatHolds.tripId, TEST_TRIP_ID));
+	const testTripIds = [TEST_TRIP_ID, RELEASE_TEST_TRIP_ID];
+	await db.delete(bookedSeats).where(inArray(bookedSeats.tripId, testTripIds));
+	await db.delete(seatHolds).where(inArray(seatHolds.tripId, testTripIds));
 }
 
 describe("booking seat inventory", () => {
@@ -59,6 +61,45 @@ describe("booking seat inventory", () => {
 		expect(seatMap.seats.find((seat) => seat.no === "2")?.status).toBe(
 			"available"
 		);
+	});
+
+	it("releases a cancelled hold immediately", async () => {
+		const hold = await api.booking.hold({
+			seatNos: ["1"],
+			tripId: RELEASE_TEST_TRIP_ID,
+		});
+
+		await expect(
+			api.booking.releaseHold({
+				holdId: hold.holdId,
+				tripId: RELEASE_TEST_TRIP_ID,
+			})
+		).resolves.toEqual({ released: true });
+		await expect
+			.poll(
+				async () => {
+					const remainingHeldSeats = await getDb()
+						.select({ id: bookedSeats.id })
+						.from(bookedSeats)
+						.where(eq(bookedSeats.tripId, RELEASE_TEST_TRIP_ID));
+					return remainingHeldSeats.length;
+				},
+				{ interval: 250, timeout: 10_000 }
+			)
+			.toBe(0);
+
+		const seatMap = await api.booking.seatMap({
+			tripId: RELEASE_TEST_TRIP_ID,
+		});
+		expect(seatMap.seats.find((seat) => seat.no === "1")?.status).toBe(
+			"available"
+		);
+		await expect(
+			api.booking.holdStatus({
+				holdId: hold.holdId,
+				tripId: RELEASE_TEST_TRIP_ID,
+			})
+		).rejects.toMatchObject({ code: "NOT_FOUND" });
 	});
 
 	it("does not hold seats occupied by the baseline inventory", async () => {

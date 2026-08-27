@@ -6,6 +6,7 @@ import {
 	jsonb,
 	numeric,
 	pgTable,
+	primaryKey,
 	text,
 	timestamp,
 	uniqueIndex,
@@ -135,11 +136,105 @@ export const accountRelations = relations(account, ({ one }) => ({
 	user: one(user, { fields: [account.userId], references: [user.id] }),
 }));
 
+// ── Transport inventory ─────────────────────────────────────────────────
+// Schedules recur daily. A passenger-facing trip ID combines a schedule with
+// the selected journey date, while route, timetable, fare, bus and seat-layout
+// data remain authoritative database records.
+export const cities = pgTable("cities", {
+	name: text("name").primaryKey(),
+});
+
+export const transportRoutes = pgTable(
+	"transport_routes",
+	{
+		active: boolean("active").notNull().default(true),
+		fromCity: text("from_city")
+			.notNull()
+			.references(() => cities.name),
+		id: text("id").primaryKey(),
+		toCity: text("to_city")
+			.notNull()
+			.references(() => cities.name),
+	},
+	(table) => [
+		uniqueIndex("transport_routes_from_to_uidx").on(
+			table.fromCity,
+			table.toCity
+		),
+	]
+);
+
+export const buses = pgTable(
+	"buses",
+	{
+		active: boolean("active").notNull().default(true),
+		amenities: jsonb("amenities").$type<string[]>().notNull(),
+		busType: text("bus_type", {
+			enum: [
+				"Volvo AC Sleeper",
+				"AC Seater",
+				"Sleeper",
+				"Express",
+				"Gurjar Nagari",
+				"Electric",
+			],
+		}).notNull(),
+		id: text("id").primaryKey(),
+		registrationNo: text("registration_no").notNull().unique(),
+		serviceIndex: integer("service_index").notNull().unique(),
+	},
+	(table) => [index("buses_type_idx").on(table.busType)]
+);
+
+export const busSeats = pgTable(
+	"bus_seats",
+	{
+		busId: text("bus_id")
+			.notNull()
+			.references(() => buses.id, { onDelete: "cascade" }),
+		deck: text("deck", { enum: ["lower", "upper"] }).notNull(),
+		defaultStatus: text("default_status", {
+			enum: ["available", "booked", "ladies"],
+		})
+			.notNull()
+			.default("available"),
+		kind: text("kind", { enum: ["seater", "sleeper"] }).notNull(),
+		seatNo: text("seat_no").notNull(),
+	},
+	(table) => [
+		primaryKey({ columns: [table.busId, table.seatNo] }),
+		index("bus_seats_bus_idx").on(table.busId),
+	]
+);
+
+export const tripSchedules = pgTable(
+	"trip_schedules",
+	{
+		active: boolean("active").notNull().default(true),
+		busId: text("bus_id")
+			.notNull()
+			.references(() => buses.id),
+		departureMinutes: integer("departure_minutes").notNull(),
+		durationMin: integer("duration_min").notNull(),
+		fareFrom: numeric("fare_from", { precision: 10, scale: 2 }).notNull(),
+		id: text("id").primaryKey(),
+		routeId: text("route_id")
+			.notNull()
+			.references(() => transportRoutes.id),
+		serviceIndex: integer("service_index").notNull(),
+	},
+	(table) => [
+		uniqueIndex("trip_schedules_route_service_uidx").on(
+			table.routeId,
+			table.serviceIndex
+		),
+		index("trip_schedules_route_idx").on(table.routeId),
+		index("trip_schedules_bus_idx").on(table.busId),
+	]
+);
+
 // ── Bookings ─────────────────────────────────────────────────────────────
-// Trips themselves stay synthetic (generated from the search leg, mirroring
-// how the real adapter would read OPRS's live timetable. Only the seats
-// that have actually been touched by a hold or booking are persisted, as an
-// overlay on top of the deterministic baseline occupancy in router.ts.
+// Dated holds and bookings are an overlay on the recurring trip schedules.
 export const seatHolds = pgTable("seat_holds", {
 	consumedAt: timestamp("consumed_at", { withTimezone: true }),
 	createdAt: timestamp("created_at", { withTimezone: true })

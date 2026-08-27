@@ -71,6 +71,15 @@ export const booking = {
 			})
 		),
 
+	releaseHold: base
+		.route({
+			method: "DELETE",
+			path: "/bookings/hold/{holdId}",
+			summary: "Release a seat hold",
+		})
+		.input(v.object({ holdId: v.string(), tripId: v.string() }))
+		.output(v.object({ released: v.boolean() })),
+
 	seatMap: base
 		.route({
 			method: "GET",

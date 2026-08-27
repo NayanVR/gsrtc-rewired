@@ -6590,6 +6590,501 @@
             }
           }
         }
+      },
+      "delete": {
+        "operationId": "booking.releaseHold",
+        "summary": "Release a seat hold",
+        "parameters": [
+          {
+            "name": "holdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tripId": {
+                    "type": "string"
+                  }
+                },
+                "required": ["tripId"],
+                "$schema": "http://json-schema.org/draft-07/schema#"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "released": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["released"],
+                  "$schema": "http://json-schema.org/draft-07/schema#"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "defined": {
+                          "const": true
+                        },
+                        "code": {
+                          "const": "UNAUTHORIZED"
+                        },
+                        "status": {
+                          "const": 401
+                        },
+                        "message": {
+                          "type": "string",
+                          "default": "Sign in to continue."
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "enum": [
+                                "hold_expired",
+                                "hold_unknown",
+                                "booking_unknown",
+                                "mobile_mismatch",
+                                "trip_unknown",
+                                "pnr_unknown",
+                                "pass_unknown",
+                                "agent_unknown",
+                                "vehicle_unknown",
+                                "payment_intent_unknown",
+                                "seats_taken",
+                                "seat_passenger_mismatch",
+                                "hold_already_consumed",
+                                "trip_mismatch",
+                                "wallet_account_missing",
+                                "checkout_session_failed",
+                                "provider_unavailable",
+                                "charge_declined",
+                                "booking_write_failed",
+                                "mock_provider_disabled",
+                                "too_many_hold_attempts",
+                                "too_many_topup_attempts",
+                                "otp_throttled",
+                                "session_missing",
+                                "session_expired"
+                              ],
+                              "type": "string"
+                            },
+                            "traceId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
+                      },
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "defined": {
+                          "const": false
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "number"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "data": {}
+                      },
+                      "required": ["defined", "code", "status", "message"]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "defined": {
+                          "const": true
+                        },
+                        "code": {
+                          "const": "NOT_FOUND"
+                        },
+                        "status": {
+                          "const": 404
+                        },
+                        "message": {
+                          "type": "string",
+                          "default": "Not found."
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "enum": [
+                                "hold_expired",
+                                "hold_unknown",
+                                "booking_unknown",
+                                "mobile_mismatch",
+                                "trip_unknown",
+                                "pnr_unknown",
+                                "pass_unknown",
+                                "agent_unknown",
+                                "vehicle_unknown",
+                                "payment_intent_unknown",
+                                "seats_taken",
+                                "seat_passenger_mismatch",
+                                "hold_already_consumed",
+                                "trip_mismatch",
+                                "wallet_account_missing",
+                                "checkout_session_failed",
+                                "provider_unavailable",
+                                "charge_declined",
+                                "booking_write_failed",
+                                "mock_provider_disabled",
+                                "too_many_hold_attempts",
+                                "too_many_topup_attempts",
+                                "otp_throttled",
+                                "session_missing",
+                                "session_expired"
+                              ],
+                              "type": "string"
+                            },
+                            "traceId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
+                      },
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "defined": {
+                          "const": false
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "number"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "data": {}
+                      },
+                      "required": ["defined", "code", "status", "message"]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "defined": {
+                          "const": true
+                        },
+                        "code": {
+                          "const": "CONFLICT"
+                        },
+                        "status": {
+                          "const": 409
+                        },
+                        "message": {
+                          "type": "string",
+                          "default": "The resource changed; please retry."
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "enum": [
+                                "hold_expired",
+                                "hold_unknown",
+                                "booking_unknown",
+                                "mobile_mismatch",
+                                "trip_unknown",
+                                "pnr_unknown",
+                                "pass_unknown",
+                                "agent_unknown",
+                                "vehicle_unknown",
+                                "payment_intent_unknown",
+                                "seats_taken",
+                                "seat_passenger_mismatch",
+                                "hold_already_consumed",
+                                "trip_mismatch",
+                                "wallet_account_missing",
+                                "checkout_session_failed",
+                                "provider_unavailable",
+                                "charge_declined",
+                                "booking_write_failed",
+                                "mock_provider_disabled",
+                                "too_many_hold_attempts",
+                                "too_many_topup_attempts",
+                                "otp_throttled",
+                                "session_missing",
+                                "session_expired"
+                              ],
+                              "type": "string"
+                            },
+                            "traceId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
+                      },
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "defined": {
+                          "const": false
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "number"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "data": {}
+                      },
+                      "required": ["defined", "code", "status", "message"]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "500",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "defined": {
+                          "const": true
+                        },
+                        "code": {
+                          "const": "PAYMENT_FAILED"
+                        },
+                        "status": {
+                          "const": 500
+                        },
+                        "message": {
+                          "type": "string",
+                          "default": "Payment could not be completed."
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "enum": [
+                                "hold_expired",
+                                "hold_unknown",
+                                "booking_unknown",
+                                "mobile_mismatch",
+                                "trip_unknown",
+                                "pnr_unknown",
+                                "pass_unknown",
+                                "agent_unknown",
+                                "vehicle_unknown",
+                                "payment_intent_unknown",
+                                "seats_taken",
+                                "seat_passenger_mismatch",
+                                "hold_already_consumed",
+                                "trip_mismatch",
+                                "wallet_account_missing",
+                                "checkout_session_failed",
+                                "provider_unavailable",
+                                "charge_declined",
+                                "booking_write_failed",
+                                "mock_provider_disabled",
+                                "too_many_hold_attempts",
+                                "too_many_topup_attempts",
+                                "otp_throttled",
+                                "session_missing",
+                                "session_expired"
+                              ],
+                              "type": "string"
+                            },
+                            "traceId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
+                      },
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "defined": {
+                          "const": true
+                        },
+                        "code": {
+                          "const": "RATE_LIMITED"
+                        },
+                        "status": {
+                          "const": 500
+                        },
+                        "message": {
+                          "type": "string",
+                          "default": "Too many attempts. Try again shortly."
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "enum": [
+                                "hold_expired",
+                                "hold_unknown",
+                                "booking_unknown",
+                                "mobile_mismatch",
+                                "trip_unknown",
+                                "pnr_unknown",
+                                "pass_unknown",
+                                "agent_unknown",
+                                "vehicle_unknown",
+                                "payment_intent_unknown",
+                                "seats_taken",
+                                "seat_passenger_mismatch",
+                                "hold_already_consumed",
+                                "trip_mismatch",
+                                "wallet_account_missing",
+                                "checkout_session_failed",
+                                "provider_unavailable",
+                                "charge_declined",
+                                "booking_write_failed",
+                                "mock_provider_disabled",
+                                "too_many_hold_attempts",
+                                "too_many_topup_attempts",
+                                "otp_throttled",
+                                "session_missing",
+                                "session_expired"
+                              ],
+                              "type": "string"
+                            },
+                            "traceId": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "$schema": "http://json-schema.org/draft-07/schema#"
+                        }
+                      },
+                      "required": [
+                        "defined",
+                        "code",
+                        "status",
+                        "message",
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "defined": {
+                          "const": false
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "number"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "data": {}
+                      },
+                      "required": ["defined", "code", "status", "message"]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/bookings/payment/{paymentIntentId}": {

@@ -8,10 +8,9 @@ import { passHandlers } from "#/api/handlers/passes";
 import { refundHandlers } from "#/api/handlers/refunds";
 import { ticketHandlers } from "#/api/handlers/tickets";
 import { walletHandlers } from "#/api/handlers/wallet";
-import { BUS_TYPES, buildTrip } from "#/api/trips";
+import { listCities, searchTripSchedules } from "#/api/trips";
 import { PAGE_CONTENT } from "#/data/page-content";
 import { PAGE_TITLES } from "#/data/site-nav";
-import { CITIES } from "#/data/trips";
 import { getDb } from "#/db/client";
 import { pageForms } from "#/db/schema";
 import { addEventFields } from "#/lib/events";
@@ -23,20 +22,15 @@ import { addEventFields } from "#/lib/events";
 const os = implement(appContract);
 
 // ── search ────────────────────────────────────────────────────────────────
-const cities = os.search.cities.handler(({ input }) => {
-	addEventFields({ result_count: CITIES.length });
-	const q = input.q?.trim().toLowerCase();
-	if (!q) {
-		return [...CITIES];
-	}
-	return CITIES.filter((city) => city.toLowerCase().includes(q));
+const cities = os.search.cities.handler(async ({ input }) => {
+	const results = await listCities(input.q);
+	addEventFields({ result_count: results.length });
+	return results;
 });
 
-const trips = os.search.trips.handler(({ input }) => {
+const trips = os.search.trips.handler(async ({ input }) => {
 	addEventFields({ from: input.from, journey_date: input.date, to: input.to });
-	const all = BUS_TYPES.map((_, index) =>
-		buildTrip({ date: input.date, from: input.from, index, to: input.to })
-	);
+	const all = await searchTripSchedules(input);
 	const filtered = input.busType
 		? all.filter((trip) => trip.busType === input.busType)
 		: all;

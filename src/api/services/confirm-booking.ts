@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import type { ErrorReason } from "#/api/contract/base";
 import type { Passenger } from "#/api/schemas";
 import type { DbTransaction } from "#/api/services/seat-holds";
-import { buildSeats, buildTrip, parseTripId } from "#/api/trips";
+import { findTrip, findTripSeats } from "#/api/trips";
 import { bookedSeats, bookings, seatHolds } from "#/db/schema";
 import { generatePnr } from "#/lib/ids";
 
@@ -41,13 +41,15 @@ export function hasMatchingSeatNos(
 	);
 }
 
-export function calculateBookingAmount(
+export async function calculateBookingAmount(
 	tripId: string,
 	seatNos: string[]
-): number {
-	const fareBySeatNo = new Map(
-		buildSeats(tripId).map((seat) => [seat.no, seat.fare])
-	);
+): Promise<number> {
+	const tripSeats = await findTripSeats(tripId);
+	if (!tripSeats) {
+		throw new Error(`Cannot calculate fare for unknown trip ${tripId}.`);
+	}
+	const fareBySeatNo = new Map(tripSeats.map((seat) => [seat.no, seat.fare]));
 	const seatFare = seatNos.reduce(
 		(total, seatNo) => total + (fareBySeatNo.get(seatNo) ?? 0),
 		0
@@ -96,12 +98,11 @@ export async function confirmHold(
 		throw errors.CONFLICT({ data: { reason: "seat_passenger_mismatch" } });
 	}
 
-	const leg = parseTripId(holdRow.tripId);
-	if (!leg) {
+	const route = await findTrip(holdRow.tripId);
+	if (!route) {
 		throw errors.NOT_FOUND({ data: { reason: "trip_unknown" } });
 	}
-	const route = buildTrip(leg);
-	const amount = calculateBookingAmount(holdRow.tripId, heldSeatNos);
+	const amount = await calculateBookingAmount(holdRow.tripId, heldSeatNos);
 	const pnr = generatePnr();
 	const [createdBooking] = await tx
 		.insert(bookings)
@@ -110,7 +111,7 @@ export async function confirmHold(
 			contactEmail: input.contact.email,
 			contactMobile: input.contact.mobile,
 			from: route.from,
-			journeyDate: leg.date,
+			journeyDate: route.departure.slice(0, 10),
 			passengers: input.passengers,
 			pnr,
 			seatNos: heldSeatNos,

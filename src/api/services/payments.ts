@@ -247,7 +247,7 @@ export async function startBookingPayment(
 			.insert(paymentIntents)
 			.values({
 				amountPaise: Math.round(
-					calculateBookingAmount(hold.tripId, heldSeatNos) * 100
+					(await calculateBookingAmount(hold.tripId, heldSeatNos)) * 100
 				),
 				contactEmail: input.contact.email,
 				contactMobile: input.contact.mobile,

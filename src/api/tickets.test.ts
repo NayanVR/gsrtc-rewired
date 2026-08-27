@@ -12,7 +12,7 @@ const TEST_MOBILE = `8${String(Date.now()).slice(-9)}`;
 const TEST_DATE = new Date(Date.now() + 2 * MS_PER_DAY)
 	.toISOString()
 	.slice(0, 10);
-const TEST_TRIP_ID = `TicketTestOrigin~TicketTestDestination~${TEST_DATE}~0`;
+const TEST_TRIP_ID = `Ahmedabad~Surat~${TEST_DATE}~0`;
 const testTripIds = new Set([TEST_TRIP_ID]);
 
 function passenger(seatNo: string) {
@@ -26,12 +26,12 @@ async function createTestBooking() {
 		.values({
 			amountPaid: "500.00",
 			contactMobile: TEST_MOBILE,
-			from: "TicketTestOrigin",
+			from: "Ahmedabad",
 			journeyDate: TEST_DATE,
 			passengers: [passenger("1")],
 			pnr,
 			seatNos: ["1"],
-			to: "TicketTestDestination",
+			to: "Surat",
 			tripId: TEST_TRIP_ID,
 		});
 	await getDb().insert(bookedSeats).values({
@@ -134,7 +134,7 @@ describe("tickets", () => {
 		const newDate = new Date(Date.now() + 3 * MS_PER_DAY)
 			.toISOString()
 			.slice(0, 10);
-		const newTripId = `TicketTestOrigin~TicketTestDestination~${newDate}~0`;
+		const newTripId = `Ahmedabad~Surat~${newDate}~0`;
 		testTripIds.add(newTripId);
 
 		const rescheduled = await api.tickets.reschedule({

@@ -53,7 +53,7 @@ describe("OpenAPI specification", () => {
 		const operations = contractOperations(appContract);
 
 		expect(spec.openapi).toBe("3.1.1");
-		expect(operations).toHaveLength(38);
+		expect(operations).toHaveLength(39);
 		expect(Object.keys(appContract)).toHaveLength(10);
 		for (const operation of operations) {
 			expect(spec.paths?.[operation.path]?.[operation.method]).toBeDefined();

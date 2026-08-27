@@ -60,7 +60,7 @@ async function createBookingIntent() {
 		tripId: TEST_TRIP_ID,
 	});
 	const amountPaise = Math.round(
-		calculateBookingAmount(TEST_TRIP_ID, ["1"]) * 100
+		(await calculateBookingAmount(TEST_TRIP_ID, ["1"])) * 100
 	);
 	const paymentIntentId = crypto.randomUUID();
 	await getDb()

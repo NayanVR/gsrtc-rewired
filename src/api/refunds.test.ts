@@ -16,7 +16,6 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const TEST_DATE = new Date(Date.now() + 2 * MS_PER_DAY)
 	.toISOString()
 	.slice(0, 10);
-const TEST_RUN_ID = String(Date.now()).slice(-7);
 
 let testCase = 0;
 
@@ -29,7 +28,7 @@ function createTestFixture(): TestFixture {
 	testCase += 1;
 	return {
 		mobile: `7${String(Date.now() + testCase).slice(-9)}`,
-		tripId: `RefundTest${TEST_RUN_ID}${testCase}~Destination~${TEST_DATE}~0`,
+		tripId: `Ahmedabad~Surat~${TEST_DATE}~0`,
 	};
 }
 
@@ -46,12 +45,12 @@ async function createCancelledBooking(testFixture: TestFixture) {
 		.values({
 			amountPaid: "500.00",
 			contactMobile: testFixture.mobile,
-			from: testFixture.tripId.split("~")[0] ?? "Refund origin",
+			from: "Ahmedabad",
 			journeyDate: TEST_DATE,
 			passengers: [passenger("1")],
 			pnr,
 			seatNos: ["1"],
-			to: "Destination",
+			to: "Surat",
 			tripId: testFixture.tripId,
 		});
 	await api.tickets.cancel({

@@ -16,15 +16,17 @@ tickets.
 - English, Hindi and Gujarati interface support
 - Accessible form fields, validation messages and recoverable error states
 - Phone-based sign-in flow with a development-only OTP delivery seam
-- Postgres-backed seat holds, bookings, tickets, wallet, passes and refunds
+- Postgres-backed transport inventory, seat holds, bookings, tickets, wallet,
+  passes and refunds
 - A Dodo Payments hosted-checkout integration locked to test mode
 - One typed oRPC contract that also generates an OpenAPI document
 - Docker Compose deployment for the application, migrations and Postgres
 - A shadcn-compatible, GSRTC-themed component foundation
 
-The application uses synthetic timetable and tracking data. Transactional data
-is stored in this project's own database. No live GSRTC OPRS, GPS, SMS, identity
-or payment-production system is connected.
+The application uses database-backed recurring timetable and bus inventory data.
+Tracking remains simulated, and transactional data is stored in this project's
+own database. No live GSRTC OPRS, GPS, SMS, identity or payment-production
+system is connected.
 
 ## Run it locally
 
@@ -97,7 +99,7 @@ src/api/contract/       Validated API inputs, outputs and errors
 src/api/handlers/       Concept implementations of those operations
 src/api/services/       Seat-hold and payment orchestration
 src/db/                 Drizzle schema and Postgres client
-src/data/               Synthetic trips and migrated public-page content
+src/data/               Presentation metadata and migrated public-page content
 docs/openapi.json        Generated OpenAPI description
 docs/migration-plan.md   Proposed GSRTC adoption and rollout plan
 docs/pain-points/        Problem statements behind the concept

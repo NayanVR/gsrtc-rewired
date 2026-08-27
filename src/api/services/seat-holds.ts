@@ -1,5 +1,5 @@
 import { and, eq, lte } from "drizzle-orm";
-import { buildSeats } from "#/api/trips";
+import { findTripSeats } from "#/api/trips";
 import type { getDb } from "#/db/client";
 import { bookedSeats, seatHolds } from "#/db/schema";
 
@@ -10,6 +10,7 @@ export type DbTransaction = Parameters<
 >[0];
 
 export class SeatConflictError extends Error {}
+export class TripInventoryNotFoundError extends Error {}
 
 export function isUniqueViolation(error: unknown): boolean {
 	if (typeof error !== "object" || error === null) {
@@ -28,12 +29,19 @@ export async function createSeatHold(
 	if (input.seatNos.length === 0) {
 		throw new SeatConflictError("A hold requires at least one seat.");
 	}
+	const tripSeats = await findTripSeats(input.tripId);
+	if (!tripSeats) {
+		throw new TripInventoryNotFoundError("The requested trip does not exist.");
+	}
+	const knownSeats = new Set(tripSeats.map((seat) => seat.no));
 	const unavailableSeats = new Set(
-		buildSeats(input.tripId)
-			.filter((seat) => seat.status === "booked")
-			.map((seat) => seat.no)
+		tripSeats.filter((seat) => seat.status === "booked").map((seat) => seat.no)
 	);
-	if (input.seatNos.some((seatNo) => unavailableSeats.has(seatNo))) {
+	if (
+		input.seatNos.some(
+			(seatNo) => !knownSeats.has(seatNo) || unavailableSeats.has(seatNo)
+		)
+	) {
 		throw new SeatConflictError("The requested seat is already occupied.");
 	}
 

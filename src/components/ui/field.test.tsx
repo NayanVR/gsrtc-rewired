@@ -40,4 +40,19 @@ describe("Button", () => {
 		expect(button.classList.contains("rounded-full")).toBe(true);
 		expect(button.classList.contains("rounded-xl")).toBe(false);
 	});
+
+	it("composes onto a single child when rendered asChild", () => {
+		render(
+			<Button asChild>
+				<a href="/search">
+					Search
+					<span aria-hidden>→</span>
+				</a>
+			</Button>
+		);
+
+		const link = screen.getByRole("link", { name: "Search" });
+		expect(link.classList.contains("gradient-surface")).toBe(true);
+		expect(link.textContent).toBe("Search→");
+	});
 });

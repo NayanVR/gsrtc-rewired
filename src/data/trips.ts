@@ -9,24 +9,6 @@ import type { BusType as BusTypeSchema } from "#/api/schemas";
 
 export type BusType = v.InferOutput<typeof BusTypeSchema>;
 
-export const CITIES = [
-	"Ahmedabad",
-	"Vadodara",
-	"Surat",
-	"Rajkot",
-	"Bhavnagar",
-	"Jamnagar",
-	"Gandhinagar",
-	"Junagadh",
-	"Bhuj",
-	"Navsari",
-	"Anand",
-	"Mehsana",
-	"Porbandar",
-	"Valsad",
-	"Palanpur",
-] as const;
-
 export const BUS_TYPE_META: Record<
 	BusType,
 	{ label: string; blurb: string; fareFrom: number }

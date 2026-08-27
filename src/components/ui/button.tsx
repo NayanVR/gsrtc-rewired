@@ -1,4 +1,4 @@
-import { Slot } from "@radix-ui/react-slot";
+import { Slot, Slottable } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { SpinnerIcon } from "#/components/icons";
 import { cn } from "#/lib/cn";
@@ -47,19 +47,29 @@ export function Button({
 	disabled,
 	...props
 }: ButtonProps) {
-	const Component = asChild ? Slot : "button";
 	const isDisabled = disabled || loading;
+	const classes = cn(buttonVariants({ size, variant }), className);
+
+	if (asChild) {
+		return (
+			<Slot aria-busy={loading || undefined} className={classes} {...props}>
+				{loading ? <SpinnerIcon className="size-4" /> : null}
+				<Slottable>{children}</Slottable>
+			</Slot>
+		);
+	}
+
 	return (
-		<Component
+		<button
 			aria-busy={loading || undefined}
-			className={cn(buttonVariants({ size, variant }), className)}
-			disabled={asChild ? undefined : isDisabled}
-			type={asChild ? undefined : type}
+			className={classes}
+			disabled={isDisabled}
+			type={type}
 			{...props}
 		>
 			{loading ? <SpinnerIcon className="size-4" /> : null}
 			{children}
-		</Component>
+		</button>
 	);
 }
 

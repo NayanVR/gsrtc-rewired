@@ -33,8 +33,8 @@ that apply to every task; individual task files do not repeat them.
 | 13  | [OpenAPI spec](./13-openapi.md)                                  | done   | —          | 4     | 06         |
 | 14  | [Mobile OTP (phone-number plugin)](./14-mobile-otp.md)           | done   | 07         | 2     | —          |
 | 15  | [Self-host on a VPS](./15-vps-self-host.md)                      | done   | 02         | 0     | —          |
-| 16  | [Dodo Payments (test mode)](./16-dodo-payments.md)               | todo   | 04, 08, 15 | 3     | 02         |
-| 17  | [Wide events & error handling](./17-wide-events.md)                               | done   | 16         | 0     | 05, 06     |
+| 16  | [Dodo Payments (test mode)](./16-dodo-payments.md)               | done   | 04, 08, 15 | 3     | 02         |
+| 17  | [Wide events & error handling](./17-wide-events.md)              | done   | 16         | 0     | 05, 06     |
 | 18  | [UI components & error states](./18-ui-components.md)            | done   | 17         | 0     | 05         |
 
 Status values: `todo` / `in progress` / `done` / `blocked`.

@@ -34,6 +34,18 @@ describe("error copy", () => {
 		).toBe(ERROR_COPY.hold_expired.title);
 	});
 
+	it("explains when another passenger is booking the same seat", () => {
+		expect(
+			toAppError({ code: "CONFLICT", data: { reason: "seats_taken" } })
+		).toMatchObject({
+			action: "Choose another available seat from the refreshed seat map.",
+			detail:
+				"Another passenger selected one of the same seats before we could lock it for you.",
+			recoverable: true,
+			title: "Someone else is booking your selected seat",
+		});
+	});
+
 	it("maps only field-specific reasons to fields", () => {
 		const mappedReasons = new Set(Object.keys(ERROR_REASON_FIELDS));
 		for (const [reason, field] of Object.entries(ERROR_REASON_FIELDS)) {

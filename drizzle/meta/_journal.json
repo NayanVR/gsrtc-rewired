@@ -43,6 +43,13 @@
       "when": 1787635148176,
       "tag": "0005_salty_ozymandias",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787820311779,
+      "tag": "0006_mighty_molecule_man",
+      "breakpoints": true
     }
   ]
 }

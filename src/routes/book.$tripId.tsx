@@ -1,5 +1,10 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import {
+	createFileRoute,
+	Link,
+	notFound,
+	useBlocker,
+} from "@tanstack/react-router";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
 	createBooking,
 	getPaymentProvider,
@@ -7,6 +12,7 @@ import {
 	getSeatMap,
 	getTrip,
 	holdSeats,
+	releaseSeatHold,
 	startBookingPayment,
 } from "#/api/fns";
 import type {
@@ -256,6 +262,9 @@ function BookPage() {
 	);
 	const [bookingError, setBookingError] = useState<AppError | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isCancellingHold, setIsCancellingHold] = useState(false);
+	const [holdCancellationError, setHoldCancellationError] =
+		useState<AppError | null>(null);
 	const [paymentProvider, setPaymentProvider] = useState<"dodo" | "mock">(
 		"mock"
 	);
@@ -405,6 +414,46 @@ function BookPage() {
 	const showError = (name: string) => detailsSubmitted || touchedDetails[name];
 	const markTouched = (name: string) =>
 		setTouchedDetails((current) => ({ ...current, [name]: true }));
+	const navigationBlocker = useBlocker({
+		disabled: !seatHold || confirmedBooking !== null,
+		enableBeforeUnload: () => !isSubmitting,
+		shouldBlockFn: () => true,
+		withResolver: true,
+	});
+
+	const keepBooking = () => {
+		setHoldCancellationError(null);
+		if (navigationBlocker.status === "blocked") {
+			navigationBlocker.reset();
+		}
+	};
+
+	const cancelBookingAndLeave = async () => {
+		if (!(seatHold && navigationBlocker.status === "blocked")) {
+			return;
+		}
+		setHoldCancellationError(null);
+		setIsCancellingHold(true);
+		try {
+			const result = await releaseSeatHold({
+				data: { holdId: seatHold.holdId, tripId: trip.id },
+			});
+			if (result.error) {
+				setHoldCancellationError(result.error);
+				return;
+			}
+			clearBookingSession(trip.id);
+			setSeatHold(null);
+			setRemainingSeconds(0);
+			setSelected([]);
+			setPeople({});
+			navigationBlocker.proceed();
+		} catch (error) {
+			setHoldCancellationError(toAppError(error));
+		} finally {
+			setIsCancellingHold(false);
+		}
+	};
 
 	const continueToPaymentMethod = () => {
 		setDetailsSubmitted(true);
@@ -418,6 +467,15 @@ function BookPage() {
 		setBookingStep("payment-method");
 	};
 
+	const returnToDetails = () => {
+		const selectedSeatWasTaken = bookingError?.reason === "seats_taken";
+		setBookingError(null);
+		setBookingStep("details");
+		if (selectedSeatWasTaken) {
+			setSelected([]);
+		}
+	};
+
 	const lockSeats = async () => {
 		if (!bookingPassengers || seatHold) {
 			return;
@@ -425,9 +483,15 @@ function BookPage() {
 		setBookingError(null);
 		setIsSubmitting(true);
 		try {
-			const hold = await holdSeats({
+			const result = await holdSeats({
 				data: { seatNos: selected, tripId: trip.id },
 			});
+			if (result.error) {
+				setBookingError(result.error);
+				refreshSeatMap(trip.id, setSeatMap);
+				return;
+			}
+			const { hold } = result;
 			setSeatHold(hold);
 			setRemainingSeconds(remainingHoldSeconds(hold.expiresAt));
 			saveProgress(hold, "payment");
@@ -496,6 +560,15 @@ function BookPage() {
 
 	return (
 		<>
+			{navigationBlocker.status === "blocked" ? (
+				<CancelBookingDialog
+					error={holdCancellationError}
+					isCancelling={isCancellingHold}
+					onCancel={cancelBookingAndLeave}
+					onKeep={keepBooking}
+					seatCount={selected.length}
+				/>
+			) : null}
 			<SiteHeader />
 			<main className="bg-canvas" id="main">
 				<BookingBreadcrumb trip={trip} />
@@ -714,6 +787,7 @@ function BookPage() {
 							<PaymentMethodStep
 								disabled={isSubmitting}
 								hostedCheckout={paymentProvider === "dodo"}
+								onBack={returnToDetails}
 								onSelect={selectPaymentMethod}
 								paymentMethod={paymentMethod}
 								seatHold={seatHold}
@@ -823,6 +897,73 @@ function BookPage() {
 			</main>
 			<SiteFooter />
 		</>
+	);
+}
+
+function CancelBookingDialog({
+	error,
+	isCancelling,
+	onCancel,
+	onKeep,
+	seatCount,
+}: {
+	error: AppError | null;
+	isCancelling: boolean;
+	onCancel: () => void;
+	onKeep: () => void;
+	seatCount: number;
+}) {
+	const dialogRef = useRef<HTMLDialogElement>(null);
+
+	useEffect(() => {
+		dialogRef.current?.showModal();
+		return () => dialogRef.current?.close();
+	}, []);
+
+	return (
+		<dialog
+			aria-labelledby="cancel-booking-title"
+			className="m-auto w-[min(30rem,calc(100vw-2rem))] rounded-2xl border border-ink-100 bg-surface p-6 text-ink-800 shadow-pop backdrop:bg-ink-900/50"
+			onCancel={(event) => {
+				event.preventDefault();
+				if (!isCancelling) {
+					onKeep();
+				}
+			}}
+			ref={dialogRef}
+		>
+			<h2 className="font-bold font-display text-xl" id="cancel-booking-title">
+				Cancel this booking?
+			</h2>
+			<p className="mt-2 text-ink-600 text-sm leading-relaxed">
+				{seatCount === 1 ? "Your seat is" : "Your seats are"} currently locked
+				for you. If you cancel, {seatCount === 1 ? "it" : "they"} will be
+				released immediately for other passengers.
+			</p>
+			{error ? (
+				<div className="mt-4">
+					<ErrorPanel error={error} />
+				</div>
+			) : null}
+			<div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+				<Button
+					disabled={isCancelling}
+					onClick={onKeep}
+					type="button"
+					variant="secondary"
+				>
+					Keep my seat
+				</Button>
+				<Button
+					loading={isCancelling}
+					onClick={onCancel}
+					type="button"
+					variant="destructive"
+				>
+					Cancel booking and leave
+				</Button>
+			</div>
+		</dialog>
 	);
 }
 
@@ -963,10 +1104,10 @@ function BookingPrimaryAction({
 		<Button
 			className="mt-5 w-full"
 			disabled={!seatHold || remainingSeconds === 0 || isSubmitting}
+			loading={isSubmitting}
 			onClick={onSubmitPayment}
 			type="button"
 		>
-			loading={isSubmitting}
 			{`Pay ${formatFare(total)}`}
 			{isSubmitting ? null : <ArrowRightIcon height={18} width={18} />}
 		</Button>
@@ -976,12 +1117,14 @@ function BookingPrimaryAction({
 function PaymentMethodStep({
 	disabled,
 	hostedCheckout,
+	onBack,
 	onSelect,
 	paymentMethod,
 	seatHold,
 }: {
 	disabled: boolean;
 	hostedCheckout: boolean;
+	onBack: () => void;
 	onSelect: (method: PaymentMethod) => void;
 	paymentMethod: PaymentMethod;
 	seatHold: SeatHold | null;
@@ -998,9 +1141,21 @@ function PaymentMethodStep({
 
 	return (
 		<section className="rounded-2xl border border-ink-100 bg-surface p-5 sm:p-6">
-			<h2 className="font-bold font-display text-ink-900 text-lg">
-				{hostedCheckout ? "Secure checkout" : "Choose payment method"}
-			</h2>
+			<div className="flex items-center justify-between gap-4">
+				<h2 className="font-bold font-display text-ink-900 text-lg">
+					{hostedCheckout ? "Secure checkout" : "Choose payment method"}
+				</h2>
+				{seatHold ? null : (
+					<button
+						className="shrink-0 font-semibold text-brand-600 text-sm hover:text-brand-700 hover:underline disabled:pointer-events-none disabled:opacity-60"
+						disabled={disabled}
+						onClick={onBack}
+						type="button"
+					>
+						Back to seats
+					</button>
+				)}
+			</div>
 			<p className="mt-1 text-ink-500 text-sm">
 				Your seats will be checked and locked when you continue to payment.
 			</p>

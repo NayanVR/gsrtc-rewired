@@ -158,10 +158,11 @@ const COPY: Record<
 		title: "Your selected seats changed",
 	},
 	seats_taken: {
-		action: "Choose from the refreshed seat map.",
-		detail: "Another passenger confirmed that seat first.",
+		action: "Choose another available seat from the refreshed seat map.",
+		detail:
+			"Another passenger selected one of the same seats before we could lock it for you.",
 		recoverable: true,
-		title: "That seat was just booked",
+		title: "Someone else is booking your selected seat",
 	},
 	session_expired: {
 		action: "Sign in again. Your booking details are saved.",

@@ -1,6 +1,6 @@
 # 16 — Dodo Payments (test mode only)
 
-**Status:** todo
+**Status:** done
 **Depends on:** 04, 08, 15
 **Phase:** 3
 **Pain point:** 02
@@ -53,15 +53,15 @@ Two hard requirements shape every decision below:
 ### The structural problem
 
 Dodo's checkout is a **redirect to a hosted page**. The charge cannot happen
-inside a database transaction, and its result arrives on a *different
-request* — a webhook — that may land before the browser returns, after it,
+inside a database transaction, and its result arrives on a _different
+request_ — a webhook — that may land before the browser returns, after it,
 twice, or ten hours late. Three consequences drive the design:
 
 - Neither a booking nor a wallet credit can be completed by the request that
   starts payment.
 - The confirming request (the webhook) carries **no passenger data and no
   session**, so passengers, contact, and the user id must be persisted
-  *before* the redirect.
+  _before_ the redirect.
 - The 10-minute seat hold can expire while the customer is on Dodo's page.
   Money taken against seats we no longer own is the single worst outcome in
   this system and gets its own explicit path.
@@ -72,13 +72,13 @@ They share the ledger, the webhook, the test-mode lock, and the reconcile
 sweep. They differ in exactly one way that matters, and the design leans on
 it:
 
-|  | Booking | Wallet top-up |
-|---|---|---|
-| Holds scarce inventory | Yes — seats | No |
-| Can a late success always be fulfilled? | **No** — seats may be gone | **Yes** — always creditable |
-| Orphan path reachable | Yes, and it is the main risk | Only if the user row is gone |
-| Idempotency key | `holdId` (exists today) | `paymentIntentId` (**new**) |
-| Session required | No — booking is account-free | Yes |
+|                                         | Booking                      | Wallet top-up                |
+| --------------------------------------- | ---------------------------- | ---------------------------- |
+| Holds scarce inventory                  | Yes — seats                  | No                           |
+| Can a late success always be fulfilled? | **No** — seats may be gone   | **Yes** — always creditable  |
+| Orphan path reachable                   | Yes, and it is the main risk | Only if the user row is gone |
+| Idempotency key                         | `holdId` (exists today)      | `paymentIntentId` (**new**)  |
+| Session required                        | No — booking is account-free | Yes                          |
 
 So: **a `payment.succeeded` for a wallet top-up is credited unconditionally,
 however late it arrives.** There is no expiry race to lose. Booking is where
@@ -116,8 +116,8 @@ session.
 
 ## Contract additions
 
-Three new operations. `00-conventions.md` freezes the contract *unless a task
-says otherwise* — **this task says otherwise, for these three only.** No
+Three new operations. `00-conventions.md` freezes the contract _unless a task
+says otherwise_ — **this task says otherwise, for these three only.** No
 existing operation's input, output, or error set changes.
 
 ```
@@ -167,28 +167,28 @@ One row per payment attempt, written **before** the redirect. This is the
 only place the passenger snapshot and the user id live between redirect and
 webhook.
 
-| column | type | note |
-|---|---|---|
-| `id` | text PK | `crypto.randomUUID()`; appears in the return URL |
-| `purpose` | text enum | `booking` \| `wallet_topup` |
-| `status` | text enum | see state machine below |
-| `holdId` | text | null for wallet top-ups |
-| `tripId` | text | null for wallet top-ups |
-| `userId` | text | set for wallet top-ups; null for booking (account-free) |
-| `amountPaise` | integer | integer, never float; `Math.round(rupees * 100)` |
-| `currency` | text | `INR` |
-| `passengers` | jsonb | booking snapshot; the webhook has none |
-| `contactMobile` / `contactEmail` | text | booking snapshot |
-| `singleLady` | boolean | booking snapshot |
-| `dodoSessionId` | text | from `checkoutSessions.create` |
-| `dodoPaymentId` | text | from the webhook / `payments.retrieve` |
-| `checkoutUrl` | text | asserted test-mode before it is ever returned |
-| `pnr` | text | set only on a succeeded booking |
-| `failureCode` / `failureMessage` | text | set on `failed` |
-| `incidentReason` | text | **non-null means a human must look** |
-| `refundId` | text | set if the orphan auto-refund succeeded |
-| `lastWebhookId` / `lastWebhookAt` | text / timestamptz | provenance |
-| `createdAt` / `updatedAt` / `expiresAt` | timestamptz | |
+| column                                  | type               | note                                                    |
+| --------------------------------------- | ------------------ | ------------------------------------------------------- |
+| `id`                                    | text PK            | `crypto.randomUUID()`; appears in the return URL        |
+| `purpose`                               | text enum          | `booking` \| `wallet_topup`                             |
+| `status`                                | text enum          | see state machine below                                 |
+| `holdId`                                | text               | null for wallet top-ups                                 |
+| `tripId`                                | text               | null for wallet top-ups                                 |
+| `userId`                                | text               | set for wallet top-ups; null for booking (account-free) |
+| `amountPaise`                           | integer            | integer, never float; `Math.round(rupees * 100)`        |
+| `currency`                              | text               | `INR`                                                   |
+| `passengers`                            | jsonb              | booking snapshot; the webhook has none                  |
+| `contactMobile` / `contactEmail`        | text               | booking snapshot                                        |
+| `singleLady`                            | boolean            | booking snapshot                                        |
+| `dodoSessionId`                         | text               | from `checkoutSessions.create`                          |
+| `dodoPaymentId`                         | text               | from the webhook / `payments.retrieve`                  |
+| `checkoutUrl`                           | text               | asserted test-mode before it is ever returned           |
+| `pnr`                                   | text               | set only on a succeeded booking                         |
+| `failureCode` / `failureMessage`        | text               | set on `failed`                                         |
+| `incidentReason`                        | text               | **non-null means a human must look**                    |
+| `refundId`                              | text               | set if the orphan auto-refund succeeded                 |
+| `lastWebhookId` / `lastWebhookAt`       | text / timestamptz | provenance                                              |
+| `createdAt` / `updatedAt` / `expiresAt` | timestamptz        |                                                         |
 
 Indexes: `holdId`, `userId`, `dodoPaymentId`, `status`, and a partial index
 `where incident_reason is not null` — the ops query must stay a single fast
@@ -200,14 +200,14 @@ a payment.
 
 ### `payment_webhook_events` — the audit log
 
-| column | type | note |
-|---|---|---|
-| `webhookId` | text PK | the `webhook-id` header; the dedupe fence |
-| `eventType` | text | `payment.succeeded` etc. |
-| `payload` | jsonb | the full verified envelope, as received |
-| `paymentIntentId` | text | resolved from metadata, nullable |
-| `receivedAt` / `processedAt` | timestamptz | `processedAt` null = unprocessed |
-| `processingError` | text | set when handling threw |
+| column                       | type        | note                                      |
+| ---------------------------- | ----------- | ----------------------------------------- |
+| `webhookId`                  | text PK     | the `webhook-id` header; the dedupe fence |
+| `eventType`                  | text        | `payment.succeeded` etc.                  |
+| `payload`                    | jsonb       | the full verified envelope, as received   |
+| `paymentIntentId`            | text        | resolved from metadata, nullable          |
+| `receivedAt` / `processedAt` | timestamptz | `processedAt` null = unprocessed          |
+| `processingError`            | text        | set when handling threw                   |
 
 Every verified delivery is persisted **before** it is processed, so a crash
 mid-processing is replayable from this table alone. Nothing here is deleted.
@@ -227,7 +227,7 @@ created ──► processing ─────────► succeeded (booking c
 ```
 
 Terminal: `succeeded`, `failed`, `expired`, `refunded`. `orphaned` is
-terminal *and* open — it stays visible until someone clears
+terminal _and_ open — it stays visible until someone clears
 `incidentReason`.
 
 Transitions only ever move forward. A late `payment.processing` arriving
@@ -236,7 +236,7 @@ that events can arrive out of order.
 
 One exception, and it is the asymmetry above: **an `expired` wallet intent
 that later receives `payment.succeeded` moves to `succeeded` and credits.**
-Nothing was released, so there is nothing to lose. An `expired` *booking*
+Nothing was released, so there is nothing to lose. An `expired` _booking_
 intent that later succeeds goes to `orphaned` — its seats are gone.
 
 ## Flow A · Booking
@@ -265,12 +265,10 @@ Then, outside the transaction, call Dodo:
 
 ```ts
 const session = await dodo.checkoutSessions.create({
-  product_cart: [{ product_id: BOOKING_PRODUCT_ID, quantity: 1,
-                   amount: intent.amountPaise }],
+  product_cart: [{ product_id: BOOKING_PRODUCT_ID, quantity: 1, amount: intent.amountPaise }],
   customer: { email: contact.email, name: passengers[0].name },
   return_url: `${BETTER_AUTH_URL}/payment/return?intent=${intent.id}`,
-  metadata: { payment_intent_id: intent.id, purpose: "booking",
-              hold_id: holdId, trip_id: tripId },
+  metadata: { payment_intent_id: intent.id, purpose: "booking", hold_id: holdId, trip_id: tripId },
 });
 ```
 
@@ -331,12 +329,10 @@ non-terminal intents for one user in an hour → `RATE_LIMITED`.
 
 ```ts
 const session = await dodo.checkoutSessions.create({
-  product_cart: [{ product_id: WALLET_PRODUCT_ID, quantity: 1,
-                   amount: intent.amountPaise }],
+  product_cart: [{ product_id: WALLET_PRODUCT_ID, quantity: 1, amount: intent.amountPaise }],
   customer: { email: user.email, name: user.name },
   return_url: `${BETTER_AUTH_URL}/payment/return?intent=${intent.id}`,
-  metadata: { payment_intent_id: intent.id, purpose: "wallet_topup",
-              user_id: user.id },
+  metadata: { payment_intent_id: intent.id, purpose: "wallet_topup", user_id: user.id },
 });
 ```
 
@@ -355,12 +351,12 @@ transaction:
 1. `SELECT … FOR UPDATE` the wallet account (upserting it first, as the
    existing handler does).
 2. `insert(walletTransactions).values({ id: paymentIntentId, … })
-   .onConflictDoNothing().returning()`.
+.onConflictDoNothing().returning()`.
 3. **Only if that returned a row, increment the balance.** An empty return
    means this intent was already credited — a duplicate webhook, a replay, or
    the reconcile sweep racing the webhook. Skip and report success.
 
-The primary-key conflict *is* the fence. It is a database-level guarantee, in
+The primary-key conflict _is_ the fence. It is a database-level guarantee, in
 the same transaction as the balance write, so no amount of concurrent or
 out-of-order delivery can double-credit. This is strictly stronger than what
 `wallet.topUp` does today.
@@ -499,24 +495,24 @@ an environment variable someone sets by accident.
 
 Every way this can fail, and where it lands. Nothing reaches "unknown".
 
-| What happens | Status | Where it shows up |
-|---|---|---|
-| Session creation throws | `failed` | Intent row + `PAYMENT_FAILED` to the user |
-| Customer abandons the tab | `expired` | Reconcile sweep; booking hold released |
-| Card declined | `failed` | `failureCode`/`failureMessage`; hold still live, retry |
-| Webhook signature invalid | — | 401 + Sentry warning; no state change |
-| Webhook duplicate | unchanged | Event row; both fulfilment paths idempotent |
-| Webhook out of order | unchanged | Forward-only transitions |
-| Webhook never arrives | resolved | Dokploy job via `payments.retrieve` |
-| Unknown intent in metadata | — | Event row + incident + Sentry, 200 |
-| Booking paid, hold expired | `orphaned` → `refunded` | Incident + Sentry fatal + auto-refund |
-| Booking paid, seats taken | `orphaned` → `refunded` | Incident + Sentry fatal + auto-refund |
-| Wallet paid, intent expired | `succeeded` | Credited anyway — nothing was released |
-| Wallet paid, user deleted | `orphaned` → `refunded` | Incident + Sentry fatal + auto-refund |
-| Wallet webhook delivered twice | `succeeded` | PK conflict on `wallet_transactions.id`; one credit |
-| Amount mismatch | `succeeded` | Fulfilled, incident flagged |
-| Refund attempt fails | `orphaned` | Incident text + second Sentry event |
-| Database down during webhook | unchanged | 500 → Dodo retries 8× over ~28h |
+| What happens                   | Status                  | Where it shows up                                      |
+| ------------------------------ | ----------------------- | ------------------------------------------------------ |
+| Session creation throws        | `failed`                | Intent row + `PAYMENT_FAILED` to the user              |
+| Customer abandons the tab      | `expired`               | Reconcile sweep; booking hold released                 |
+| Card declined                  | `failed`                | `failureCode`/`failureMessage`; hold still live, retry |
+| Webhook signature invalid      | —                       | 401 + Sentry warning; no state change                  |
+| Webhook duplicate              | unchanged               | Event row; both fulfilment paths idempotent            |
+| Webhook out of order           | unchanged               | Forward-only transitions                               |
+| Webhook never arrives          | resolved                | Dokploy job via `payments.retrieve`                    |
+| Unknown intent in metadata     | —                       | Event row + incident + Sentry, 200                     |
+| Booking paid, hold expired     | `orphaned` → `refunded` | Incident + Sentry fatal + auto-refund                  |
+| Booking paid, seats taken      | `orphaned` → `refunded` | Incident + Sentry fatal + auto-refund                  |
+| Wallet paid, intent expired    | `succeeded`             | Credited anyway — nothing was released                 |
+| Wallet paid, user deleted      | `orphaned` → `refunded` | Incident + Sentry fatal + auto-refund                  |
+| Wallet webhook delivered twice | `succeeded`             | PK conflict on `wallet_transactions.id`; one credit    |
+| Amount mismatch                | `succeeded`             | Fulfilled, incident flagged                            |
+| Refund attempt fails           | `orphaned`              | Incident text + second Sentry event                    |
+| Database down during webhook   | unchanged               | 500 → Dodo retries 8× over ~28h                        |
 
 ## Invariants
 
@@ -617,7 +613,7 @@ The Dodo SDK is stubbed with `vi.spyOn`; **no test may touch the network.**
       `orphaned`, sets `incidentReason`, and calls `refunds.create`.
 - [ ] `payment.failed` sets `failureCode`/`failureMessage`, leaves the hold
       live, and permits a second `startPayment` on the same hold.
-- [ ] `startPayment` twice in the window returns the *same* `checkoutUrl`.
+- [ ] `startPayment` twice in the window returns the _same_ `checkoutUrl`.
 - [ ] An amount mismatch still confirms the booking and flags an incident.
 - [ ] With `PAYMENTS_PROVIDER=dodo`, `booking.create` throws
       `PAYMENT_FAILED` and leaves the hold unconsumed.

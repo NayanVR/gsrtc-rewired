@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { api } from "#/api/server";
 import { isValidMobileNumber } from "#/lib/auth-identity";
 import { getPaymentsProvider } from "#/lib/dodo";
+import { toAppError } from "#/lib/error-copy";
 import { getDevelopmentOtp as readDevelopmentOtp } from "#/lib/mock-otp-delivery";
 
 // The client↔server boundary. Each server function wraps a contract call; the
@@ -32,11 +33,28 @@ export const getSeatMap = createServerFn()
 
 export const holdSeats = createServerFn()
 	.validator((data: { seatNos: string[]; tripId: string }) => data)
-	.handler(({ data }) => api.booking.hold(data));
+	.handler(async ({ data }) => {
+		try {
+			return { error: null, hold: await api.booking.hold(data) };
+		} catch (error) {
+			return { error: toAppError(error), hold: null };
+		}
+	});
 
 export const getSeatHold = createServerFn()
 	.validator((data: { holdId: string; tripId: string }) => data)
 	.handler(({ data }) => api.booking.holdStatus(data));
+
+export const releaseSeatHold = createServerFn()
+	.validator((data: { holdId: string; tripId: string }) => data)
+	.handler(async ({ data }) => {
+		try {
+			const result = await api.booking.releaseHold(data);
+			return { error: null, released: result.released };
+		} catch (error) {
+			return { error: toAppError(error), released: false };
+		}
+	});
 
 export const createBooking = createServerFn()
 	.validator(

@@ -31,8 +31,8 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		Alert: "ચેતવણી",
 		"All Rights Reserved.": "સર્વ હકો સુરક્ષિત.",
 		"Annual Audit Report": "વાર્ષિક ઓડિટ અહેવાલ",
-		"Another passenger confirmed that seat first.":
-			"બીજા મુસાફરે તે સીટ પહેલાં બુક કરી લીધી.",
+		"Another passenger selected one of the same seats before we could lock it for you.":
+			"અમે તમારા માટે સીટ લોક કરીએ તે પહેલાં બીજા મુસાફરે એ જ સીટમાંથી એક પસંદ કરી લીધી.",
 		"AWT (Award Winning Teachers)": "AWT (પુરસ્કાર વિજેતા શિક્ષકો)",
 		Awards: "પુરસ્કારો",
 		"Back to home": "મુખ્ય પૃષ્ઠ પર પાછા જાઓ",
@@ -51,9 +51,10 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 			"શોધતા પહેલાં મુસાફરીની તારીખ પસંદ કરો.",
 		"Choose a pass type before applying.":
 			"અરજી કરતા પહેલાં પાસનો પ્રકાર પસંદ કરો.",
+		"Choose another available seat from the refreshed seat map.":
+			"તાજા સીટ નકશામાંથી બીજી ઉપલબ્ધ સીટ પસંદ કરો.",
 		"Choose both a source and destination before searching.":
 			"શોધતા પહેલાં પ્રસ્થાન અને ગંતવ્ય બંને પસંદ કરો.",
-		"Choose from the refreshed seat map.": "તાજા સીટ નકશામાંથી પસંદ કરો.",
 		"Citizen's Rights (નાગરિક અધિકાર પત્ર)": "નાગરિક અધિકાર પત્ર",
 		"Close navigation menu": "નેવિગેશન મેનૂ બંધ કરો",
 		"Contact Us": "અમારો સંપર્ક કરો",
@@ -161,13 +162,14 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Single Lady": "એકલી મહિલા",
 		"Site search": "સાઇટ શોધ",
 		Sitemap: "સાઇટમેપ",
+		"Someone else is booking your selected seat":
+			"બીજું કોઈ તમારી પસંદ કરેલી સીટ બુક કરી રહ્યું છે",
 		"Something broke on our side": "અમારી તરફ કંઈક ખોટું થયું છે",
 		Source: "પ્રસ્થાન સ્થાન",
 		"Special Services": "વિશેષ સેવાઓ",
 		"Statue of Unity": "સ્ટેચ્યુ ઓફ યુનિટી",
 		"Swap source and destination": "પ્રસ્થાન અને ગંતવ્ય બદલો",
 		Tenders: "ટેન્ડરો",
-		"That seat was just booked": "તે સીટ હમણાં જ બુક થઈ ગઈ",
 		"This is not your fault and nothing was charged.":
 			"આ તમારી ભૂલ નથી અને કોઈ રકમ લેવામાં આવી નથી.",
 		"This page is part of the GSRTC redesign concept. The full experience is on its way. Check back soon.":
@@ -219,8 +221,8 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		Alert: "सूचना",
 		"All Rights Reserved.": "सर्वाधिकार सुरक्षित।",
 		"Annual Audit Report": "वार्षिक लेखा परीक्षा रिपोर्ट",
-		"Another passenger confirmed that seat first.":
-			"किसी दूसरे यात्री ने वह सीट पहले बुक कर ली।",
+		"Another passenger selected one of the same seats before we could lock it for you.":
+			"आपके लिए सीट लॉक होने से पहले किसी दूसरे यात्री ने वही सीट चुन ली।",
 		"AWT (Award Winning Teachers)": "AWT (पुरस्कार विजेता शिक्षक)",
 		Awards: "पुरस्कार",
 		"Back to home": "होम पर वापस जाएं",
@@ -238,9 +240,10 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Choose a date of journey before searching.":
 			"खोजने से पहले यात्रा की तारीख चुनें।",
 		"Choose a pass type before applying.": "आवेदन करने से पहले पास का प्रकार चुनें।",
+		"Choose another available seat from the refreshed seat map.":
+			"अपडेट किए गए सीट मानचित्र से कोई दूसरी उपलब्ध सीट चुनें।",
 		"Choose both a source and destination before searching.":
 			"खोजने से पहले स्रोत और गंतव्य दोनों चुनें।",
-		"Choose from the refreshed seat map.": "नए सीट मानचित्र से सीट चुनें।",
 		"Citizen's Rights (નાગરિક અધિકાર પત્ર)": "नागरिक अधिकार पत्र",
 		"Close navigation menu": "नेविगेशन मेनू बंद करें",
 		"Contact Us": "संपर्क करें",
@@ -348,13 +351,14 @@ export const MESSAGES: Record<Exclude<Lang, "en">, Record<string, string>> = {
 		"Single Lady": "एकल महिला",
 		"Site search": "साइट खोज",
 		Sitemap: "साइटमैप",
+		"Someone else is booking your selected seat":
+			"कोई और आपकी चुनी हुई सीट बुक कर रहा है",
 		"Something broke on our side": "हमारी ओर से कुछ गड़बड़ हो गई",
 		Source: "प्रस्थान स्थान",
 		"Special Services": "विशेष सेवाएं",
 		"Statue of Unity": "स्टैच्यू ऑफ यूनिटी",
 		"Swap source and destination": "प्रस्थान और गंतव्य बदलें",
 		Tenders: "निविदाएं",
-		"That seat was just booked": "वह सीट अभी बुक हो गई",
 		"This is not your fault and nothing was charged.":
 			"यह आपकी गलती नहीं है और कोई पैसा नहीं काटा गया।",
 		"This page is part of the GSRTC redesign concept. The full experience is on its way. Check back soon.":

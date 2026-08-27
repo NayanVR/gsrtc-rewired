@@ -1,5 +1,5 @@
 import { implement } from "@orpc/server";
-import { and, eq, gt, or } from "drizzle-orm";
+import { and, eq, gt, or, sql } from "drizzle-orm";
 import { appContract } from "#/api/contract";
 import {
 	calculateBookingAmount,
@@ -12,8 +12,9 @@ import {
 	createSeatHold,
 	isUniqueViolation,
 	SeatConflictError,
+	TripInventoryNotFoundError,
 } from "#/api/services/seat-holds";
-import { buildSeats, buildTrip, parseTripId } from "#/api/trips";
+import { findTrip, findTripSeats } from "#/api/trips";
 import { getDb } from "#/db/client";
 import { bookedSeats, bookings, seatHolds } from "#/db/schema";
 import { getPaymentsProvider } from "#/lib/dodo";
@@ -38,17 +39,21 @@ function toBooking(row: typeof bookings.$inferSelect) {
 	};
 }
 
-const trip = os.booking.trip.handler(({ input, errors }) => {
+const trip = os.booking.trip.handler(async ({ input, errors }) => {
 	addEventFields({ trip_id: input.tripId });
-	const leg = parseTripId(input.tripId);
-	if (!leg) {
+	const result = await findTrip(input.tripId);
+	if (!result) {
 		throw errors.NOT_FOUND({ data: { reason: "trip_unknown" } });
 	}
-	return buildTrip(leg);
+	return result;
 });
 
-const seatMap = os.booking.seatMap.handler(async ({ input }) => {
+const seatMap = os.booking.seatMap.handler(async ({ input, errors }) => {
 	addEventFields({ trip_id: input.tripId });
+	const baselineSeats = await findTripSeats(input.tripId);
+	if (!baselineSeats) {
+		throw errors.NOT_FOUND({ data: { reason: "trip_unknown" } });
+	}
 	const now = new Date();
 	const activeSeats = await getDb()
 		.select({ seatNo: bookedSeats.seatNo, state: bookedSeats.state })
@@ -67,7 +72,7 @@ const seatMap = os.booking.seatMap.handler(async ({ input }) => {
 	);
 
 	return {
-		seats: buildSeats(input.tripId).map((seat) => {
+		seats: baselineSeats.map((seat) => {
 			const state = stateBySeatNo.get(seat.no);
 			return state ? { ...seat, status: state } : seat;
 		}),
@@ -86,6 +91,9 @@ const hold = os.booking.hold.handler(async ({ input, errors }) => {
 			holdId: createdHold.holdId,
 		};
 	} catch (error) {
+		if (error instanceof TripInventoryNotFoundError) {
+			throw errors.NOT_FOUND({ data: { reason: "trip_unknown" } });
+		}
 		if (error instanceof SeatConflictError || isUniqueViolation(error)) {
 			throw errors.CONFLICT({ data: { reason: "seats_taken" } });
 		}
@@ -110,6 +118,24 @@ const holdStatus = os.booking.holdStatus.handler(async ({ input, errors }) => {
 		holdId: holdRow.id,
 		seatNos: holdRow.seatNos,
 	};
+});
+
+const releaseHold = os.booking.releaseHold.handler(async ({ input }) => {
+	addEventFields({ hold_id: input.holdId, trip_id: input.tripId });
+	const releasedSeats = await getDb().execute<{ id: string }>(sql`
+		WITH released_hold AS (
+			DELETE FROM ${seatHolds}
+			WHERE ${seatHolds.id} = ${input.holdId}
+				AND ${seatHolds.tripId} = ${input.tripId}
+				AND ${seatHolds.consumedAt} IS NULL
+			RETURNING ${seatHolds.id}
+		)
+		DELETE FROM ${bookedSeats}
+		WHERE ${bookedSeats.holdId} IN (SELECT id FROM released_hold)
+			AND ${bookedSeats.state} = 'held'
+		RETURNING ${bookedSeats.id} AS id
+	`);
+	return { released: releasedSeats.length > 0 };
 });
 
 async function findBookingForConsumedHold(tx: DbTransaction, holdId: string) {
@@ -168,7 +194,7 @@ const create = os.booking.create.handler(({ input, errors }) => {
 			throw errors.CONFLICT({ data: { reason: "seat_passenger_mismatch" } });
 		}
 		const charge = mockCharge({
-			amount: calculateBookingAmount(holdRow.tripId, heldSeatNos),
+			amount: await calculateBookingAmount(holdRow.tripId, heldSeatNos),
 			idempotencyKey: holdRow.id,
 			method: input.paymentMethod ?? "upi",
 		});
@@ -228,6 +254,7 @@ export const bookingHandlers = {
 	hold,
 	holdStatus,
 	paymentStatus,
+	releaseHold,
 	seatMap,
 	startPayment,
 	trip,

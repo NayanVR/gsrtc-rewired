@@ -5,8 +5,14 @@ import {
 	createSeatHold,
 	isUniqueViolation,
 	SeatConflictError,
+	TripInventoryNotFoundError,
 } from "#/api/services/seat-holds";
-import { buildSeats, buildTrip, parseTripId } from "#/api/trips";
+import {
+	findTrip,
+	findTripSeats,
+	parseTripId,
+	tripIdForLeg,
+} from "#/api/trips";
 import { cancellationCharge } from "#/data/cancellation-policy";
 import { getDb } from "#/db/client";
 import { bookedSeats, bookings, refunds, seatHolds } from "#/db/schema";
@@ -34,35 +40,44 @@ function dateString(date: Date): string {
 	return date.toISOString().slice(0, 10);
 }
 
-function departureForTrip(tripId: string): Date | null {
-	const leg = parseTripId(tripId);
-	return leg ? new Date(buildTrip(leg).departure) : null;
+async function departureForTrip(tripId: string): Promise<Date | null> {
+	const trip = await findTrip(tripId);
+	return trip ? new Date(trip.departure) : null;
 }
 
-function fareForSeats(tripId: string, seatNos: string[]): number {
-	const fareBySeatNo = new Map(
-		buildSeats(tripId).map((seat) => [seat.no, seat.fare])
-	);
+async function fareForSeats(
+	tripId: string,
+	seatNos: string[]
+): Promise<number | null> {
+	const tripSeats = await findTripSeats(tripId);
+	if (!tripSeats) {
+		return null;
+	}
+	const fareBySeatNo = new Map(tripSeats.map((seat) => [seat.no, seat.fare]));
 	return seatNos.reduce(
 		(total, seatNo) => total + (fareBySeatNo.get(seatNo) ?? 0),
 		0
 	);
 }
 
-function rescheduledTripId(
+async function rescheduledTripId(
 	currentTripId: string,
 	newDate: string,
 	newTripId: string | undefined
-): string | null {
+): Promise<string | null> {
 	if (newTripId) {
 		const newLeg = parseTripId(newTripId);
-		return newLeg?.date === newDate ? newTripId : null;
+		if (newLeg?.date !== newDate) {
+			return null;
+		}
+		return (await findTrip(newTripId)) ? newTripId : null;
 	}
 	const currentLeg = parseTripId(currentTripId);
 	if (!currentLeg) {
 		return null;
 	}
-	return `${currentLeg.from}~${currentLeg.to}~${newDate}~${currentLeg.index}`;
+	const candidate = tripIdForLeg({ ...currentLeg, date: newDate });
+	return (await findTrip(candidate)) ? candidate : null;
 }
 
 const cancel = os.tickets.cancel.handler(async ({ input, errors }) =>
@@ -84,19 +99,18 @@ const cancel = os.tickets.cancel.handler(async ({ input, errors }) =>
 		if (booking.status === "cancelled") {
 			throw errors.CONFLICT({ data: { reason: "hold_already_consumed" } });
 		}
-		const departureAt = departureForTrip(booking.tripId);
-		if (!departureAt) {
+		const [departureAt, seatFare] = await Promise.all([
+			departureForTrip(booking.tripId),
+			fareForSeats(booking.tripId, booking.seatNos),
+		]);
+		if (!(departureAt && seatFare !== null)) {
 			throw errors.NOT_FOUND({ data: { reason: "trip_unknown" } });
 		}
-		const charge = cancellationCharge(
-			fareForSeats(booking.tripId, booking.seatNos),
-			departureAt,
-			new Date()
-		);
+		const charge = cancellationCharge(seatFare, departureAt, new Date());
 		if (charge === null) {
 			throw errors.CONFLICT({ data: { reason: "hold_already_consumed" } });
 		}
-		const refundAmount = fareForSeats(booking.tripId, booking.seatNos) - charge;
+		const refundAmount = seatFare - charge;
 		const expectedBy = new Date(
 			Date.now() + REFUND_PROCESSING_DAYS * MS_PER_DAY
 		);
@@ -171,13 +185,13 @@ const reschedule = os.tickets.reschedule.handler(async ({ input, errors }) => {
 			if (booking.status !== "confirmed") {
 				throw errors.CONFLICT({ data: { reason: "hold_already_consumed" } });
 			}
-			const newTripId = rescheduledTripId(
+			const newTripId = await rescheduledTripId(
 				booking.tripId,
 				input.newDate,
 				input.newTripId
 			);
-			const newLeg = newTripId ? parseTripId(newTripId) : null;
-			if (!(newTripId && newLeg)) {
+			const route = newTripId ? await findTrip(newTripId) : null;
+			if (!(newTripId && route)) {
 				throw errors.NOT_FOUND({ data: { reason: "trip_unknown" } });
 			}
 			const hold = await createSeatHold(tx, {
@@ -204,7 +218,6 @@ const reschedule = os.tickets.reschedule.handler(async ({ input, errors }) => {
 				.update(seatHolds)
 				.set({ consumedAt: new Date() })
 				.where(eq(seatHolds.id, hold.holdId));
-			const route = buildTrip(newLeg);
 			const [rescheduledBooking] = await tx
 				.update(bookings)
 				.set({
@@ -221,6 +234,9 @@ const reschedule = os.tickets.reschedule.handler(async ({ input, errors }) => {
 			return toBooking(rescheduledBooking);
 		});
 	} catch (error) {
+		if (error instanceof TripInventoryNotFoundError) {
+			throw errors.NOT_FOUND({ data: { reason: "trip_unknown" } });
+		}
 		if (error instanceof SeatConflictError || isUniqueViolation(error)) {
 			throw errors.CONFLICT({ data: { reason: "seats_taken" } });
 		}
