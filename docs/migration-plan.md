@@ -120,8 +120,8 @@ the component source, reviews it and owns subsequent changes in its codebase.
 Engineering teams can inspect the complete bundle before installing it:
 
 ```bash
-bunx shadcn@latest view NayanVR/gsrtc/gsrtc-ui
-bunx shadcn@latest add NayanVR/gsrtc/gsrtc-ui --dry-run
+bunx shadcn@latest view NayanVR/gsrtc-rewired/gsrtc-ui
+bunx shadcn@latest add NayanVR/gsrtc-rewired/gsrtc-ui --dry-run
 ```
 
 The bundle includes form controls, fields, alerts, badges, cards, buttons,

@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "gsrtc",
-  "homepage": "https://github.com/NayanVR/gsrtc",
+  "homepage": "https://github.com/NayanVR/gsrtc-rewired",
   "items": [
     {
       "name": "gsrtc-theme",
@@ -98,8 +98,8 @@
       "description": "GSRTC button variants with asChild composition and a built-in loading state.",
       "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
       "registryDependencies": [
-        "NayanVR/gsrtc/gsrtc-theme",
-        "NayanVR/gsrtc/gsrtc-utils"
+        "NayanVR/gsrtc-rewired/gsrtc-theme",
+        "NayanVR/gsrtc-rewired/gsrtc-utils"
       ],
       "files": [
         {
@@ -120,8 +120,8 @@
       "title": "GSRTC Input",
       "description": "A native input with accessible focus, invalid and disabled states.",
       "registryDependencies": [
-        "NayanVR/gsrtc/gsrtc-theme",
-        "NayanVR/gsrtc/gsrtc-utils"
+        "NayanVR/gsrtc-rewired/gsrtc-theme",
+        "NayanVR/gsrtc-rewired/gsrtc-utils"
       ],
       "files": [
         {
@@ -142,8 +142,8 @@
       "title": "GSRTC Textarea",
       "description": "A native textarea sharing the GSRTC control states.",
       "registryDependencies": [
-        "NayanVR/gsrtc/gsrtc-theme",
-        "NayanVR/gsrtc/gsrtc-utils"
+        "NayanVR/gsrtc-rewired/gsrtc-theme",
+        "NayanVR/gsrtc-rewired/gsrtc-utils"
       ],
       "files": [
         {
@@ -164,8 +164,8 @@
       "title": "GSRTC Select",
       "description": "A styled native select that preserves the platform picker.",
       "registryDependencies": [
-        "NayanVR/gsrtc/gsrtc-theme",
-        "NayanVR/gsrtc/gsrtc-utils"
+        "NayanVR/gsrtc-rewired/gsrtc-theme",
+        "NayanVR/gsrtc-rewired/gsrtc-utils"
       ],
       "files": [
         {
@@ -186,8 +186,8 @@
       "title": "GSRTC Label",
       "description": "The GSRTC form label primitive.",
       "registryDependencies": [
-        "NayanVR/gsrtc/gsrtc-theme",
-        "NayanVR/gsrtc/gsrtc-utils"
+        "NayanVR/gsrtc-rewired/gsrtc-theme",
+        "NayanVR/gsrtc-rewired/gsrtc-utils"
       ],
       "files": [
         {
@@ -203,9 +203,9 @@
       "title": "GSRTC Field",
       "description": "An accessible label, description and validation-message wrapper for native controls.",
       "registryDependencies": [
-        "NayanVR/gsrtc/gsrtc-label",
-        "NayanVR/gsrtc/gsrtc-theme",
-        "NayanVR/gsrtc/gsrtc-utils"
+        "NayanVR/gsrtc-rewired/gsrtc-label",
+        "NayanVR/gsrtc-rewired/gsrtc-theme",
+        "NayanVR/gsrtc-rewired/gsrtc-utils"
       ],
       "files": [
         {
@@ -222,8 +222,8 @@
       "description": "Information, success and destructive alert surfaces.",
       "dependencies": ["class-variance-authority"],
       "registryDependencies": [
-        "NayanVR/gsrtc/gsrtc-theme",
-        "NayanVR/gsrtc/gsrtc-utils"
+        "NayanVR/gsrtc-rewired/gsrtc-theme",
+        "NayanVR/gsrtc-rewired/gsrtc-utils"
       ],
       "files": [
         {
@@ -240,8 +240,8 @@
       "description": "Compact semantic status badges in GSRTC tones.",
       "dependencies": ["class-variance-authority"],
       "registryDependencies": [
-        "NayanVR/gsrtc/gsrtc-theme",
-        "NayanVR/gsrtc/gsrtc-utils"
+        "NayanVR/gsrtc-rewired/gsrtc-theme",
+        "NayanVR/gsrtc-rewired/gsrtc-utils"
       ],
       "files": [
         {
@@ -258,8 +258,8 @@
       "description": "GSRTC card surfaces with optional jali artwork.",
       "dependencies": ["class-variance-authority"],
       "registryDependencies": [
-        "NayanVR/gsrtc/gsrtc-theme",
-        "NayanVR/gsrtc/gsrtc-utils"
+        "NayanVR/gsrtc-rewired/gsrtc-theme",
+        "NayanVR/gsrtc-rewired/gsrtc-utils"
       ],
       "files": [
         {

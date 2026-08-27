@@ -32,8 +32,8 @@ You need [Bun](https://bun.sh/) and Postgres. Docker is optional, but it is the
 quickest way to start a local database.
 
 ```bash
-git clone https://github.com/NayanVR/gsrtc.git
-cd gsrtc
+git clone https://github.com/NayanVR/gsrtc-rewired.git
+cd gsrtc-rewired
 bun install
 cp .env.example .env
 ```
@@ -146,22 +146,22 @@ Because the registry is published from this repository's default branch,
 consumers can inspect and install the complete bundle with:
 
 ```bash
-bunx shadcn@latest view NayanVR/gsrtc/gsrtc-ui
-bunx shadcn@latest add NayanVR/gsrtc/gsrtc-ui --dry-run
-bunx shadcn@latest add NayanVR/gsrtc/gsrtc-ui
+bunx shadcn@latest view NayanVR/gsrtc-rewired/gsrtc-ui
+bunx shadcn@latest add NayanVR/gsrtc-rewired/gsrtc-ui --dry-run
+bunx shadcn@latest add NayanVR/gsrtc-rewired/gsrtc-ui
 ```
 
 Individual items are available under their `gsrtc-` names:
 
 ```bash
-bunx shadcn@latest add NayanVR/gsrtc/gsrtc-button
-bunx shadcn@latest add NayanVR/gsrtc/gsrtc-field
+bunx shadcn@latest add NayanVR/gsrtc-rewired/gsrtc-button
+bunx shadcn@latest add NayanVR/gsrtc-rewired/gsrtc-field
 ```
 
 Registry maintainers can validate all item definitions and source paths with:
 
 ```bash
-bunx shadcn@latest registry validate NayanVR/gsrtc
+bunx shadcn@latest registry validate NayanVR/gsrtc-rewired
 ```
 
 See the official [shadcn GitHub registry
