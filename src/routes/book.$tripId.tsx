@@ -573,7 +573,7 @@ function BookPage() {
 			<main className="bg-canvas" id="main">
 				<BookingBreadcrumb trip={trip} />
 				<div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_360px]">
-					<div className="space-y-6">
+					<div className="min-w-0 space-y-6">
 						<TripSummary date={date} trip={trip} />
 						<BookingStepIndicator step={bookingStep} />
 
@@ -817,7 +817,7 @@ function BookPage() {
 					</div>
 
 					{/* Fare summary */}
-					<aside className="lg:sticky lg:top-24 lg:h-fit">
+					<aside className="min-w-0 lg:sticky lg:top-24 lg:h-fit">
 						<div className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-card">
 							<h2 className="font-bold font-display text-ink-900 text-lg">
 								Fare summary
@@ -1268,7 +1268,7 @@ function PaymentConfirmation({
 function BookingBreadcrumb({ trip }: { trip: Trip }) {
 	return (
 		<div className="border-ink-100 border-b bg-surface">
-			<div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 text-sm sm:px-6">
+			<div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3 text-sm sm:px-6">
 				<Link className="text-ink-500 hover:text-saffron-600" to="/">
 					Home
 				</Link>
@@ -1322,7 +1322,7 @@ function TripSummary({ trip, date }: { trip: Trip; date: string }) {
 					</p>
 					<p className="text-ink-500 text-xs">{trip.to}</p>
 				</div>
-				<div className="ml-auto text-right">
+				<div className="w-full sm:ml-auto sm:w-auto sm:text-right">
 					<p className="text-ink-500 text-xs">Journey date</p>
 					<p className="font-semibold text-ink-800">
 						{new Date(date).toLocaleDateString("en-IN", {
@@ -1392,14 +1392,14 @@ function SeatDeck({
 		<div
 			aria-describedby={error ? errorId : undefined}
 			aria-invalid={error || undefined}
-			className="inline-block rounded-2xl border border-ink-100 bg-canvas p-4 aria-invalid:border-destructive"
+			className="inline-block min-w-full rounded-2xl border border-ink-100 bg-canvas p-4 aria-invalid:border-destructive sm:min-w-0"
 			tabIndex={error ? -1 : undefined}
 		>
 			<div className="mb-3 flex items-center justify-end gap-1.5 text-ink-400 text-xs">
 				<SteeringIcon />
 				Driver
 			</div>
-			<div className="flex gap-8">
+			<div className="flex flex-col gap-6 sm:flex-row sm:gap-8">
 				{decks.map(([deck, deckSeats]) => (
 					<div key={deck}>
 						{decks.length > 1 ? (
