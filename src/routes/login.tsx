@@ -29,6 +29,7 @@ function submitLabel(mode: Mode, t: (message: string) => string): string {
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: This screen keeps both auth methods and their mutually exclusive UI states together.
 function LoginPage() {
 	const { t } = useTranslation();
+	const navigate = Route.useNavigate();
 	const { data: currentSession, isPending: sessionPending } =
 		authClient.useSession();
 	const [mode, setMode] = useState<Mode>("signIn");
@@ -63,6 +64,7 @@ function LoginPage() {
 					? "Your account is ready. You are signed in."
 					: "You are signed in."
 			);
+			await navigate({ to: "/profile" });
 		} catch (caughtError) {
 			setError(toAppError(caughtError));
 		} finally {
@@ -122,6 +124,7 @@ function LoginPage() {
 			}
 			setDevelopmentOtp(null);
 			setNotice("Your mobile number is verified. You are signed in.");
+			await navigate({ to: "/profile" });
 		} catch (caughtError) {
 			setError(toAppError(caughtError));
 		} finally {
