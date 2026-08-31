@@ -101,10 +101,21 @@ export function SiteFooter() {
 					<p>
 						© {new Date().getFullYear()} GSRTC. {t("All Rights Reserved.")}
 					</p>
-					<p>
-						{t("Version Details:")} 20/07/2026, 20:00 PM ·{" "}
-						{t("A redesign concept")}
-					</p>
+					<div className="flex items-center gap-2">
+						<p>
+							{t("Version Details:")} 20/07/2026, 20:00 PM ·{" "}
+							{t("A redesign concept")}
+						</p>
+						<span aria-hidden>·</span>
+						<a
+							className="rounded-full border border-saffron-400/50 bg-saffron-400/10 px-2.5 py-1 font-semibold text-saffron-200 transition-colors hover:border-saffron-300 hover:bg-saffron-400/20 hover:text-white"
+							href="https://github.com/NayanVR/gsrtc-rewired/"
+							rel="noopener noreferrer"
+							target="_blank"
+						>
+							GitHub
+						</a>
+					</div>
 				</div>
 			</div>
 		</footer>
